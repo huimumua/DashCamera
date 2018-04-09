@@ -1,0 +1,54 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        singnedconfig {
+            keyAlias 'kenwood'
+            keyPassword 'android'
+            storeFile file('../tools/debug.keystore')
+            storePassword 'android'
+        }
+    }
+
+    compileSdkVersion rootProject.ext.sdk.compileSdkVersion
+    defaultConfig {
+        applicationId "com.askey.dvr.cdr7010.dashcam"
+        project.archivesBaseName = "DashCam";
+        minSdkVersion rootProject.ext.sdk.minSdkVersion
+        targetSdkVersion rootProject.ext.sdk.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.version.versionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.singnedconfig
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=gcc"
+                cppFlags "-fexceptions"
+            }
+        }
+
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation rootProject.ext.dependencies.appcompatV7
+    testImplementation rootProject.ext.dependencies.junit
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}

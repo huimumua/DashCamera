@@ -1,0 +1,45 @@
+ext {
+    sdk = [
+        compileSdkVersion: 26,
+        buildToolsVersion: "26.0.2",
+        minSdkVersion    : 23,
+        targetSdkVersion : 26,
+    ]
+
+    version = [
+        versionCode      : gitVersionCode(),
+        versionName      : gitVersionTag(),
+    ]
+
+    dependencies = [
+        junit           : 'junit:junit:4.12',
+        appcompatV7     : 'com.android.support:appcompat-v7:26.1.0',
+        recyclerview    : 'com.android.support:recyclerview-v7:24.2.1',
+    ]
+}
+
+def gitVersionCode() {
+    def cmd = 'git rev-list HEAD --first-parent --count'
+    try {
+        cmd.execute().text.trim().toInteger()
+    } catch (Exception e) {
+        return 0
+    }
+}
+
+def gitVersionTag() {
+    def cmd = 'git describe --tags'
+    def version = cmd.execute().text.trim()
+
+    def pattern = "-(\\d+)-g"
+    def matcher = version =~ pattern
+
+    if (matcher) {
+        version = version.substring(0, matcher.start()) + "." + matcher[0][1]
+    } else {
+        version = version + ".0"
+    }
+
+    return version
+}
+
