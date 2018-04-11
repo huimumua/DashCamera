@@ -13,7 +13,7 @@ android {
     compileSdkVersion rootProject.ext.sdk.compileSdkVersion
     defaultConfig {
         applicationId "com.askey.dvr.cdr7010.dashcam"
-        project.archivesBaseName = "DashCam";
+        project.archivesBaseName = "DashCam"
         minSdkVersion rootProject.ext.sdk.minSdkVersion
         targetSdkVersion rootProject.ext.sdk.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
@@ -33,8 +33,16 @@ android {
         }
     }
     buildTypes {
-        release {
+        debug {
+            buildConfigField "boolean", "LOG_DEBUG", "true"
             minifyEnabled false
+            signingConfig signingConfigs.singnedconfig
+            jniDebuggable true
+        }
+        release {
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            minifyEnabled false
+            signingConfig signingConfigs.singnedconfig
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -48,6 +56,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation rootProject.ext.dependencies.appcompatV7
+    implementation rootProject.ext.dependencies.supportV4
+    implementation rootProject.ext.dependencies.supportV13
     testImplementation rootProject.ext.dependencies.junit
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'

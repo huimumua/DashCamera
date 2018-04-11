@@ -3,6 +3,11 @@
     package="com.askey.dvr.cdr7010.dashcam">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-feature android:name="android.hardware.camera2" />
     
     <application
         android:name=".application.DashCamApplication"

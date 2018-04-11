@@ -10,13 +10,12 @@ import android.os.Message;
 import android.view.Surface;
 
 import com.askey.dvr.cdr7010.dashcam.core.encoder.IFrameListener;
-import com.askey.dvr.cdr7010.dashcam.core.encoder.ISegmentListener;
 import com.askey.dvr.cdr7010.dashcam.core.gles.EglCore;
 import com.askey.dvr.cdr7010.dashcam.core.gles.GLDrawer2D;
 import com.askey.dvr.cdr7010.dashcam.core.gles.OffscreenSurface;
 import com.askey.dvr.cdr7010.dashcam.core.gles.WindowSurface;
 
-public class EGLRenderer implements OnFrameAvailableListener, ISegmentListener {
+public class EGLRenderer implements OnFrameAvailableListener {
 
     private final static int MSG_INIT = 0;
     private final static int MSG_DEINIT = 1;
@@ -28,7 +27,6 @@ public class EGLRenderer implements OnFrameAvailableListener, ISegmentListener {
 
     private RenderHandler mRenderHandler;
     private HandlerThread mRenderThread;
-    private long mElapsed;
     private SnapshotCallback mSnapshotCallback = null;
     private IFrameListener mFrameListener;
 
@@ -37,21 +35,33 @@ public class EGLRenderer implements OnFrameAvailableListener, ISegmentListener {
     }
 
     public EGLRenderer() {
+
+    }
+
+    public void start() {
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper());
+        init();
     }
 
-    @Override
-    public void finalize() {
-        mRenderThread.quit();
+    public void stop() {
+        deinit();
+        mRenderThread.quitSafely();
+        try {
+            mRenderThread.join();
+            mRenderThread = null;
+            mRenderHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void init() {
+    private void init() {
         mRenderHandler.sendEmptyMessage(MSG_INIT);
     }
 
-    public void deinit() {
+    private void deinit() {
         mRenderHandler.sendEmptyMessage(MSG_DEINIT);
     }
 
@@ -86,11 +96,6 @@ public class EGLRenderer implements OnFrameAvailableListener, ISegmentListener {
     @Override //OnFrameAvailableListener
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         mRenderHandler.sendEmptyMessage(MSG_UPDATE_FRAME);
-    }
-
-    @Override //ISegmentListener
-    public void timeElapsed(long timeMs) {
-        mElapsed = timeMs;
     }
 
     private class RenderHandler extends Handler {
