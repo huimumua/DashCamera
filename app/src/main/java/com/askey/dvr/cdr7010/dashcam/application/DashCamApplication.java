@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.application;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 
 /**
@@ -8,6 +9,8 @@ import android.content.res.Configuration;
  */
 
 public class DashCamApplication extends Application {
+    private static Context appContext;
+
     public DashCamApplication() {
         super();
     }
@@ -15,6 +18,7 @@ public class DashCamApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        setAppContext(this);
     }
 
     @Override
@@ -45,5 +49,13 @@ public class DashCamApplication extends Application {
     @Override
     public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {
         super.unregisterActivityLifecycleCallbacks(callback);
+    }
+
+    public static Context getAppContext() {
+        return appContext;
+    }
+
+    private static void setAppContext(Context context) {
+        appContext = context;
     }
 }
