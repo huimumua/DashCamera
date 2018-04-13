@@ -11,11 +11,12 @@ import android.view.Surface;
 
 import com.askey.dvr.cdr7010.dashcam.core.encoder.IFrameListener;
 import com.askey.dvr.cdr7010.dashcam.core.gles.EglCore;
-import com.askey.dvr.cdr7010.dashcam.core.gles.GLDrawer2D;
 import com.askey.dvr.cdr7010.dashcam.core.gles.OffscreenSurface;
 import com.askey.dvr.cdr7010.dashcam.core.gles.WindowSurface;
 
 public class EGLRenderer implements OnFrameAvailableListener {
+
+    private final static String TAG = "EGLRenderer";
 
     private final static int MSG_INIT = 0;
     private final static int MSG_DEINIT = 1;
@@ -27,21 +28,20 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
     private RenderHandler mRenderHandler;
     private HandlerThread mRenderThread;
-    private SnapshotCallback mSnapshotCallback = null;
     private IFrameListener mFrameListener;
 
-    public interface SnapshotCallback {
-        void onSnapshotAvailable(byte[] data, int width, int height, long timeStamp);
+    public interface OnSurfaceTextureListener {
+        void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height);
+        void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
     public EGLRenderer() {
-
-    }
-
-    public void start() {
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper());
+    }
+
+    public void start() {
         init();
     }
 
@@ -55,6 +55,10 @@ public class EGLRenderer implements OnFrameAvailableListener {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setSurfaceTextureListener(OnSurfaceTextureListener listener) {
+        mRenderHandler.mSurfaceTextureListener = listener;
     }
 
     private void init() {
@@ -79,22 +83,13 @@ public class EGLRenderer implements OnFrameAvailableListener {
         mFrameListener = null;
     }
 
-    public SurfaceTexture getInputSurfaceTexture() {
-        return mRenderHandler.mInputSurface;
-    }
-
-    public void takeDisplaySnapshot(SnapshotCallback callback) {
-        if (mSnapshotCallback == null) {
-            mSnapshotCallback = callback;
-        }
-    }
-
     public void clear() {
         mRenderHandler.sendEmptyMessage(MSG_DSLP_CLEAR);
     }
 
     @Override //OnFrameAvailableListener
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+        //Logg.d(TAG, "onFrameAvailable");
         mRenderHandler.sendEmptyMessage(MSG_UPDATE_FRAME);
     }
 
@@ -102,14 +97,13 @@ public class EGLRenderer implements OnFrameAvailableListener {
         private EglCore mEglCore;
         private WindowSurface mDisplaySurface;
         private WindowSurface mEncoderSurface;
+        private VideoTextureController mTextureController;
         private SurfaceTexture mInputSurface;
-        private GLDrawer2D mDrawer;
-//        private OverlayDrawer mOverlay;
-        private int mInputTexture;
         private final float[] mTmpMatrix = new float[16];
         private int mViewportWidth, mViewportHeight;
         private final Object mDispSync = new Object();
         private final Object mEncSync = new Object();
+        private OnSurfaceTextureListener mSurfaceTextureListener;
 
         public RenderHandler(Looper looper) {
             super(looper);
@@ -138,20 +132,18 @@ public class EGLRenderer implements OnFrameAvailableListener {
             OffscreenSurface dummySurface = new OffscreenSurface(mEglCore, 1, 1);
             dummySurface.makeCurrent();
 
-            mInputTexture = GLDrawer2D.initTex();
-            mInputSurface = new SurfaceTexture(mInputTexture);
+            mTextureController = new VideoTextureController();
+            mTextureController.prepare();
+            mInputSurface = new SurfaceTexture(mTextureController.getTexture());
+            mInputSurface.setDefaultBufferSize(1920, 1080);
             mInputSurface.setOnFrameAvailableListener(EGLRenderer.this);
 
-            mDrawer = new GLDrawer2D();
-//            mOverlay = new OverlayDrawer();
+            if (mSurfaceTextureListener != null) {
+                mSurfaceTextureListener.onSurfaceTextureAvailable(mInputSurface, 1920, 1080);
+            }
         }
 
         private void deinit() {
-            if (mInputSurface != null) {
-                mInputSurface.release();
-                mInputSurface = null;
-            }
-            GLDrawer2D.deleteTex(mInputTexture);
             synchronized (mDispSync) {
                 if (mDisplaySurface != null) {
                     mDisplaySurface.release();
@@ -168,14 +160,17 @@ public class EGLRenderer implements OnFrameAvailableListener {
                 mEglCore.release();
                 mEglCore = null;
             }
-            if (mDrawer != null) {
-                mDrawer.release();
-                mDrawer = null;
+            if (mInputSurface != null) {
+                if (mSurfaceTextureListener != null) {
+                    mSurfaceTextureListener.onSurfaceTextureDestroyed(mInputSurface);
+                }
+                mInputSurface.release();
+                mInputSurface = null;
             }
-//            if (mOverlay != null) {
-//                mOverlay.release();
-//                mOverlay = null;
-//            }
+            if (mTextureController != null) {
+                mTextureController.release();
+                mTextureController = null;
+            }
         }
 
         private void setDisplaySurface(Surface surface, int width, int height) {
@@ -229,13 +224,13 @@ public class EGLRenderer implements OnFrameAvailableListener {
             // Latch the next frame from the camera.
             mInputSurface.updateTexImage();
             mInputSurface.getTransformMatrix(mTmpMatrix);
+            mTextureController.setMatrix(mTmpMatrix);
 
             synchronized (mDispSync) {
                 if (mDisplaySurface != null) {
                     mDisplaySurface.makeCurrent();
                     GLES20.glViewport(0, 0, mViewportWidth, mViewportHeight);
-                    mDrawer.draw(mInputTexture, mTmpMatrix);
-//                    mOverlay.drawPreview(mElapsed, mEncoderSurface == null);
+                    mTextureController.draw();
                     mDisplaySurface.swapBuffers();
                 }
             }
@@ -244,26 +239,13 @@ public class EGLRenderer implements OnFrameAvailableListener {
                 if (mEncoderSurface != null) {
                     mEncoderSurface.makeCurrent();
                     GLES20.glViewport(0, 0, 1920, 1080);
-                    mDrawer.draw(mInputTexture, mTmpMatrix);
-//                    mOverlay.drawRecord(true);
+                    mTextureController.draw();
                     mEncoderSurface.setPresentationTime(mInputSurface.getTimestamp());
-                    takeSnapshotIfNecessary(mEncoderSurface);
                     if (mFrameListener != null) {
                         mFrameListener.frameAvailableSoon();
                     }
                     mEncoderSurface.swapBuffers();
                 }
-            }
-        }
-
-        private void takeSnapshotIfNecessary(WindowSurface surface) {
-            if (mSnapshotCallback != null) {
-                final SnapshotCallback callback = mSnapshotCallback;
-                mSnapshotCallback = null;
-                final int width = surface.getWidth();
-                final int height = surface.getHeight();
-                final byte[] data = surface.snapshot().array();
-                callback.onSnapshotAvailable(data, width, height, System.currentTimeMillis());
             }
         }
     }

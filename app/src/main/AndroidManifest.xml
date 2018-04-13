@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.askey.dvr.cdr7010.dashcam">
+    package="com.askey.dvr.cdr7010.dashcam"
+    android:sharedUserId="android.uid.system">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <uses-feature android:name="android.hardware.camera2" />
+    <uses-feature android:name="android.hardware.camera2" android:required="true"/>
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     
     <application
         android:name=".application.DashCamApplication"
@@ -18,13 +20,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name="com.askey.dvr.cdr7010.dashcam.notice.NoticeActivity">
+
+        </activity>
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity">
         </activity>
     </application>
 

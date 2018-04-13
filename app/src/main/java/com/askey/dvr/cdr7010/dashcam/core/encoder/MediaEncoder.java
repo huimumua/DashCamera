@@ -261,9 +261,7 @@ public abstract class MediaEncoder implements Runnable {
         int encoderStatus, count = 0;
         final MediaMuxerWrapper muxer = mWeakMuxer.get();
         if (muxer == null) {
-//        	throw new NullPointerException("muxer is unexpectedly null");
-        	Logg.w(LOG_TAG, "muxer is unexpectedly null");
-        	return;
+        	throw new NullPointerException("muxer is unexpectedly null");
         }
 LOOP:	while (mIsCapturing) {
 			// get encoded data with maximum timeout duration of TIMEOUT_USEC(=10[msec])

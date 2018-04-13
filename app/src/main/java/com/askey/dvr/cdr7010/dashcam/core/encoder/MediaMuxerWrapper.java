@@ -93,22 +93,6 @@ public class MediaMuxerWrapper {
 		return mIsStarted;
 	}
 
-	public long getSegmentDuration() {
-		return 0;
-	}
-
-	public long getTotalDuration() {
-		return mTotalDurationUs / 1000L;
-	}
-
-	public void setSegmentDuration(long timeMs) {
-		mSegmentDurationLimitedUs = timeMs * 1000L;
-	}
-
-	public long getSegmentDurationLimitedMs() {
-		return mSegmentDurationLimitedUs / 1000L;
-	}
-
 	public void registerSegmentListener(ISegmentListener listener) {
         mSegmentListener = listener;
     }
@@ -170,6 +154,7 @@ public class MediaMuxerWrapper {
 
 	/*package*/ synchronized boolean addTrackWithType(final @SampleType int type,
 													  final MediaFormat format) {
+		Logg.d(LOG_TAG, "addTrackWithType: " + type);
 		if (type == SAMPLE_TYPE_AUDIO)
 			mAudioFormat = format;
 		else

@@ -42,8 +42,6 @@ public class Camera2Controller {
 
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
-    private Surface mPreviewSurface;
-
     @SuppressLint("MissingPermission")
     public Camera2Controller(Context context) {
         mContext = context.getApplicationContext();
@@ -92,9 +90,9 @@ public class Camera2Controller {
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             Log.v(TAG, "onOpened: cameraDevice = " + cameraDevice);
             mCameraDevice = cameraDevice;
-            if (mIsPreviewing) {
-                startPreviewInternal();
-            }
+            //if (mIsPreviewing) {
+            //    startPreviewInternal();
+            //}
             mCameraOpenCloseLock.release();
         }
 
@@ -144,6 +142,7 @@ public class Camera2Controller {
     }
 
     public void closeCamera() {
+        Log.d(TAG, "closeCamera");
         try {
             mCameraOpenCloseLock.acquire();
             closePreviewSession();
@@ -166,13 +165,14 @@ public class Camera2Controller {
     }
 
     public void startPreview() {
+        Log.d(TAG, "startPreview");
         startPreviewInternal();
         mIsPreviewing = true;
     }
 
     private boolean startPreviewInternal() {
         Log.v(TAG, "startPreviewInternal()");
-        if (mIsPreviewing && mCameraDevice == null || mSurfaceList.size() == 0) {
+        if (mIsPreviewing || mCameraDevice == null || mSurfaceList.size() == 0) {
             Log.e(TAG, "startPreviewInternal error");
             return false;
         }
@@ -191,6 +191,7 @@ public class Camera2Controller {
                     Log.v(TAG, "onConfigured: cameraCaptureSession = " + session);
                     mPreviewSession = session;
                     updatePreview();
+                    mIsPreviewing = true;
                 }
 
                 @Override
@@ -208,6 +209,7 @@ public class Camera2Controller {
         if (mIsRecordingVideo || null == mCameraDevice || mSurfaceList.size() == 0) {
             return;
         }
+
         try {
             closePreviewSession();
             mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
@@ -242,6 +244,7 @@ public class Camera2Controller {
     }
 
     public void addSurface(@NonNull Surface surface) {
+        Log.d(TAG, "addSurface" + surface);
         mSurfaceList.add(surface);
     }
 
