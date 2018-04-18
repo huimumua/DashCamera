@@ -9,6 +9,9 @@ public class OSDProvider{
     public UIElementStatusEnum.RecordingStatusType getRecordingStatus(){
         return GlobalLogic.getInstance().getRecordingStatus();
     }
+    public UIElementStatusEnum.MICStatusType getMicStatus(){
+        return GlobalLogic.getInstance().getMicStatus();
+    }
 
 
 }

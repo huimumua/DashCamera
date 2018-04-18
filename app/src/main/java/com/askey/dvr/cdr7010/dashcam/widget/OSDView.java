@@ -16,27 +16,45 @@ import android.util.TypedValue;
 import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 
 import java.util.Calendar;
+
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_PARKING;
 
 public class OSDView extends View {
     private static final int REFRESH_PREVIEW_TIME_TIMER = 0x500;
     private Context mContext;
     private String timeString;
     private RectF  timeRectF;
+    private RectF  recordingRectF;
+    private RectF  micRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
     private Bitmap time_bg;
+    private Bitmap continuous_recording ;
+    private Bitmap event_recording;
+    private Bitmap parking_recording;
+    private Bitmap mic_on;
+    private Bitmap mic_off;
+    private OSDProvider osdProvider;
 
     public OSDView(Context context){
         super(context);
         mContext = context;
+        osdProvider = new OSDProvider();
         initViews();
     }
     public OSDView(Context context, AttributeSet attrs){
         super(context, attrs);
         mContext = context;
+        osdProvider = new OSDProvider();
         initViews();
     }
     public void init(int normalInterval){
@@ -54,6 +72,15 @@ public class OSDView extends View {
         timePaint.setAntiAlias(true);
 
         time_bg = decodeResource(getResources(), R.drawable.time_bg);
+
+        recordingRectF = new RectF(20,70,80,100);
+        continuous_recording = decodeResource(getResources(), R.drawable.continuous_recording);
+        event_recording = decodeResource(getResources(), R.drawable.event_recording);
+        parking_recording = decodeResource(getResources(), R.drawable.parking_recording);
+
+        micRectF = new RectF(220,140,270,200);
+        mic_on = decodeResource(getResources(), R.drawable.mic_on);
+        mic_off = decodeResource(getResources(), R.drawable.mic_off);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -101,7 +128,7 @@ public class OSDView extends View {
     public void invalidateView(){
         invalidate();
     }
-        private void drawTime(Canvas canvas,String timeText,float width,float height){
+    private void drawTime(Canvas canvas,String timeText,float width,float height){
         canvas.drawBitmap(time_bg,null, timeRectF, null);
         Rect strRect = new Rect();
         timePaint.getTextBounds(timeText,0,timeText.length(),strRect);
@@ -117,5 +144,17 @@ public class OSDView extends View {
         // 基本的而绘制功能，比如绘制背景颜色、背景图片等
         super.onDraw(canvas);
         drawTime(canvas,updateClock(),timeRectF.width(),timeRectF.height());
+        if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS){
+            canvas.drawBitmap(continuous_recording,null, recordingRectF, null);
+        }else if(osdProvider.getRecordingStatus() == RECORDING_EVENT){
+            canvas.drawBitmap(event_recording,null, recordingRectF, null);
+        }else if(osdProvider.getRecordingStatus() == RECORDING_PARKING){
+            canvas.drawBitmap(parking_recording,null, recordingRectF, null);
+        }
+        if(osdProvider.getMicStatus() == MIC_ON){
+            canvas.drawBitmap(mic_on,null, micRectF, null);
+        }else if(osdProvider.getMicStatus() == MIC_OFF){
+            canvas.drawBitmap(mic_off,null, micRectF, null);
+        }
     }
 }
