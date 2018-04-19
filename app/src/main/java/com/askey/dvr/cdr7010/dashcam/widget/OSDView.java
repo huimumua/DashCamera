@@ -40,6 +40,9 @@ public class OSDView extends View {
     private RectF  recordingRectF;
     private RectF  micRectF;
     private RectF  lteRectF;
+    private RectF  volumeUpRectF;
+    private RectF  volumeDownRectF;
+    private RectF  menuRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -50,6 +53,9 @@ public class OSDView extends View {
     private Bitmap mic_on;
     private Bitmap mic_off;
     private Bitmap lte_sinal_strength_great;
+    private Bitmap volume_up;
+    private Bitmap volume_down;
+    private Bitmap menu;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -91,6 +97,15 @@ public class OSDView extends View {
 
         lteRectF = new RectF(220,0,260,20);
         lte_sinal_strength_great = decodeResource(getResources(), R.drawable.lte_sinal_strength_great);
+
+        volumeUpRectF = new RectF(290,30,320,60);
+        volume_up = decodeResource(getResources(), R.drawable.volume_up);
+
+        volumeDownRectF = new RectF(290,170,320,200);
+        volume_down = decodeResource(getResources(), R.drawable.volume_down);
+
+        menuRectF = new RectF(290,100,320,130);
+        menu = decodeResource(getResources(), R.drawable.menu);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -177,5 +192,9 @@ public class OSDView extends View {
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_POOR){
             canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
         }
+
+        canvas.drawBitmap(volume_up,null, volumeUpRectF, null);
+        canvas.drawBitmap(menu,null, menuRectF, null);
+        canvas.drawBitmap(volume_down,null, volumeDownRectF, null);
     }
 }
