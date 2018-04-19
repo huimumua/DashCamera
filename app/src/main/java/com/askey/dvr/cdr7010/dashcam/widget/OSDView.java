@@ -21,6 +21,11 @@ import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 
 import java.util.Calendar;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
@@ -34,6 +39,7 @@ public class OSDView extends View {
     private RectF  timeRectF;
     private RectF  recordingRectF;
     private RectF  micRectF;
+    private RectF  lteRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -43,6 +49,7 @@ public class OSDView extends View {
     private Bitmap parking_recording;
     private Bitmap mic_on;
     private Bitmap mic_off;
+    private Bitmap lte_sinal_strength_great;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -81,6 +88,9 @@ public class OSDView extends View {
         micRectF = new RectF(220,140,270,200);
         mic_on = decodeResource(getResources(), R.drawable.mic_on);
         mic_off = decodeResource(getResources(), R.drawable.mic_off);
+
+        lteRectF = new RectF(220,0,260,20);
+        lte_sinal_strength_great = decodeResource(getResources(), R.drawable.lte_sinal_strength_great);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -155,6 +165,17 @@ public class OSDView extends View {
             canvas.drawBitmap(mic_on,null, micRectF, null);
         }else if(osdProvider.getMicStatus() == MIC_OFF){
             canvas.drawBitmap(mic_off,null, micRectF, null);
+        }
+        if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN){
+            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+        }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GREAT){
+            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+        }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GOOD){
+            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+        }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_MODERATE){
+            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+        }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_POOR){
+            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
         }
     }
 }

@@ -12,6 +12,9 @@ public class OSDProvider{
     public UIElementStatusEnum.MICStatusType getMicStatus(){
         return GlobalLogic.getInstance().getMicStatus();
     }
+    public UIElementStatusEnum.LTEStatusType getLTEStatus(){
+        return GlobalLogic.getInstance().getLTEStatus();
+    }
 
 
 }

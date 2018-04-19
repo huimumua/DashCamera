@@ -3,6 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal">
+    <com.askey.dvr.cdr7010.dashcam.widget.OSDView
+        android:id="@+id/osd_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </com.askey.dvr.cdr7010.dashcam.widget.OSDView>
+
 
 
 </LinearLayout>
