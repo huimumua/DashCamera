@@ -16,10 +16,16 @@ import android.view.ViewGroup;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.reflect.Method;
 
@@ -51,6 +57,7 @@ public class CameraRecordFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        EventUtil.register(this);
     }
 
     @Override
@@ -84,6 +91,7 @@ public class CameraRecordFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         osdView.unInit();
+        EventUtil.unregister(this);
     }
 
     private void requestVideoPermissions() {
@@ -100,6 +108,21 @@ public class CameraRecordFragment extends Fragment {
             }
         }
         return true;
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent messageEvent){
+        Logg.d(TAG,"onMessageEvent messageEvent="+messageEvent.getData());
+        if(messageEvent != null){
+            handleMessageEvent(messageEvent);
+        }
+    }
+    private void handleMessageEvent(MessageEvent messageEvent){
+        if(messageEvent.getCode() == Event.EventCode.EVENT_RECORDING){
+            GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
+            osdView.startRecordingCountDown();
+            osdView.invalidateView();
+        }
+
     }
     private final PhoneStateListener mListener = new PhoneStateListener(){
         @Override

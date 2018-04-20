@@ -4,6 +4,10 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 
+import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
+
+import org.greenrobot.eventbus.EventBus;
+
 /**
  * Created by lly on 18-4-9.
  */
@@ -18,6 +22,7 @@ public class DashCamApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
         setAppContext(this);
     }
 

@@ -16,7 +16,6 @@ import android.util.TypedValue;
 import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 
 import java.util.Calendar;
@@ -43,6 +42,7 @@ public class OSDView extends View {
     private RectF  volumeUpRectF;
     private RectF  volumeDownRectF;
     private RectF  menuRectF;
+    private RectF  countTimeRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -106,6 +106,8 @@ public class OSDView extends View {
 
         menuRectF = new RectF(290,100,320,130);
         menu = decodeResource(getResources(), R.drawable.menu);
+
+        countTimeRectF = new RectF(90,70,120,100);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -133,6 +135,7 @@ public class OSDView extends View {
             }
         }
     };
+
     private void startClockTimer(){
         new Thread(){
             @Override
@@ -150,16 +153,37 @@ public class OSDView extends View {
         }.start();
 
     }
+    private int countTime ;
+    private Handler timeHandler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            countTime--;
+            if(countTime >= 0) {
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
+    public void startRecordingCountDown(){
+        countTime = 6;
+        timeHandler.post(runnable);
+    }
     public void invalidateView(){
         invalidate();
     }
-    private void drawTime(Canvas canvas,String timeText,float width,float height){
-        canvas.drawBitmap(time_bg,null, timeRectF, null);
+    private void drawTime(Canvas canvas,RectF bgRectF,String timeText,RectF dstRectF){
+        float x = dstRectF.left;
+        float y = dstRectF.top;
+        float width = dstRectF.width();
+        float height = dstRectF.height();
+        if(bgRectF != null) {
+            canvas.drawBitmap(time_bg, null, bgRectF, null);
+        }
         Rect strRect = new Rect();
         timePaint.getTextBounds(timeText,0,timeText.length(),strRect);
         Paint.FontMetrics fontMetrics = timePaint.getFontMetrics();
         float baseline = (height - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
-        canvas.drawText(timeText,width / 2 - strRect.width() / 2, baseline, timePaint);
+        canvas.drawText(timeText,x + width / 2 - strRect.width() / 2, y + baseline, timePaint);
     }
 
 
@@ -168,13 +192,19 @@ public class OSDView extends View {
         //调用父View的onDraw函数，因为View这个类帮我们实现了一些
         // 基本的而绘制功能，比如绘制背景颜色、背景图片等
         super.onDraw(canvas);
-        drawTime(canvas,updateClock(),timeRectF.width(),timeRectF.height());
+        drawTime(canvas,timeRectF,updateClock(),timeRectF);
         if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS){
             canvas.drawBitmap(continuous_recording,null, recordingRectF, null);
         }else if(osdProvider.getRecordingStatus() == RECORDING_EVENT){
             canvas.drawBitmap(event_recording,null, recordingRectF, null);
+            if(countTime>=0) {
+                drawTime(canvas, null,"0" + countTime, countTimeRectF);
+            }
         }else if(osdProvider.getRecordingStatus() == RECORDING_PARKING){
             canvas.drawBitmap(parking_recording,null, recordingRectF, null);
+            if(countTime>=0) {
+                drawTime(canvas, null,"0" + countTime, countTimeRectF);
+            }
         }
         if(osdProvider.getMicStatus() == MIC_ON){
             canvas.drawBitmap(mic_on,null, micRectF, null);

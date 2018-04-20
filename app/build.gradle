@@ -31,6 +31,11 @@ android {
         ndk {
             abiFilters "armeabi", "armeabi-v7a"
         }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ eventBusIndex : 'com.askey.dvr.cdr7010.dashcam.EventBusIndex' ]
+            }
+        }
     }
     buildTypes {
         debug {
@@ -59,6 +64,10 @@ dependencies {
     implementation rootProject.ext.dependencies.supportV4
     implementation rootProject.ext.dependencies.supportV13
     testImplementation rootProject.ext.dependencies.junit
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
+
+
