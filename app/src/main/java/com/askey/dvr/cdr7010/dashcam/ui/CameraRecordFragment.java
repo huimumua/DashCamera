@@ -70,7 +70,7 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState){
         requestVideoPermissions();
-        osdView = view.findViewById(R.id.osd_view);
+        osdView = (OSDView) view.findViewById(R.id.osd_view);
         mMainCam = new DashCam(getActivity());
         mMainCam.prepare();
     }

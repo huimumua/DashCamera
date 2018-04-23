@@ -89,7 +89,7 @@ public class Camera2PreviewFragment extends Fragment
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
-        mTextureView = view.findViewById(R.id.texture);
+        mTextureView = (TextureView) view.findViewById(R.id.texture);
         mMainCam = new DashCam(getActivity());
         mMainCam.prepare();
     }
