@@ -13,7 +13,7 @@ android {
     compileSdkVersion rootProject.ext.sdk.compileSdkVersion
     defaultConfig {
         applicationId "com.askey.dvr.cdr7010.dashcam"
-        project.archivesBaseName = "DashCam"
+        archivesBaseName = "DashCam"
         minSdkVersion rootProject.ext.sdk.minSdkVersion
         targetSdkVersion rootProject.ext.sdk.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
@@ -37,6 +37,7 @@ android {
             }
         }
     }
+
     buildTypes {
         debug {
             buildConfigField "boolean", "LOG_DEBUG", "true"
@@ -56,6 +57,13 @@ android {
             path "CMakeLists.txt"
         }
     }
+
+    applicationVariants.all { variant ->
+        variant.getPackageApplication().outputScope.apkDatas.forEach { apkData ->
+            apkData.outputFileName = project.archivesBaseName + ".apk"
+        }
+    }
+
 }
 
 dependencies {
