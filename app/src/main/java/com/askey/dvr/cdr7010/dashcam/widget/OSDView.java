@@ -17,9 +17,11 @@ import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
+import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
 import java.util.Calendar;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
@@ -27,6 +29,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_PARKING;
@@ -43,6 +46,8 @@ public class OSDView extends View {
     private RectF  volumeDownRectF;
     private RectF  menuRectF;
     private RectF  countTimeRectF;
+    private RectF  parkingRecordingLimitRectF;
+    private RectF  eventRecordingLimitRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -56,6 +61,8 @@ public class OSDView extends View {
     private Bitmap volume_up;
     private Bitmap volume_down;
     private Bitmap menu;
+    private Bitmap parking_recording_limit;
+    private Bitmap event_recording_limit;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -108,6 +115,12 @@ public class OSDView extends View {
         menu = decodeResource(getResources(), R.drawable.menu);
 
         countTimeRectF = new RectF(90,70,120,100);
+
+        parkingRecordingLimitRectF = new RectF(180,150,230,170);
+        parking_recording_limit = decodeResource(getResources(), R.drawable.parking_recording_limit);
+
+        eventRecordingLimitRectF = new RectF(120,150,170,170);
+        event_recording_limit = decodeResource(getResources(), R.drawable.event_recording_limit);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -221,6 +234,13 @@ public class OSDView extends View {
             canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_POOR){
             canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+        }
+
+        if(osdProvider.getEventRecordingLimitStatus() == EVENT_RECORDING_REACH_LIMIT_CONDITION){
+            canvas.drawBitmap(event_recording_limit,null, eventRecordingLimitRectF, null);
+        }
+        if(osdProvider.getParkingRecordingLimitStatus() == PARKING_RECORDING_REACH_LIMIT_CONDITION){
+            canvas.drawBitmap(parking_recording_limit,null, parkingRecordingLimitRectF, null);
         }
 
         canvas.drawBitmap(volume_up,null, volumeUpRectF, null);

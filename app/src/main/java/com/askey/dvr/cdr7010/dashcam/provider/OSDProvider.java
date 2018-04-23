@@ -15,6 +15,12 @@ public class OSDProvider{
     public UIElementStatusEnum.LTEStatusType getLTEStatus(){
         return GlobalLogic.getInstance().getLTEStatus();
     }
+    public UIElementStatusEnum.ParkingRecordingLimitStatusType getParkingRecordingLimitStatus(){
+        return GlobalLogic.getInstance().getParkingRecordingLimitStatus();
+    }
+    public UIElementStatusEnum.EventRecordingLimitStatusType getEventRecordingLimitStatus(){
+        return GlobalLogic.getInstance().getEventRecordingLimitStatus() ;
+    }
 
 
 }

@@ -30,6 +30,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
+            <intent-filter>
+                <action android:name="com.askey.dvr.cdr7010.dashcam.limit"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

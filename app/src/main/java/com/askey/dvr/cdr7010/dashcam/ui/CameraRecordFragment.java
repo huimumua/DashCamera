@@ -3,6 +3,7 @@ package com.askey.dvr.cdr7010.dashcam.ui;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -120,8 +121,12 @@ public class CameraRecordFragment extends Fragment {
         if(messageEvent.getCode() == Event.EventCode.EVENT_RECORDING){
             GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
             osdView.startRecordingCountDown();
-            osdView.invalidateView();
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT){
+            GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT){
+            GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType)messageEvent.getData());
         }
+        osdView.invalidateView();
 
     }
     private final PhoneStateListener mListener = new PhoneStateListener(){

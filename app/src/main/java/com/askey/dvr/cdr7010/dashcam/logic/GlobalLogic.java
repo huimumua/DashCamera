@@ -3,8 +3,10 @@ package com.askey.dvr.cdr7010.dashcam.logic;
 import android.content.Context;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 
 public class GlobalLogic{
@@ -13,7 +15,8 @@ public class GlobalLogic{
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-
+    private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+    private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 
     public static GlobalLogic getInstance(){
         if(globalLogic == null){
@@ -38,6 +41,18 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.LTEStatusType getLTEStatus(){
         return lteStatus;
+    }
+    public void setEventRecordingLimitStatus(UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus){
+        this.eventRecordingLimitStatus = eventRecordingLimitStatus;
+    }
+    public UIElementStatusEnum.EventRecordingLimitStatusType getEventRecordingLimitStatus(){
+       return eventRecordingLimitStatus ;
+    }
+    public void setParkingRecordingLimitStatus(UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus){
+        this.parkingRecordingLimitStatus = parkingRecordingLimitStatus;
+    }
+    public UIElementStatusEnum.ParkingRecordingLimitStatusType getParkingRecordingLimitStatus(){
+        return parkingRecordingLimitStatus;
     }
 
 }

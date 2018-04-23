@@ -45,4 +45,28 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum EventRecordingLimitStatusType{
+        EVENT_RECORDING_REACH_LIMIT_CONDITION(0),
+        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION(1);
+        public final int value;
+        EventRecordingLimitStatusType(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
+    public enum ParkingRecordingLimitStatusType{
+        PARKING_RECORDING_REACH_LIMIT_CONDITION(0),
+        PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION(1);
+        public final int value;
+        ParkingRecordingLimitStatusType(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
 }
