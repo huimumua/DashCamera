@@ -69,4 +69,25 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum SDcardStatusType{
+        MEDIA_MOUNTED(0),// 此时SD是可读写的
+        MEDIA_MOUNTED_READ_ONLY(1),//SD卡存在且为只读状态
+        MEDIA_REMOVED(2),//SD不存在
+        MEDIA_SHARED(3),//SD卡存在，正与PC等相连接
+        MEDIA_BAD_REMOVAL(4),//SD卡在挂载状态下被错误取出
+        MEDIA_CHECKING(5),//正在检查SD卡
+        MEDIA_NOFS(6),//SD卡存在，但其文件系统不被支持
+        MEDIA_UNMOUNTABLE(7),//SD卡存在，无法被挂载
+        MEDIA_UNMOUNTED(8),//SD卡存在，未被挂载
+        MEDIA_UNKNOWN(9);//SD卡不能使用其他原因
+
+        public final int value;
+        SDcardStatusType(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
 }

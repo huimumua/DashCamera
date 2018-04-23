@@ -33,6 +33,16 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Parking
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_PARKING;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_BAD_REMOVAL;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_CHECKING;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_MOUNTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_MOUNTED_READ_ONLY;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_NOFS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_REMOVED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_SHARED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTABLE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTED;
 
 public class OSDView extends View {
     private static final int REFRESH_PREVIEW_TIME_TIMER = 0x500;
@@ -48,6 +58,7 @@ public class OSDView extends View {
     private RectF  countTimeRectF;
     private RectF  parkingRecordingLimitRectF;
     private RectF  eventRecordingLimitRectF;
+    private RectF  sdCardRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -63,6 +74,10 @@ public class OSDView extends View {
     private Bitmap menu;
     private Bitmap parking_recording_limit;
     private Bitmap event_recording_limit;
+    private Bitmap sdcard_error;
+    private Bitmap sdcard_testing;
+    private Bitmap sdcard_recording;
+    private Bitmap sdcard_not_found;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -86,14 +101,14 @@ public class OSDView extends View {
     }
 
     private void initViews(){
-        timeRectF = new RectF(0,0,60,60);
+        timeRectF = new RectF(20,180,40,210);
         timePaint = new Paint();
         timePaint.setColor(Color.RED);
         timePaint.setAntiAlias(true);
 
         time_bg = decodeResource(getResources(), R.drawable.time_bg);
 
-        recordingRectF = new RectF(20,70,80,100);
+        recordingRectF = new RectF(20,0,80,30);
         continuous_recording = decodeResource(getResources(), R.drawable.continuous_recording);
         event_recording = decodeResource(getResources(), R.drawable.event_recording);
         parking_recording = decodeResource(getResources(), R.drawable.parking_recording);
@@ -114,13 +129,19 @@ public class OSDView extends View {
         menuRectF = new RectF(290,100,320,130);
         menu = decodeResource(getResources(), R.drawable.menu);
 
-        countTimeRectF = new RectF(90,70,120,100);
+        countTimeRectF = new RectF(90,0,120,30);
 
         parkingRecordingLimitRectF = new RectF(180,150,230,170);
         parking_recording_limit = decodeResource(getResources(), R.drawable.parking_recording_limit);
 
         eventRecordingLimitRectF = new RectF(120,150,170,170);
         event_recording_limit = decodeResource(getResources(), R.drawable.event_recording_limit);
+
+        sdCardRectF = new RectF(20,70,44,86);
+        sdcard_error = decodeResource(getResources(), R.drawable.icon_sdcard_error);
+        sdcard_not_found = decodeResource(getResources(), R.drawable.icon_sdcard_nofound);
+        sdcard_recording = decodeResource(getResources(), R.drawable.icon_sdcard_recording);
+        sdcard_testing = decodeResource(getResources(), R.drawable.icon_sdcard_testing);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -166,7 +187,7 @@ public class OSDView extends View {
         }.start();
 
     }
-    private int countTime ;
+    private int countTime = -1 ;
     private Handler timeHandler = new Handler();
     private Runnable runnable = new Runnable() {
         @Override
@@ -242,6 +263,24 @@ public class OSDView extends View {
         if(osdProvider.getParkingRecordingLimitStatus() == PARKING_RECORDING_REACH_LIMIT_CONDITION){
             canvas.drawBitmap(parking_recording_limit,null, parkingRecordingLimitRectF, null);
         }
+        if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
+            canvas.drawBitmap(sdcard_recording,null,sdCardRectF,null);
+        }else if((osdProvider.getRecordingStatus() == RECORDING_PARKING && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED)
+                || osdProvider.getSDcardStatusType() == MEDIA_CHECKING){
+            canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
+        }else if(osdProvider.getSDcardStatusType() == MEDIA_MOUNTED_READ_ONLY
+                ||osdProvider.getSDcardStatusType() == MEDIA_SHARED
+                ||osdProvider.getSDcardStatusType() == MEDIA_BAD_REMOVAL
+                ||osdProvider.getSDcardStatusType() == MEDIA_NOFS
+                ||osdProvider.getSDcardStatusType() == MEDIA_UNMOUNTABLE
+                ||osdProvider.getSDcardStatusType() == MEDIA_UNMOUNTED
+                ||osdProvider.getSDcardStatusType() == MEDIA_UNKNOWN
+                ){
+            canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
+        } else if(osdProvider.getSDcardStatusType() == MEDIA_REMOVED ){
+            canvas.drawBitmap(sdcard_not_found,null,sdCardRectF,null);
+        }
+
 
         canvas.drawBitmap(volume_up,null, volumeUpRectF, null);
         canvas.drawBitmap(menu,null, menuRectF, null);
