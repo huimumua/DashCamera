@@ -2,8 +2,10 @@ package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -50,6 +52,18 @@ public class CameraRecordFragment extends Fragment {
             Manifest.permission.RECORD_AUDIO,
     };
 
+    private BroadcastReceiver mSDMonitor = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("android.intent.action.MEDIA_MOUNTED")) {
+                if (mMainCam != null) {
+                    mMainCam.prepare();
+                    mMainCam.startVideoRecord();
+                }
+            }
+        }
+    };
+
     public static CameraRecordFragment newInstance() {
         return new CameraRecordFragment();
     }
@@ -72,7 +86,6 @@ public class CameraRecordFragment extends Fragment {
         requestVideoPermissions();
         osdView = (OSDView) view.findViewById(R.id.osd_view);
         mMainCam = new DashCam(getActivity());
-        mMainCam.prepare();
     }
 
     @Override
@@ -80,13 +93,20 @@ public class CameraRecordFragment extends Fragment {
         super.onResume();
         osdView.init(1000);
         mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        mMainCam.prepare();
         mMainCam.startVideoRecord();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.intent.action.MEDIA_MOUNTED");
+        filter.addDataScheme("file");
+        getActivity().registerReceiver(mSDMonitor, filter);
     }
 
     @Override
     public void onPause() {
-        super.onPause();
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+        getActivity().unregisterReceiver(mSDMonitor);
+        super.onPause();
     }
     @Override
     public void onDestroy() {

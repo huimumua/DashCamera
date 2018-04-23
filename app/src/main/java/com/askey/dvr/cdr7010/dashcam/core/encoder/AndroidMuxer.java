@@ -1,15 +1,12 @@
-package com.askey.dvr.cdr7010.dashcam.core.muxer;
+package com.askey.dvr.cdr7010.dashcam.core.encoder;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.support.annotation.NonNull;
 
-import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -21,7 +18,6 @@ public class AndroidMuxer {
     private MediaMuxer mMuxer;
     private int mVidIdx, mAudIdx;
     private String mPath;
-    private String nmeaFilePath;
     private boolean mStarted = false;
     private boolean mHasAudioData = false;
     private long mLastVideoPTSUs;
@@ -33,28 +29,14 @@ public class AndroidMuxer {
     private int mEventId = 0;
     private long mMaxDurationMs;
     private int mFrameCount = 0;
-    private FileOutputStream fos;
-    private BufferedOutputStream bos;
 
     AndroidMuxer(@NonNull final String path)  throws IOException {
         mPath = path;
         mMuxer = new MediaMuxer(mPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        String tempPath = path;
-        if (tempPath.contains("mp4")) {
-            nmeaFilePath = tempPath.replace("mp4", "nmea");
-        } else {
-            nmeaFilePath = tempPath + ".nmea";
-        }
-        fos = new FileOutputStream(nmeaFilePath);
-        bos = new BufferedOutputStream(fos);
     }
 
     String filePath() {
         return mPath;
-    }
-
-    String nmeaFilePath(){
-        return nmeaFilePath;
     }
 
     long duration() {
@@ -118,13 +100,6 @@ public class AndroidMuxer {
             mDurationUs = bufferInfo.presentationTimeUs - mStartPtsUs;
             mLastVideoPTSUs = bufferInfo.presentationTimeUs;
             mFrameCount++;
-        } else {
-            try {
-                bos.write(byteBuf.array(), 0, bufferInfo.size);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return;
         }
         int idx = (type == MediaMuxerWrapper.SAMPLE_TYPE_AUDIO) ? mAudIdx : mVidIdx;
         mMuxer.writeSampleData(idx, byteBuf, bufferInfo);
@@ -161,21 +136,6 @@ public class AndroidMuxer {
             Logg.e(LOG_TAG, "Fail to release MediaMuxer with: " + e.getMessage());
         } finally {
             mMuxer = null;
-        }
-
-        try {
-            bos.flush();
-        } catch (IOException e) {
-        } finally {
-            try {
-                bos.close();
-            } catch (IOException e) {
-            }
-
-            try {
-                fos.close();
-            } catch (IOException e) {
-            }
         }
     }
 }

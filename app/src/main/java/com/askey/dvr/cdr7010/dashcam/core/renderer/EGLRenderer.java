@@ -47,13 +47,15 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
     public void stop() {
         deinit();
-        mRenderThread.quitSafely();
-        try {
-            mRenderThread.join();
-            mRenderThread = null;
-            mRenderHandler = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (mRenderThread != null) {
+            mRenderThread.quitSafely();
+            try {
+                mRenderThread.join();
+                mRenderThread = null;
+                mRenderHandler = null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

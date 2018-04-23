@@ -34,7 +34,7 @@ public class Camera2Controller {
     private Context mContext;
     private CameraManager mCameraManager;
     private CameraDevice mCameraDevice;
-    private CameraCaptureSession mPreviewSession;
+    private CameraCaptureSession mCaptureSession;
     private CaptureRequest.Builder mCaptureBuilder;
 
     private HandlerThread mBackgroundThread;
@@ -158,9 +158,9 @@ public class Camera2Controller {
     }
 
     private void closePreviewSession() {
-        if (mPreviewSession != null) {
-            mPreviewSession.close();
-            mPreviewSession = null;
+        if (mCaptureSession != null) {
+            mCaptureSession.close();
+            mCaptureSession = null;
         }
     }
 
@@ -189,7 +189,7 @@ public class Camera2Controller {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
                     Log.v(TAG, "onConfigured: cameraCaptureSession = " + session);
-                    mPreviewSession = session;
+                    mCaptureSession = session;
                     updatePreview();
                     mIsPreviewing = true;
                 }
@@ -221,7 +221,7 @@ public class Camera2Controller {
 
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-                    mPreviewSession = cameraCaptureSession;
+                    mCaptureSession = cameraCaptureSession;
                     updatePreview();
                     mIsRecordingVideo = true;
                     // TODO:
@@ -240,7 +240,7 @@ public class Camera2Controller {
 
     public void stopRecordingVideo() {
         mIsRecordingVideo = false;
-        startPreview();
+        closePreviewSession();
     }
 
     public void addSurface(@NonNull Surface surface) {
@@ -256,7 +256,7 @@ public class Camera2Controller {
             setUpCaptureRequestBuilder(mCaptureBuilder);
             HandlerThread thread = new HandlerThread("CameraPreview");
             thread.start();
-            mPreviewSession.setRepeatingRequest(mCaptureBuilder.build(), null, mBackgroundHandler);
+            mCaptureSession.setRepeatingRequest(mCaptureBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

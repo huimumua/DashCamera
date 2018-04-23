@@ -9,6 +9,7 @@ import android.view.Surface;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 
+import java.io.IOException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -59,13 +60,21 @@ public class DashCam {
             }
 
             if (mCameraController != null && mRecorder == null) {
-                mRecorder = new Recorder();
+                mRecorder = new Recorder(mContext, new Recorder.InterruptedCallback() {
+                    @Override
+                    public void onInterrupted() {
+                        Log.d(TAG, "recorder interrupted");
+                        release();
+                        mRecorder.release();
+                        mRecorder = null;
+                    }
+                });
                 mRecorder.prepare();
                 mRecorder.startRecording();
                 mCameraController.addSurface(mRecorder.getInputSurface());
                 mCameraController.startRecordingVideo();
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         } finally {
             mRecordLock.release();
