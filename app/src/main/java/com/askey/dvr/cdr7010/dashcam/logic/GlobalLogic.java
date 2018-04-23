@@ -8,6 +8,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 
 public class GlobalLogic{
     private static GlobalLogic globalLogic;
@@ -17,6 +18,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
     private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+    private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
 
     public static GlobalLogic getInstance(){
         if(globalLogic == null){
@@ -53,6 +55,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.ParkingRecordingLimitStatusType getParkingRecordingLimitStatus(){
         return parkingRecordingLimitStatus;
+    }
+    public void setSecondCameraStatus(UIElementStatusEnum.SecondCameraStatusType secondCameraStatus){
+        this.secondCameraStatus =secondCameraStatus;
+    }
+    public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus(){
+        return secondCameraStatus;
     }
 
 }

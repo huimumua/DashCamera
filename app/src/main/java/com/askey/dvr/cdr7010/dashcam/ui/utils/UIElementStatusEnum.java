@@ -90,4 +90,17 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum SecondCameraStatusType{
+        CONNECTED(0),
+        DISCONNECTED(1);
+
+        public final int value;
+        SecondCameraStatusType(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
 }

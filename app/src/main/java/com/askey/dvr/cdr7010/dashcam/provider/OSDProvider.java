@@ -49,6 +49,9 @@ public class OSDProvider{
         }
         return sDcardStatusType;
     }
+    public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus(){
+        return GlobalLogic.getInstance().getSecondCameraStatus();
+    }
 
 
 }

@@ -43,6 +43,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 
 public class OSDView extends View {
     private static final int REFRESH_PREVIEW_TIME_TIMER = 0x500;
@@ -59,6 +60,8 @@ public class OSDView extends View {
     private RectF  parkingRecordingLimitRectF;
     private RectF  eventRecordingLimitRectF;
     private RectF  sdCardRectF;
+    private RectF  updateRectF;
+    private RectF  secondCameraRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -78,6 +81,8 @@ public class OSDView extends View {
     private Bitmap sdcard_testing;
     private Bitmap sdcard_recording;
     private Bitmap sdcard_not_found;
+    private Bitmap update;
+    private Bitmap second_camera;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -142,6 +147,12 @@ public class OSDView extends View {
         sdcard_not_found = decodeResource(getResources(), R.drawable.icon_sdcard_nofound);
         sdcard_recording = decodeResource(getResources(), R.drawable.icon_sdcard_recording);
         sdcard_testing = decodeResource(getResources(), R.drawable.icon_sdcard_testing);
+
+        secondCameraRectF = new RectF(20,141,44,157);
+        second_camera = decodeResource(getResources(), R.drawable.icon_2nd_camera);
+
+        updateRectF = new RectF(20,104,44,120);
+        update = decodeResource(getResources(), R.drawable.icon_update);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -279,6 +290,10 @@ public class OSDView extends View {
             canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
         } else if(osdProvider.getSDcardStatusType() == MEDIA_REMOVED ){
             canvas.drawBitmap(sdcard_not_found,null,sdCardRectF,null);
+        }
+        canvas.drawBitmap(update,null,updateRectF,null);
+        if(osdProvider.getSecondCameraStatus() == CONNECTED){
+            canvas.drawBitmap(second_camera,null,secondCameraRectF,null);
         }
 
 
