@@ -145,6 +145,8 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
         }else if(messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT){
             GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType)messageEvent.getData());
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_GPS){
+            GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType)messageEvent.getData());
         }
         osdView.invalidateView();
 

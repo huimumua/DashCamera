@@ -4,6 +4,7 @@ import android.content.Context;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
@@ -19,6 +20,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
+    private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
 
     public static GlobalLogic getInstance(){
         if(globalLogic == null){
@@ -61,6 +63,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus(){
         return secondCameraStatus;
+    }
+    public void setGPSStatus(UIElementStatusEnum.GPSStatusType gpsStatus){
+        this.gpsStatus =gpsStatus;
+    }
+    public UIElementStatusEnum.GPSStatusType getGpsStatus(){
+        return gpsStatus;
     }
 
 }

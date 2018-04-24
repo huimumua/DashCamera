@@ -22,6 +22,9 @@ import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import java.util.Calendar;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NOT_FIXES;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
@@ -62,6 +65,7 @@ public class OSDView extends View {
     private RectF  sdCardRectF;
     private RectF  updateRectF;
     private RectF  secondCameraRectF;
+    private RectF  gpsRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -83,6 +87,9 @@ public class OSDView extends View {
     private Bitmap sdcard_not_found;
     private Bitmap update;
     private Bitmap second_camera;
+    private Bitmap gps_signal_strength_not_fixes;
+    private Bitmap gps_signal_strength_fixes;
+    private Bitmap gps_signal_strength_none;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -153,6 +160,11 @@ public class OSDView extends View {
 
         updateRectF = new RectF(20,104,44,120);
         update = decodeResource(getResources(), R.drawable.icon_update);
+
+        gpsRectF = new RectF(200,6,232,22);
+        gps_signal_strength_not_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength);
+        gps_signal_strength_none = decodeResource(getResources(), R.drawable.icon_gps_strength_none);
+        gps_signal_strength_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength_max);
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -294,6 +306,13 @@ public class OSDView extends View {
         canvas.drawBitmap(update,null,updateRectF,null);
         if(osdProvider.getSecondCameraStatus() == CONNECTED){
             canvas.drawBitmap(second_camera,null,secondCameraRectF,null);
+        }
+        if(osdProvider.getGpsStatus() == GPS_STRENGTH_FIXES){
+            canvas.drawBitmap(gps_signal_strength_fixes,null,gpsRectF,null);
+        }else if(osdProvider.getGpsStatus() == GPS_STRENGTH_NOT_FIXES){
+            canvas.drawBitmap(gps_signal_strength_not_fixes,null,gpsRectF,null);
+        }else if(osdProvider.getGpsStatus() == GPS_STRENGTH_NONE){
+            canvas.drawBitmap(gps_signal_strength_none,null,gpsRectF,null);
         }
 
 

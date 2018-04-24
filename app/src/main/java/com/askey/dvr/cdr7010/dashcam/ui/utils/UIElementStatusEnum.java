@@ -103,4 +103,21 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum GPSStatusType{
+        GPS_STRENGTH_NONE(0),
+        GPS_STRENGTH_NOT_FIXES(1),
+        GPS_STRENGTH_FIXES(2);
+
+
+        public final int value;
+        GPSStatusType(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+
+
+    }
 }

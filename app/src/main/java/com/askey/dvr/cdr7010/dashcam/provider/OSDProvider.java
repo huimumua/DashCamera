@@ -52,6 +52,9 @@ public class OSDProvider{
     public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus(){
         return GlobalLogic.getInstance().getSecondCameraStatus();
     }
+    public UIElementStatusEnum.GPSStatusType getGpsStatus(){
+        return GlobalLogic.getInstance().getGpsStatus();
+    }
 
 
 }
