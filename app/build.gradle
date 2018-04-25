@@ -71,11 +71,12 @@ dependencies {
     implementation rootProject.ext.dependencies.appcompatV7
     implementation rootProject.ext.dependencies.supportV4
     implementation rootProject.ext.dependencies.supportV13
-    testImplementation rootProject.ext.dependencies.junit
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation rootProject.ext.dependencies.eventbus
+    implementation files('libs/com.askey.platform.jar')
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    testImplementation rootProject.ext.dependencies.junit
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
 
 
