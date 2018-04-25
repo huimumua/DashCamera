@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -17,6 +18,7 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         setContentView(R.layout.activity_notice);
         NoticeFragment noticeFragment = NoticeFragment.newInstance(null);
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
@@ -30,21 +32,7 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
             }
         }else{
             SPUtils.put(DashCamApplication.getAppContext(),Const.IS_FIRST_BOOT,true);
-
-           // startNextActivity(this.getPackageName(),"com.askey.dvr.cdr7010.dashcam.ui.MainActivty");
+            ActivityUtils.startActivity(this,this.getPackageName(),"com.askey.dvr.cdr7010.dashcam.ui.MainActivity",true);
         }
     }
-    private void startNextActivity(String packageName,String className){
-        if(TextUtils.isEmpty(packageName) || TextUtils.isEmpty(className)){
-            return ;
-        }
-        Intent intent = new Intent();
-        intent.setClassName(packageName,className);
-        startActivity(intent);
-    }
-
-
-
-
-
 }

@@ -20,16 +20,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.notice.NoticeActivity">
-
-        </activity>
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.notice.NoticeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
+        </activity>
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
+            android:exported="true">
         </activity>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
             <intent-filter>
