@@ -109,8 +109,12 @@ public class Recorder {
     }
 
     public void stopRecording() {
-        mRenderer.stop();
-        mMuxer.stopRecording();
+        if(mRenderer != null) {
+            mRenderer.stop();
+        }
+        if(mMuxer != null) {
+            mMuxer.stopRecording();
+        }
     }
 
     public void release() {

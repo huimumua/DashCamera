@@ -20,6 +20,8 @@ import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
@@ -35,7 +37,9 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_PARKING;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_STOP;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_BAD_REMOVAL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_CHECKING;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_MOUNTED;
@@ -72,10 +76,14 @@ public class OSDView extends View {
     private Bitmap time_bg;
     private Bitmap continuous_recording ;
     private Bitmap event_recording;
-    private Bitmap parking_recording;
+    private Bitmap stop_recording;
     private Bitmap mic_on;
     private Bitmap mic_off;
     private Bitmap lte_sinal_strength_great;
+    private Bitmap lte_sinal_strength_good;
+    private Bitmap lte_sinal_strength_moderate;
+    private Bitmap lte_sinal_strength_poor;
+    private Bitmap lte_none;
     private Bitmap volume_up;
     private Bitmap volume_down;
     private Bitmap menu;
@@ -113,55 +121,61 @@ public class OSDView extends View {
     }
 
     private void initViews(){
-        timeRectF = new RectF(20,180,40,210);
+        timeRectF = new RectF(0,214,84,240);
         timePaint = new Paint();
-        timePaint.setColor(Color.RED);
+        timePaint.setTextSize(14);
+        timePaint.setColor(Color.WHITE);
         timePaint.setAntiAlias(true);
 
-        time_bg = decodeResource(getResources(), R.drawable.time_bg);
+        time_bg = decodeResource(getResources(), R.drawable.bg_time);
 
-        recordingRectF = new RectF(20,0,80,30);
+        recordingRectF = new RectF(11,8,59,24);
         continuous_recording = decodeResource(getResources(), R.drawable.continuous_recording);
         event_recording = decodeResource(getResources(), R.drawable.event_recording);
-        parking_recording = decodeResource(getResources(), R.drawable.parking_recording);
+        stop_recording = decodeResource(getResources(), R.drawable.stop_recording);
 
-        micRectF = new RectF(220,140,270,200);
+        micRectF = new RectF(240,212,292,240);
         mic_on = decodeResource(getResources(), R.drawable.mic_on);
         mic_off = decodeResource(getResources(), R.drawable.mic_off);
 
-        lteRectF = new RectF(220,0,260,20);
+        lteRectF = new RectF(243,8,287,24);
         lte_sinal_strength_great = decodeResource(getResources(), R.drawable.lte_sinal_strength_great);
+        lte_sinal_strength_good = decodeResource(getResources(), R.drawable.lte_sinal_strength_good);
+        lte_sinal_strength_moderate= decodeResource(getResources(), R.drawable.lte_sinal_strength_moderate);
+        lte_sinal_strength_poor = decodeResource(getResources(), R.drawable.lte_sinal_strength_poor);
+        lte_none = decodeResource(getResources(), R.drawable.lte_none);
 
-        volumeUpRectF = new RectF(290,30,320,60);
+
+        volumeUpRectF = new RectF(292,20,320,72);
         volume_up = decodeResource(getResources(), R.drawable.volume_up);
 
-        volumeDownRectF = new RectF(290,170,320,200);
+        volumeDownRectF = new RectF(292,164,320,216);
         volume_down = decodeResource(getResources(), R.drawable.volume_down);
 
-        menuRectF = new RectF(290,100,320,130);
+        menuRectF = new RectF(292,96,320,148);
         menu = decodeResource(getResources(), R.drawable.menu);
 
-        countTimeRectF = new RectF(90,0,120,30);
+        countTimeRectF = new RectF(62,8,77,24);
 
-        parkingRecordingLimitRectF = new RectF(180,150,230,170);
+        parkingRecordingLimitRectF = new RectF(164,156,230,192);
         parking_recording_limit = decodeResource(getResources(), R.drawable.parking_recording_limit);
 
-        eventRecordingLimitRectF = new RectF(120,150,170,170);
+        eventRecordingLimitRectF = new RectF(90,156,156,192);
         event_recording_limit = decodeResource(getResources(), R.drawable.event_recording_limit);
 
-        sdCardRectF = new RectF(20,70,44,86);
+        sdCardRectF = new RectF(11,62,35,78);
         sdcard_error = decodeResource(getResources(), R.drawable.icon_sdcard_error);
         sdcard_not_found = decodeResource(getResources(), R.drawable.icon_sdcard_nofound);
         sdcard_recording = decodeResource(getResources(), R.drawable.icon_sdcard_recording);
         sdcard_testing = decodeResource(getResources(), R.drawable.icon_sdcard_testing);
 
-        secondCameraRectF = new RectF(20,141,44,157);
+        secondCameraRectF = new RectF(11,162,35,178);
         second_camera = decodeResource(getResources(), R.drawable.icon_2nd_camera);
 
-        updateRectF = new RectF(20,104,44,120);
+        updateRectF = new RectF(11,111,35,127);
         update = decodeResource(getResources(), R.drawable.icon_update);
 
-        gpsRectF = new RectF(200,6,232,22);
+        gpsRectF = new RectF(200,8,232,22);
         gps_signal_strength_not_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength);
         gps_signal_strength_none = decodeResource(getResources(), R.drawable.icon_gps_strength_none);
         gps_signal_strength_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength_max);
@@ -175,10 +189,13 @@ public class OSDView extends View {
     }
     private String updateClock() {
         //更新时间
-        Calendar calendar= Calendar.getInstance();
-        int hour=calendar.get(Calendar.HOUR_OF_DAY);
-        int minute=calendar.get(Calendar.MINUTE);
-        timeString=hour+":"+minute;
+        Calendar calendar = new GregorianCalendar();
+        Date trialTime = new Date();
+        calendar.setTime(trialTime);
+        int hour= calendar.get(Calendar.HOUR);
+        int minute= calendar.get(Calendar.MINUTE);
+        int am_pm = calendar.get(Calendar.AM_PM);
+        timeString=(hour < 10 ? "0" + hour : hour)+":"+(minute < 10 ? "0" + minute : minute)+ (am_pm == 0 ?" AM":" PM");
         return timeString;
     }
     private Handler handler = new Handler(){
@@ -219,6 +236,7 @@ public class OSDView extends View {
             if(countTime >= 0) {
                 handler.postDelayed(this, 1000);
             }
+            invalidate();
         }
     };
     public void startRecordingCountDown(){
@@ -257,8 +275,8 @@ public class OSDView extends View {
             if(countTime>=0) {
                 drawTime(canvas, null,"0" + countTime, countTimeRectF);
             }
-        }else if(osdProvider.getRecordingStatus() == RECORDING_PARKING){
-            canvas.drawBitmap(parking_recording,null, recordingRectF, null);
+        }else if(osdProvider.getRecordingStatus() == RECORDING_STOP){
+            canvas.drawBitmap(stop_recording,null, recordingRectF, null);
             if(countTime>=0) {
                 drawTime(canvas, null,"0" + countTime, countTimeRectF);
             }
@@ -269,15 +287,15 @@ public class OSDView extends View {
             canvas.drawBitmap(mic_off,null, micRectF, null);
         }
         if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN){
-            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+            canvas.drawBitmap(lte_none,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GREAT){
             canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GOOD){
-            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+            canvas.drawBitmap(lte_sinal_strength_good,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_MODERATE){
-            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+            canvas.drawBitmap(lte_sinal_strength_moderate,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_POOR){
-            canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
+            canvas.drawBitmap(lte_sinal_strength_poor,null, lteRectF, null);
         }
 
         if(osdProvider.getEventRecordingLimitStatus() == EVENT_RECORDING_REACH_LIMIT_CONDITION){
@@ -286,11 +304,15 @@ public class OSDView extends View {
         if(osdProvider.getParkingRecordingLimitStatus() == PARKING_RECORDING_REACH_LIMIT_CONDITION){
             canvas.drawBitmap(parking_recording_limit,null, parkingRecordingLimitRectF, null);
         }
-        if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
+        if(osdProvider.getSDCardInitStatus() == INIT_FAIL){
+            canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
+        } else if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
             canvas.drawBitmap(sdcard_recording,null,sdCardRectF,null);
-        }else if((osdProvider.getRecordingStatus() == RECORDING_PARKING && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED)
+        }else if((osdProvider.getRecordingStatus() == RECORDING_STOP && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED)
                 || osdProvider.getSDcardStatusType() == MEDIA_CHECKING){
             canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
+        }else if(osdProvider.getRecordingStatus() == RECORDING_UNKNOWN && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
+            canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
         }else if(osdProvider.getSDcardStatusType() == MEDIA_MOUNTED_READ_ONLY
                 ||osdProvider.getSDcardStatusType() == MEDIA_SHARED
                 ||osdProvider.getSDcardStatusType() == MEDIA_BAD_REMOVAL

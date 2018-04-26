@@ -3,24 +3,29 @@ package com.askey.dvr.cdr7010.dashcam.logic;
 import android.content.Context;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 
 public class GlobalLogic{
     private static GlobalLogic globalLogic;
     private Context mContext;
-    private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
+    private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_CONTINUOUS;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
     private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
+    private UIElementStatusEnum.SDCardInitStatus sdCardInitStatus = INIT_SUCCESS;
 
     public static GlobalLogic getInstance(){
         if(globalLogic == null){
@@ -69,6 +74,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.GPSStatusType getGpsStatus(){
         return gpsStatus;
+    }
+    public void setSDCardInitStatus(UIElementStatusEnum.SDCardInitStatus sdCardInitStatus){
+        this.sdCardInitStatus = sdCardInitStatus;
+    }
+    public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
+        return sdCardInitStatus;
     }
 
 }

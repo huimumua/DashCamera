@@ -55,6 +55,9 @@ public class OSDProvider{
     public UIElementStatusEnum.GPSStatusType getGpsStatus(){
         return GlobalLogic.getInstance().getGpsStatus();
     }
+    public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
+        return GlobalLogic.getInstance().getSDCardInitStatus();
+    }
 
 
 }

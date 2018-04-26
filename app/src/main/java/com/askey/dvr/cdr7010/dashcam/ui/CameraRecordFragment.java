@@ -71,6 +71,7 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Logg.d(TAG,"onCreate");
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         EventUtil.register(this);
     }
@@ -91,6 +92,7 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Logg.d(TAG,"onResume");
         osdView.init(1000);
         mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         mMainCam.prepare();
@@ -104,6 +106,7 @@ public class CameraRecordFragment extends Fragment {
 
     @Override
     public void onPause() {
+        Logg.d(TAG,"onPause");
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         getActivity().unregisterReceiver(mSDMonitor);
         super.onPause();
@@ -111,8 +114,14 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Logg.d(TAG,"onDestroy");
         osdView.unInit();
         EventUtil.unregister(this);
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+        Logg.d(TAG,"onStop");
     }
 
     private void requestVideoPermissions() {
@@ -147,6 +156,8 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType)messageEvent.getData());
         }else if(messageEvent.getCode() == Event.EventCode.EVENT_GPS){
             GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType)messageEvent.getData());
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_SDCARD){
+            GlobalLogic.getInstance().setSDCardInitStatus((UIElementStatusEnum.SDCardInitStatus)messageEvent.getData());
         }
         osdView.invalidateView();
 

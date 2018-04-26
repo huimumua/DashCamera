@@ -4,7 +4,7 @@ public class UIElementStatusEnum{
         RECORDING_UNKNOWN(0),
         RECORDING_CONTINUOUS(1),
         RECORDING_EVENT(2),
-        RECORDING_PARKING(3);
+        RECORDING_STOP(3);
 
         public final int value;
         RecordingStatusType(int value){
@@ -117,7 +117,17 @@ public class UIElementStatusEnum{
         public String toString(){
             return String.valueOf(value);
         }
-
-
+    }
+    public enum SDCardInitStatus{
+        INIT_SUCCESS(0),
+        INIT_FAIL(1);
+        public final int value;
+        SDCardInitStatus(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
     }
 }
