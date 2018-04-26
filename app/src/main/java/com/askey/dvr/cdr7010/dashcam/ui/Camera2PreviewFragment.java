@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 
 public class Camera2PreviewFragment extends Fragment
         implements FragmentCompat.OnRequestPermissionsResultCallback {
@@ -40,7 +39,6 @@ public class Camera2PreviewFragment extends Fragment
 
     private TextureView mTextureView;
     private Size mPreviewSize;
-    private DashCam mMainCam;
 
     private TextureView.SurfaceTextureListener mSurfaceTextureListener
             = new TextureView.SurfaceTextureListener() {
@@ -52,7 +50,6 @@ public class Camera2PreviewFragment extends Fragment
             mPreviewSize = new Size(width, height);
             surfaceTexture.setDefaultBufferSize(width, height);
             Surface surface = new Surface(surfaceTexture);
-            mMainCam.setPreviewSurface(surface);
             configureTransform(width, height);
             startPreview();
         }
@@ -90,8 +87,6 @@ public class Camera2PreviewFragment extends Fragment
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mTextureView = (TextureView) view.findViewById(R.id.texture);
-        mMainCam = new DashCam(getActivity());
-        mMainCam.prepare();
     }
 
     @Override
@@ -102,7 +97,6 @@ public class Camera2PreviewFragment extends Fragment
             SurfaceTexture texture = mTextureView.getSurfaceTexture();
             texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
             Surface surface = new Surface(texture);
-            mMainCam.setPreviewSurface(surface);
             startPreview();
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
@@ -111,13 +105,10 @@ public class Camera2PreviewFragment extends Fragment
 
     @Override
     public void onPause() {
-        mMainCam.release();
-
         super.onPause();
     }
 
     private void startPreview() {
-        mMainCam.startPreview();
     }
 
     private void configureTransform(int viewWidth, int viewHeight) {

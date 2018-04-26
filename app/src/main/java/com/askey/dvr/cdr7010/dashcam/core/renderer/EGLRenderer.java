@@ -13,6 +13,7 @@ import com.askey.dvr.cdr7010.dashcam.core.encoder.IFrameListener;
 import com.askey.dvr.cdr7010.dashcam.core.gles.EglCore;
 import com.askey.dvr.cdr7010.dashcam.core.gles.OffscreenSurface;
 import com.askey.dvr.cdr7010.dashcam.core.gles.WindowSurface;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class EGLRenderer implements OnFrameAvailableListener {
 
@@ -42,33 +43,20 @@ public class EGLRenderer implements OnFrameAvailableListener {
     }
 
     public void start() {
-        init();
+        mRenderHandler.sendEmptyMessage(MSG_INIT);
     }
 
     public void stop() {
-        deinit();
-        if (mRenderThread != null) {
-            mRenderThread.quitSafely();
-            try {
-                mRenderThread.join();
-                mRenderThread = null;
-                mRenderHandler = null;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        mRenderHandler.sendEmptyMessage(MSG_DEINIT);
+    }
+
+    @Override
+    public void finalize() {
+        mRenderThread.quit();
     }
 
     public void setSurfaceTextureListener(OnSurfaceTextureListener listener) {
         mRenderHandler.mSurfaceTextureListener = listener;
-    }
-
-    private void init() {
-        mRenderHandler.sendEmptyMessage(MSG_INIT);
-    }
-
-    private void deinit() {
-        mRenderHandler.sendEmptyMessage(MSG_DEINIT);
     }
 
     public void setDisplaySurface(Surface surface, int width, int height) {
@@ -130,6 +118,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
         }
 
         private void init() {
+            Logg.d(TAG, "init");
             mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
             OffscreenSurface dummySurface = new OffscreenSurface(mEglCore, 1, 1);
             dummySurface.makeCurrent();
@@ -146,6 +135,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
         }
 
         private void deinit() {
+            Logg.d(TAG, "deinit");
             synchronized (mDispSync) {
                 if (mDisplaySurface != null) {
                     mDisplaySurface.release();
@@ -158,10 +148,6 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     mEncoderSurface = null;
                 }
             }
-            if (mEglCore != null) {
-                mEglCore.release();
-                mEglCore = null;
-            }
             if (mInputSurface != null) {
                 if (mSurfaceTextureListener != null) {
                     mSurfaceTextureListener.onSurfaceTextureDestroyed(mInputSurface);
@@ -172,6 +158,10 @@ public class EGLRenderer implements OnFrameAvailableListener {
             if (mTextureController != null) {
                 mTextureController.release();
                 mTextureController = null;
+            }
+            if (mEglCore != null) {
+                mEglCore.release();
+                mEglCore = null;
             }
         }
 

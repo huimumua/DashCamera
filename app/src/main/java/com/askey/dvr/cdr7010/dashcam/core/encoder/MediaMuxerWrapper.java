@@ -6,15 +6,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
 import android.support.annotation.IntDef;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.core.event.Event;
+import com.askey.dvr.cdr7010.dashcam.core.event.EventState;
 import com.askey.dvr.cdr7010.dashcam.core.jni.MediaBuffer;
+import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDCardUtils;
 
@@ -25,9 +28,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class MediaMuxerWrapper {
     private static final String LOG_TAG = "MuxerWrapper";
@@ -35,7 +35,6 @@ public class MediaMuxerWrapper {
     private Context mContext;
     private final HandlerThread mHandlerThread;
     private final Handler mHandler;
-    private final String mOutputDir;
     private MediaFormat mVideoFormat;
     private MediaFormat mAudioFormat;
     private int mEncoderCount, mStatredCount;
@@ -53,6 +52,7 @@ public class MediaMuxerWrapper {
     private final MediaBuffer mMediaBuffer;
     private final HandlerThread mMuxerThread;
     private final MuxerHandler mMuxerHandler;
+    private EventState mEventState = new EventState();
 
     private ISegmentListener mSegmentListener;
     private StateCallback mStateCallback;
@@ -78,9 +78,9 @@ public class MediaMuxerWrapper {
     private BroadcastReceiver mSDCardEjectReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Intent.ACTION_MEDIA_EJECT)) {
-                terminateRecording();
-            }
+        if (intent.getAction().equals(Intent.ACTION_MEDIA_EJECT)) {
+            terminateRecording();
+        }
         }
     };
 
@@ -101,8 +101,6 @@ public class MediaMuxerWrapper {
             throw new IOException("SD Card unmounted");
         }
 
-        mOutputDir = SDCardUtils.getSDCardPath() + "DVR/NORMAL";
-
         mEncoderCount = mStatredCount = 0;
         mIsStarted = false;
 
@@ -116,16 +114,6 @@ public class MediaMuxerWrapper {
 
         File cache = DashCamApplication.getAppContext().getCacheDir();
         cleanDirectory(cache);
-
-        File dir = new File(mOutputDir);
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new IOException("create output directory error.");
-        }
-
-        File tmpDir = new File(Environment.getExternalStorageDirectory().getPath() + "/.tmp");
-        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-            throw new IOException("create tmp directory error.");
-        }
 
         mMediaBuffer = new MediaBuffer(mMuxerHandler, cache.getAbsolutePath());
     }
@@ -166,6 +154,7 @@ public class MediaMuxerWrapper {
         mHandlerThread.quit();
         mMuxerHandler.terminate();
         mMuxerThread.quit();
+        mMuxerHandler.eventMuxer.terminate();
 
         if (mVideoEncoder != null)
             mVideoEncoder.stopRecording();
@@ -257,6 +246,8 @@ public class MediaMuxerWrapper {
             mMuxerHandler.stop();
             mMuxerThread.quitSafely();
             mHandlerThread.quitSafely();
+            mMuxerHandler.eventMuxer.stop();
+
             if (mStateCallback != null) {
                 if (mReasonInterruption) {
                     mStateCallback.onInterrupted();
@@ -273,6 +264,8 @@ public class MediaMuxerWrapper {
             mAudioFormat = format;
         else
             mVideoFormat = format;
+
+        mMuxerHandler.eventMuxer.addTrack(type, format);
     }
 
     /*package*/ synchronized void writeSampleDataWithType(final @SampleType int type,
@@ -287,6 +280,14 @@ public class MediaMuxerWrapper {
             }
             final long ptsUs = bufferInfo.presentationTimeUs;
             mTotalDurationUs = ptsUs - mFirstStarPtsUs;
+
+            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
+                if (mEventState.isNeedProcess()) {
+                    mEventState.doProcess();
+                    Event event = mEventState.getEvent();
+                    eventId = event.getId();
+                }
+            }
         }
         mMediaBuffer.writeSampleData(type, eventId, time, byteBuf, bufferInfo);
     }
@@ -297,34 +298,17 @@ public class MediaMuxerWrapper {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                final String srcPath = tmpMuxer.filePath();
-                final long timeMs;
-                if (tmpMuxer.event() == 0) {
-                    timeMs = tmpMuxer.startTimeMs();
-                } else {
-                    timeMs = tmpMuxer.eventTimeMs();
-                }
-                final String dstPath = mOutputDir + "/" + getCaptureFileName(new Date(timeMs));
                 try {
                     tmpMuxer.stop();
                 } catch (final Exception e) {
                     Logg.e(LOG_TAG, "closeSegment - > failed stopping muxer", e);
                 }
 
-                if (!(new File(srcPath)).renameTo(new File(dstPath))) {
-                    Logg.e(LOG_TAG, "Fail to move " + srcPath + " --> " + dstPath);
-                    return;
-                }
-
-                if (!new File(dstPath).exists()) {
-                    Logg.e(LOG_TAG, "file no exist: " + dstPath);
-                }
-
                 long eventTimeOffsetMs = tmpMuxer.eventTimeMs() - tmpMuxer.startTimeMs();
                 if (mSegmentCallback != null) {
                     mSegmentCallback.segmentCompletedAsync(tmpMuxer.event(),
                             eventTimeOffsetMs,
-                            dstPath,
+                            tmpMuxer.filePath(),
                             tmpMuxer.startTimeMs(),
                             tmpMuxer.duration());
                 }
@@ -338,10 +322,12 @@ public class MediaMuxerWrapper {
         private AndroidMuxer muxer;
         private WeakReference<MediaMuxerWrapper> weakParent;
         private boolean flagTerm = false;
+        private EventMuxer eventMuxer;
 
         MuxerHandler(Looper looper, MediaMuxerWrapper parent) {
             super(looper);
             weakParent = new WeakReference<>(parent);
+            eventMuxer = new EventMuxer(parent.mContext, parent.mSegmentCallback, parent.mHandler);
         }
 
         void terminate() {
@@ -363,25 +349,34 @@ public class MediaMuxerWrapper {
             }
         }
 
+        void pauseContinuesRecording() {
+            MediaMuxerWrapper parent = weakParent.get();
+            if (parent != null && muxer != null) {
+                parent.closeMuxer(muxer);
+                muxer = null;
+            }
+        }
+
         void muxSampleData(int type, long time,
                            final ByteBuffer byteBuf,
                            final MediaCodec.BufferInfo bufferInfo) {
 
             if ((type == SAMPLE_TYPE_VIDEO) && ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0)) {
+                final MediaMuxerWrapper parent = weakParent.get();
                 if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
-                    MediaMuxerWrapper parent = weakParent.get();
                     if (parent != null) {
                         parent.closeMuxer(muxer);
+                        muxer = null;
                     }
-                    muxer = null;
                 }
 
                 if (muxer == null) {
                     try {
-                        muxer = new AndroidMuxer(getTempFile());
-                        final MediaMuxerWrapper parent = weakParent.get();
+                        String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
+                        Logg.d(LOG_TAG, "NORMAL PATH: " + path);
+                        muxer = new AndroidMuxer(path);
                         if (parent.mSegmentCallback != null) {
-                            parent.mSegmentCallback.segmentStartPrepareSync(0, muxer.filePath());
+                            parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
                         }
                         muxer.addTrack(SAMPLE_TYPE_VIDEO, parent.mVideoFormat);
                         muxer.addTrack(SAMPLE_TYPE_AUDIO, parent.mAudioFormat);
@@ -392,12 +387,12 @@ public class MediaMuxerWrapper {
                             @Override
                             public void run() {
                                 if (parent.mSegmentCallback != null) {
-                                    parent.mSegmentCallback.segmentStartAsync(0, startTimeMs);
+                                    parent.mSegmentCallback.segmentStartAsync(Event.ID_NONE, startTimeMs);
                                 }
                             }
                         });
-                    } catch (IOException e) {
-                        Logg.e(LOG_TAG, "Fail to create mp4 muxer");
+                    } catch (IOException | RemoteException e) {
+                        Logg.e(LOG_TAG, "Fail to create mp4 muxer with exception: " + e.getMessage());
                         return;
                     }
                 }
@@ -414,6 +409,8 @@ public class MediaMuxerWrapper {
             File file = new File(path);
             RandomAccessFile fin = null;
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            int eventId = Event.ID_NONE;
+            long eventTime = 0;
             try {
                 fin = new RandomAccessFile(file, "r");
                 byte[] array = null;
@@ -432,6 +429,13 @@ public class MediaMuxerWrapper {
                     int size = fin.readInt();
                     int flags = fin.readInt();
                     long pts = fin.readLong();
+
+                    if (eventMuxer.isRecording()) {
+                        eventId = event;
+                        eventTime = time;
+                        break;
+                    }
+
                     if (array == null || array.length < size) {
                         array = new byte[size];
                     }
@@ -446,8 +450,20 @@ public class MediaMuxerWrapper {
                     bufferInfo.offset = 0;
                     bufferInfo.size = len;
                     ByteBuffer buffer = ByteBuffer.wrap(array);
-                    if (flagTerm) break;
-                    muxSampleData(type, time, buffer, bufferInfo);
+
+                    if (flagTerm) {
+                        break;
+                    }
+
+                    if (event != Event.ID_NONE) {
+                        // stop continues recording
+                        eventId = event;
+                        eventTime = time;
+                        pauseContinuesRecording();
+                        break;
+                    } else {
+                        muxSampleData(type, time, buffer, bufferInfo);
+                    }
                 }
             } catch (FileNotFoundException e) {
                 Logg.e(LOG_TAG, "open fail:  " + path);
@@ -462,12 +478,13 @@ public class MediaMuxerWrapper {
             } catch (IOException e) {
                 Logg.e(LOG_TAG, "close fail:  " + path);
             }
+            eventMuxer.feed(eventId, eventTime, path);
         }
     }
 
-    public static void cleanDirectory(File directory) throws IOException {
+    private static void cleanDirectory(File directory) {
         if (!directory.exists()) {
-            throw new IllegalArgumentException("directory not exist.");
+            return;
         }
 
         for (File file: directory.listFiles()) {
@@ -476,22 +493,5 @@ public class MediaMuxerWrapper {
             else
                 file.delete();
         }
-    }
-
-    private static final SimpleDateFormat mDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
-    private static final String CAPTURE_FILE_EXT_NAME = ".mp4";
-
-    public static String getCaptureFileName(final Date date) {
-        synchronized (mDateTimeFormat) {
-            return mDateTimeFormat.format(date) + CAPTURE_FILE_EXT_NAME;
-        }
-    }
-
-    public static String getTempFile() {
-        String root = Environment.getExternalStorageDirectory().getPath();
-        if (!root.isEmpty()) {
-            return root + "/.tmp/" + String.valueOf(System.nanoTime());
-        }
-        return "";
     }
 }

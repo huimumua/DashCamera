@@ -66,6 +66,34 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
+    DashCam.StateCallback mDashCallback = new DashCam.StateCallback() {
+        @Override
+        public void onStarted() {
+            Logg.d(TAG, "DashState: onStarted");
+            EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
+                    UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+
+        }
+
+        @Override
+        public void onStoped() {
+            Logg.d(TAG, "DashState: onStoped");
+            EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
+                    UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
+
+        }
+
+        @Override
+        public void onEventStateChanged(boolean on) {
+            Logg.d(TAG, "DashState: onEventStateChanged " + on);
+            EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
+                    on ? UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT :
+                         UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+
+
+        }
+    };
+
     public static CameraRecordFragment newInstance() {
         return new CameraRecordFragment();
     }
@@ -88,7 +116,7 @@ public class CameraRecordFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState){
         requestVideoPermissions();
         osdView = (OSDView) view.findViewById(R.id.osd_view);
-        mMainCam = new DashCam(getActivity());
+        mMainCam = new DashCam(getActivity(), mDashCallback);
     }
 
     @Override
@@ -110,6 +138,8 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onPause() {
         Logg.d(TAG,"onPause");
+        mMainCam.stopVideoRecord();
+        //mMainCam.release();
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         getActivity().unregisterReceiver(mSDMonitor);
         super.onPause();

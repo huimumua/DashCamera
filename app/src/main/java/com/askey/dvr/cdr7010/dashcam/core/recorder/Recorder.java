@@ -29,15 +29,18 @@ public class Recorder {
     private final Object mWait = new Object();
     private final Object mSync = new Object();
 
-    private InterruptedCallback mIntrCallback;
+    private StateCallback mStateCallback;
 
-    public interface InterruptedCallback {
+    public interface StateCallback {
+        void onStarted();
+        void onStoped();
         void onInterrupted();
+        void onEventStateChanged(boolean on);
     }
 
-    public Recorder(@NonNull Context context, @Nullable InterruptedCallback callback) {
+    public Recorder(@NonNull Context context, @Nullable StateCallback callback) {
         mContext = context.getApplicationContext();
-        mIntrCallback = callback;
+        mStateCallback = callback;
     }
 
     public void prepare() throws IOException {
@@ -62,7 +65,7 @@ public class Recorder {
         mRenderer.start();
 
         try {
-            mMuxer = new MediaMuxerWrapper(mContext, mSegmentCallback, mStateCallback);
+            mMuxer = new MediaMuxerWrapper(mContext, mSegmentCallback, mMuxerStateCallback);
         } catch (IOException e) {
             Logg.e(TAG, "Exception: " + e.getMessage());
             mRenderer.stop();
@@ -109,10 +112,10 @@ public class Recorder {
     }
 
     public void stopRecording() {
-        if(mRenderer != null) {
+        if (mRenderer != null) {
             mRenderer.stop();
         }
-        if(mMuxer != null) {
+        if (mMuxer != null) {
             mMuxer.stopRecording();
         }
     }
@@ -151,6 +154,9 @@ public class Recorder {
         @Override
         public void segmentStartAsync(int event, long startTimeMs) {
             Logg.v(TAG, "segmentStartAsync: startTimeMs=" + startTimeMs +",event="+event);
+            if (mStateCallback != null) {
+                mStateCallback.onEventStateChanged(event != 0);
+            }
         }
 
         @Override
@@ -159,10 +165,13 @@ public class Recorder {
         }
     };
 
-    private MediaMuxerWrapper.StateCallback mStateCallback = new MediaMuxerWrapper.StateCallback() {
+    private MediaMuxerWrapper.StateCallback mMuxerStateCallback = new MediaMuxerWrapper.StateCallback() {
         @Override
         public void onStartd() {
             Logg.v(TAG, "mStateCallback onStartd");
+            if (mStateCallback != null) {
+                mStateCallback.onStarted();
+            }
         }
 
         @Override
@@ -172,6 +181,9 @@ public class Recorder {
                 if (mRenderer != null) {
                     mRenderer.stop();
                 }
+            }
+            if (mStateCallback != null) {
+                mStateCallback.onStoped();
             }
         }
 
@@ -183,8 +195,8 @@ public class Recorder {
                     mRenderer.stop();
                 }
 
-                if (mIntrCallback != null) {
-                    mIntrCallback.onInterrupted();
+                if (mStateCallback != null) {
+                    mStateCallback.onInterrupted();
                 }
             }
         }

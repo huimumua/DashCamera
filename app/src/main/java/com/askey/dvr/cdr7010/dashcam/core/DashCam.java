@@ -1,13 +1,12 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
-
 import android.content.Context;
-import android.graphics.SurfaceTexture;
 import android.util.Log;
 import android.view.Surface;
 
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
@@ -18,12 +17,56 @@ public class DashCam {
     private static final String TAG = "DashCam";
     private Context mContext;
     private Camera2Controller mCameraController;
-    private SurfaceTexture mSurfaceTexture;
     private Recorder mRecorder;
     private Semaphore mRecordLock = new Semaphore(1);
+    private StateCallback mStateCallback;
 
-    public DashCam(Context context) {
+    public interface StateCallback {
+        void onStarted();
+        void onStoped();
+        void onEventStateChanged(boolean on);
+    }
+
+    private Recorder.StateCallback mRecorderCallback = new Recorder.StateCallback() {
+        @Override
+        public void onStarted() {
+            Logg.d(TAG, "RecorderStateCallback: onStarted");
+            if (mStateCallback != null) {
+                mStateCallback.onStarted();
+            }
+        }
+
+        @Override
+        public void onStoped() {
+            Logg.d(TAG, "RecorderStateCallback: onStoped");
+            if (mStateCallback != null) {
+                mStateCallback.onStoped();
+            }
+
+        }
+
+        @Override
+        public void onInterrupted() {
+            Logg.d(TAG, "RecorderStateCallback: onInterrupted");
+
+            release();
+            mRecorder.release();
+            mRecorder = null;
+        }
+
+        @Override
+        public void onEventStateChanged(boolean on) {
+            Logg.d(TAG, "RecorderStateCallback: onEventStateChanged " + on);
+            if (mStateCallback != null) {
+                mStateCallback.onEventStateChanged(on);
+            }
+
+        }
+    };
+
+    public DashCam(Context context, StateCallback callback) {
         mContext = context.getApplicationContext();
+        mStateCallback = callback;
         mCameraController = new Camera2Controller(context);
     }
 
@@ -35,10 +78,6 @@ public class DashCam {
     public void release() {
         if (mCameraController != null) {
             mCameraController.closeCamera();
-        }
-        if (mSurfaceTexture != null) {
-            mSurfaceTexture.release();
-            mSurfaceTexture = null;
         }
     }
 
@@ -60,15 +99,7 @@ public class DashCam {
             }
 
             if (mCameraController != null && mRecorder == null) {
-                mRecorder = new Recorder(mContext, new Recorder.InterruptedCallback() {
-                    @Override
-                    public void onInterrupted() {
-                        Log.d(TAG, "recorder interrupted");
-                        release();
-                        mRecorder.release();
-                        mRecorder = null;
-                    }
-                });
+                mRecorder = new Recorder(mContext, mRecorderCallback);
                 mRecorder.prepare();
                 mRecorder.startRecording();
                 mCameraController.addSurface(mRecorder.getInputSurface());
@@ -89,10 +120,11 @@ public class DashCam {
                 throw new RuntimeException("Time out waiting to lock recorder stop.");
             }
 
+            mCameraController.stopRecordingVideo();
+            mCameraController.closeCamera();
             if (mRecorder != null) {
                 mRecorder.stopRecording();
                 mRecorder = null;
-                mCameraController.stopRecordingVideo();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
