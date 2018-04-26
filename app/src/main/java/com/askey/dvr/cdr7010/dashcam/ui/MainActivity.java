@@ -8,10 +8,9 @@ import android.view.View;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String PACKAGE_NAME = "com.askey.dvr.cdr7010.setting";
-    private static final String CLASS_NAME ="com.askey.dvr.cdr7010.setting.SettingsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         if( event.getAction() == KeyEvent.ACTION_DOWN){
             switch(event.getKeyCode()){
                 case KeyAdapter.KEY_MENU:
-                    ActivityUtils.startActivity(this,PACKAGE_NAME,CLASS_NAME,false);
+                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME,Const.CLASS_NAME,false);
                     return true;
             }
         }
