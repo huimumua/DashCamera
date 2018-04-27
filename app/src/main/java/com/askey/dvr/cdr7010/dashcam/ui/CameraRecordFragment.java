@@ -37,6 +37,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 
 
 public class CameraRecordFragment extends Fragment {
@@ -94,6 +96,7 @@ public class CameraRecordFragment extends Fragment {
         super.onResume();
         Logg.d(TAG,"onResume");
         osdView.init(1000);
+        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
         mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         mMainCam.prepare();
         mMainCam.startVideoRecord();
@@ -158,6 +161,8 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType)messageEvent.getData());
         }else if(messageEvent.getCode() == Event.EventCode.EVENT_SDCARD){
             GlobalLogic.getInstance().setSDCardInitStatus((UIElementStatusEnum.SDCardInitStatus)messageEvent.getData());
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_MIC){
+            GlobalLogic.getInstance().setMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? MIC_ON : MIC_OFF);
         }
         osdView.invalidateView();
 

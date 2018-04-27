@@ -1,6 +1,10 @@
 package com.askey.dvr.cdr7010.dashcam.logic;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.provider.Settings;
+
+import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
@@ -26,6 +30,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
     private UIElementStatusEnum.SDCardInitStatus sdCardInitStatus = INIT_SUCCESS;
+    private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
 
     public static GlobalLogic getInstance(){
         if(globalLogic == null){
@@ -80,6 +85,20 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
         return sdCardInitStatus;
+    }
+
+    public boolean putInt(String key, int value){
+        return Settings.Global.putInt(contentResolver , key,value);
+    }
+    public int getInt(String key){
+        int value = 0;
+        try {
+          value =  Settings.Global.getInt(contentResolver, key);
+        }catch (Settings.SettingNotFoundException e){
+            e.printStackTrace();
+            value = -1;
+        }
+        return value;
     }
 
 }

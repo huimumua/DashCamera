@@ -6,6 +6,7 @@ public final class Event{
        public static final int EVENT_RECORDING_FILE_LIMIT = 0x4;
        public static final int EVENT_PARKING_RECODING_FILE_LIMIT = 0x8;
        public static final int EVENT_SDCARD = 0x16;
+       public static final int EVENT_MIC = 0x32;
     // other more
    }
 }

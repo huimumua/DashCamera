@@ -6,9 +6,14 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
+import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onBackPressed() {
+        int micValue = GlobalLogic.getInstance().getInt("MIC");
+        boolean value = (micValue ==0) ? GlobalLogic.getInstance().putInt("MIC",1) : GlobalLogic.getInstance().putInt("MIC",0);
+        EventUtil.sendEvent(new MessageEvent<Boolean>(Event.EventCode.EVENT_MIC,value));
         return;
     }
 }

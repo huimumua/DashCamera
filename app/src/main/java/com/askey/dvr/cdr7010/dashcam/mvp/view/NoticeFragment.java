@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.mvp.presenter.NoticePresenter;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -84,6 +85,7 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
     }
 
     private void initData() {
+        GlobalLogic.getInstance().putInt("MIC",0);
         mPresenter.start();
     }
     @Override
