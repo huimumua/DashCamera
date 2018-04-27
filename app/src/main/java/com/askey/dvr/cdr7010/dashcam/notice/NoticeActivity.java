@@ -33,7 +33,7 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
             }
         }else{
             SPUtils.put(DashCamApplication.getAppContext(),Const.IS_FIRST_BOOT,true);
-            ActivityUtils.startActivity(this,this.getPackageName(),"com.askey.dvr.cdr7010.dashcam.ui.MainActivity",true);
+            ActivityUtils.startActivity(this, Const.PACKAGE_NAME,Const.CLASS_NAME,true);
         }
     }
     @Override

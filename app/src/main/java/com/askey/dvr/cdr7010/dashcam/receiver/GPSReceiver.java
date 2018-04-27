@@ -41,7 +41,6 @@ public class GPSReceiver extends BroadcastReceiver{
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NONE));
             }
         }
-
         Logg.i(TAG, "GPS status: " + Integer.toString(gpsStatus));
     }
 }
