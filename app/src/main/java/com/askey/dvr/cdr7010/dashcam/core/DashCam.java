@@ -52,6 +52,9 @@ public class DashCam {
             release();
             mRecorder.release();
             mRecorder = null;
+            if (mStateCallback != null) {
+                mStateCallback.onStoped();
+            }
         }
 
         @Override
