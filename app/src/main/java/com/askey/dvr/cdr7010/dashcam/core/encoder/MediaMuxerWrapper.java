@@ -52,7 +52,7 @@ public class MediaMuxerWrapper {
     private final MediaBuffer mMediaBuffer;
     private final HandlerThread mMuxerThread;
     private final MuxerHandler mMuxerHandler;
-    private EventState mEventState = new EventState();
+    private EventState mEventState;
 
     private ISegmentListener mSegmentListener;
     private StateCallback mStateCallback;
@@ -94,6 +94,7 @@ public class MediaMuxerWrapper {
         mContext = context.getApplicationContext();
         mSegmentCallback = segmentCallback;
         mStateCallback = stateCallback;
+        mEventState = new EventState(mContext);
 
         registerReceiver();
 
@@ -373,7 +374,6 @@ public class MediaMuxerWrapper {
                 if (muxer == null) {
                     try {
                         String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
-                        Logg.d(LOG_TAG, "NORMAL PATH: " + path);
                         muxer = new AndroidMuxer(path);
                         if (parent.mSegmentCallback != null) {
                             parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
