@@ -122,6 +122,7 @@ public class CameraRecordFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState){
         requestVideoPermissions();
         requestGPSPermissions();
+        GPSStatusManager.getInstance().recordLocation(true);
         osdView = (OSDView) view.findViewById(R.id.osd_view);
         osdView.init(1000);
         mMainCam = new DashCam(getActivity(), mDashCallback);
@@ -157,6 +158,7 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG,"onDestroy");
         osdView.unInit();
         EventUtil.unregister(this);
+        GPSStatusManager.getInstance().recordLocation(false);
         super.onDestroy();
     }
 

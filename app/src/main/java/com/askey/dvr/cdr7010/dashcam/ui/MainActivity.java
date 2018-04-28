@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
-        GPSStatusManager.getInstance().recordLocation(true);
         FileManager.getInstance(this); // bindService
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -49,10 +48,5 @@ public class MainActivity extends AppCompatActivity {
         boolean value = (micValue ==0) ? GlobalLogic.getInstance().putInt("MIC",1) : GlobalLogic.getInstance().putInt("MIC",0);
         EventUtil.sendEvent(new MessageEvent<Boolean>(Event.EventCode.EVENT_MIC,value));
         return;
-    }
-    @Override
-    public void onDestroy() {
-        GPSStatusManager.getInstance().recordLocation(false);
-        super.onDestroy();
     }
 }
