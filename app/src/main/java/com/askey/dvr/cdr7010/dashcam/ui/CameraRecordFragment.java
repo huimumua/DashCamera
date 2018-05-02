@@ -32,6 +32,7 @@ import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
@@ -65,11 +66,18 @@ public class CameraRecordFragment extends Fragment {
     private BroadcastReceiver mSDMonitor = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("android.intent.action.MEDIA_MOUNTED")) {
+            if (intent.getAction().equals(Intent.ACTION_MEDIA_MOUNTED)) {
+                Logg.d(TAG, "SD Card MEDIA_MOUNTED");
                 if (mMainCam != null) {
-                    mMainCam.prepare();
-                    mMainCam.startVideoRecord();
+                    try {
+                        mMainCam.startVideoRecord();
+                    } catch (IOException e) {
+                        Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
+                    }
                 }
+            } else if (intent.getAction().equals(Intent.ACTION_MEDIA_BAD_REMOVAL)) {
+                Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
+                mMainCam.stopVideoRecord();
             }
         }
     };
@@ -87,6 +95,12 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onStoped");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
+
+        }
+
+        @Override
+        public void onError() {
+            Logg.d(TAG, "DashState: onError");
 
         }
 
@@ -127,6 +141,7 @@ public class CameraRecordFragment extends Fragment {
         osdView = (OSDView) view.findViewById(R.id.osd_view);
         osdView.init(1000);
         mMainCam = new DashCam(getActivity(), mDashCallback);
+
     }
 
     @Override
@@ -135,22 +150,26 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG,"onResume");
         onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
         mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        mMainCam.prepare();
-        mMainCam.startVideoRecord();
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction("android.intent.action.MEDIA_MOUNTED");
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
         filter.addDataScheme("file");
         getActivity().registerReceiver(mSDMonitor, filter);
+
+        try {
+            mMainCam.startVideoRecord();
+        } catch (IOException e) {
+            Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
+        }
     }
 
     @Override
     public void onPause() {
         Logg.d(TAG,"onPause");
         mMainCam.stopVideoRecord();
-        //mMainCam.release();
-        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         getActivity().unregisterReceiver(mSDMonitor);
+        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
         super.onPause();
     }
@@ -166,8 +185,8 @@ public class CameraRecordFragment extends Fragment {
 
     @Override
     public void onStop(){
-        super.onStop();
         Logg.d(TAG,"onStop");
+        super.onStop();
     }
 
     private void requestVideoPermissions() {

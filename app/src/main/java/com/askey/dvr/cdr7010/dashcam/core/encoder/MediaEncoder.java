@@ -273,7 +273,7 @@ LOOP:   while (mIsCapturing) {
                             break LOOP;     // out of while
                     }
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    Logg.v(LOG_TAG, "INFO_OUTPUT_FORMAT_CHANGED");
+                    Logg.v(LOG_TAG, getName() + " INFO_OUTPUT_FORMAT_CHANGED");
                     // this status indicate the output format of codec is changed
                     // this should come only once before actual encoded data
                     // but this status never come on Android4.3 or less
@@ -311,7 +311,7 @@ LOOP:   while (mIsCapturing) {
                         // but MediaCodec#getOutputFormat can not call here(because INFO_OUTPUT_FORMAT_CHANGED don't come yet)
                         // therefor we should expand and prepare output format from buffer data.
                         // This sample is for API>=18(>=Android 4.3), just ignore this flag here
-                        Logg.d(LOG_TAG, "drain:BUFFER_FLAG_CODEC_CONFIG");
+                        Logg.d(LOG_TAG, getName() + " drain:BUFFER_FLAG_CODEC_CONFIG");
                         mBufferInfo.size = 0;
                     }
 

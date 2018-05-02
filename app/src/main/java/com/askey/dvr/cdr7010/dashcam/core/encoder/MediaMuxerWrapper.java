@@ -78,9 +78,10 @@ public class MediaMuxerWrapper {
     private BroadcastReceiver mSDCardEjectReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(Intent.ACTION_MEDIA_EJECT)) {
-            terminateRecording();
-        }
+            if (intent.getAction().equals(Intent.ACTION_MEDIA_EJECT)) {
+                Logg.d(LOG_TAG, "SD Card MEDIA_EJECT");
+                terminateRecording();
+            }
         }
     };
 
@@ -126,6 +127,10 @@ public class MediaMuxerWrapper {
         mContext.registerReceiver(mSDCardEjectReceiver, filter);
     }
 
+    private void unregisterReceiver() {
+        mContext.unregisterReceiver(mSDCardEjectReceiver);
+    }
+
     public void prepare() throws IOException {
         if (mVideoEncoder != null)
             mVideoEncoder.prepare();
@@ -150,6 +155,7 @@ public class MediaMuxerWrapper {
     }
 
     public void terminateRecording() {
+        Logg.d(LOG_TAG, "terminateRecordeing");
         mReasonInterruption = true;
         mMediaBuffer.stop();
         mHandlerThread.quit();
@@ -157,6 +163,7 @@ public class MediaMuxerWrapper {
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
 
+        /*
         if (mVideoEncoder != null)
             mVideoEncoder.stopRecording();
         mVideoEncoder = null;
@@ -164,6 +171,7 @@ public class MediaMuxerWrapper {
             mAudioEncoder.stopRecording();
         mAudioEncoder = null;
         mIsStarted = false;
+        */
 
     }
 
@@ -248,6 +256,8 @@ public class MediaMuxerWrapper {
             mMuxerThread.quitSafely();
             mHandlerThread.quitSafely();
             mMuxerHandler.eventMuxer.stop();
+
+            unregisterReceiver();
 
             if (mStateCallback != null) {
                 if (mReasonInterruption) {

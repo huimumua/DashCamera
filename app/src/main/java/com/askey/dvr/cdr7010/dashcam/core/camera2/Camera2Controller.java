@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -18,8 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Surface;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +27,6 @@ public class Camera2Controller {
     private static final String TAG = "Camera2Controller";
     private boolean mIsPreviewing;
     private boolean mIsRecordingVideo;
-    private List<Surface> mSurfaceList;
 
     public enum CAMERA {MAIN, EXT}
 
@@ -46,7 +45,6 @@ public class Camera2Controller {
     public Camera2Controller(Context context) {
         mContext = context.getApplicationContext();
         mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
-        mSurfaceList = new ArrayList<>();
     }
 
     public void startBackgroundThread() {
@@ -90,9 +88,6 @@ public class Camera2Controller {
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             Log.v(TAG, "onOpened: cameraDevice = " + cameraDevice);
             mCameraDevice = cameraDevice;
-            //if (mIsPreviewing) {
-            //    startPreviewInternal();
-            //}
             mCameraOpenCloseLock.release();
         }
 
@@ -144,80 +139,40 @@ public class Camera2Controller {
     public void closeCamera() {
         Log.d(TAG, "closeCamera");
         try {
-            mCameraOpenCloseLock.acquire();
-            closePreviewSession();
+            if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+                throw new RuntimeException("Time out waiting to lock camera closing.");
+            }
+            if (mCaptureSession != null) {
+                mCaptureSession.stopRepeating();
+                mCaptureSession.close();
+                mCaptureSession = null;
+            }
             if (null != mCameraDevice) {
                 mCameraDevice.close();
                 mCameraDevice = null;
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.");
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
         } finally {
             mCameraOpenCloseLock.release();
         }
+
     }
 
-    private void closePreviewSession() {
-        if (mCaptureSession != null) {
-            mCaptureSession.close();
-            mCaptureSession = null;
-        }
-    }
-
-    public void startPreview() {
-        Log.d(TAG, "startPreview");
-        startPreviewInternal();
-        mIsPreviewing = true;
-    }
-
-    private boolean startPreviewInternal() {
-        Log.v(TAG, "startPreviewInternal()");
-        if (mIsPreviewing || mCameraDevice == null || mSurfaceList.size() == 0) {
-            Log.e(TAG, "startPreviewInternal error");
-            return false;
-        }
-
-        closePreviewSession();
-
-        try {
-            Log.v(TAG, "startPreviewInternal: createCaptureRequest");
-            mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            for (Surface targetSurface: mSurfaceList) {
-                mCaptureBuilder.addTarget(targetSurface);
-            }
-            mCameraDevice.createCaptureSession(mSurfaceList, new CameraCaptureSession.StateCallback() {
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession session) {
-                    Log.v(TAG, "onConfigured: cameraCaptureSession = " + session);
-                    mCaptureSession = session;
-                    updatePreview();
-                    mIsPreviewing = true;
-                }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
-                }
-            }, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public void startRecordingVideo() {
-        if (mIsRecordingVideo || null == mCameraDevice || mSurfaceList.size() == 0) {
+    public void startRecordingVideo(@NonNull SurfaceTexture surfaceTexture) {
+        if (mIsRecordingVideo || null == mCameraDevice) {
             return;
         }
 
         try {
-            closePreviewSession();
+            Surface surface = new Surface(surfaceTexture);
             mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-            for (Surface targetSurface: mSurfaceList) {
-                mCaptureBuilder.addTarget(targetSurface);
-            }
+            mCaptureBuilder.addTarget(surface);
 
-            mCameraDevice.createCaptureSession(mSurfaceList, new CameraCaptureSession.StateCallback() {
+            mCameraDevice.createCaptureSession(Collections.singletonList(surface),
+                    new CameraCaptureSession.StateCallback() {
 
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
@@ -240,12 +195,7 @@ public class Camera2Controller {
 
     public void stopRecordingVideo() {
         mIsRecordingVideo = false;
-        closePreviewSession();
-    }
-
-    public void addSurface(@NonNull Surface surface) {
-        Log.d(TAG, "addSurface" + surface);
-        mSurfaceList.add(surface);
+        //closePreviewSession();
     }
 
     private void updatePreview() {

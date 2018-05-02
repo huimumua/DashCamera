@@ -36,10 +36,11 @@ public class EGLRenderer implements OnFrameAvailableListener {
         void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
-    public EGLRenderer() {
+    public EGLRenderer(OnSurfaceTextureListener listener) {
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper());
+        mRenderHandler.mSurfaceTextureListener = listener;
     }
 
     public void start() {
@@ -79,7 +80,6 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
     @Override //OnFrameAvailableListener
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        //Logg.d(TAG, "onFrameAvailable");
         mRenderHandler.sendEmptyMessage(MSG_UPDATE_FRAME);
     }
 
@@ -209,6 +209,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
         }
 
         private void drawFrame() {
+            //Logg.d(TAG, "drawFrame");
             if (mEglCore == null) {
                 return;
             }
