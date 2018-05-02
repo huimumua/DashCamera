@@ -268,7 +268,9 @@ public class OSDView extends View {
         // 基本的而绘制功能，比如绘制背景颜色、背景图片等
         super.onDraw(canvas);
         drawTime(canvas,timeRectF,updateClock(),timeRectF);
-        if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS){
+        if(osdProvider.getRecordingStatus() == RECORDING_UNKNOWN){
+            canvas.drawBitmap(stop_recording,null, recordingRectF, null);
+        } else if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS){
             canvas.drawBitmap(continuous_recording,null, recordingRectF, null);
         }else if(osdProvider.getRecordingStatus() == RECORDING_EVENT){
             canvas.drawBitmap(event_recording,null, recordingRectF, null);
@@ -277,9 +279,6 @@ public class OSDView extends View {
             }
         }else if(osdProvider.getRecordingStatus() == RECORDING_STOP){
             canvas.drawBitmap(stop_recording,null, recordingRectF, null);
-            if(countTime>=0) {
-                drawTime(canvas, null,"0" + countTime, countTimeRectF);
-            }
         }
         if(osdProvider.getMicStatus() == MIC_ON){
             canvas.drawBitmap(mic_on,null, micRectF, null);

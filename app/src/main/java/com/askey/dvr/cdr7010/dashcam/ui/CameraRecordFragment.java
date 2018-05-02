@@ -23,6 +23,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -150,6 +151,7 @@ public class CameraRecordFragment extends Fragment {
         //mMainCam.release();
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         getActivity().unregisterReceiver(mSDMonitor);
+        LedMananger.getInstance().setLedMicStatus(false);
         super.onPause();
     }
 
@@ -200,6 +202,7 @@ public class CameraRecordFragment extends Fragment {
     private void handleMessageEvent(MessageEvent messageEvent){
         if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING) {
             GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
+            setLedDisplay((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
             osdView.startRecordingCountDown();
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT){
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
@@ -211,8 +214,18 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setSDCardInitStatus((UIElementStatusEnum.SDCardInitStatus)messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC){
             GlobalLogic.getInstance().setMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? MIC_ON : MIC_OFF);
+            LedMananger.getInstance().setLedMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? true : false);
         }
         osdView.invalidateView();
+    }
+    private void setLedDisplay(UIElementStatusEnum.RecordingStatusType recordingStatus){
+        if(recordingStatus == UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT || recordingStatus == UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS){
+            GlobalLogic.getInstance().setIsInRecording(true);
+            LedMananger.getInstance().setLedRecStatus(true);
+        }else{
+            GlobalLogic.getInstance().setIsInRecording(false);
+            LedMananger.getInstance().setLedRecStatus(true);
+        }
     }
 
     private final PhoneStateListener mListener = new PhoneStateListener(){

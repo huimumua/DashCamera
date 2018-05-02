@@ -12,7 +12,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_STOP;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
@@ -20,7 +19,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondC
 public class GlobalLogic{
     private static GlobalLogic globalLogic;
     private Context mContext;
-    private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_STOP;
+    private boolean isInRecording;
+    private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
     private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
@@ -97,6 +97,12 @@ public class GlobalLogic{
             value = -1;
         }
         return value;
+    }
+    public void setIsInRecording(boolean isInRecording){
+        this.isInRecording = isInRecording;
+    }
+    public boolean isInRecording(){
+        return isInRecording;
     }
 
 }

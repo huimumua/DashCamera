@@ -12,6 +12,7 @@ import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.mvp.presenter.NoticePresenter;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePresenter> implements NoticeContract.View{
@@ -54,6 +55,8 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         if (getArguments() != null) {
             param = getArguments().getString("param");
         }
+        LedMananger.getInstance().setLedRecStatus(true);
+        LedMananger.getInstance().setLedMicStatus(false);
         super.onCreate(savedInstanceState);
     }
 
