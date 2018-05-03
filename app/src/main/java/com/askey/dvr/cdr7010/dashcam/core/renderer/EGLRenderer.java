@@ -1,5 +1,9 @@
 package com.askey.dvr.cdr7010.dashcam.core.renderer;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.opengl.GLES20;
@@ -13,6 +17,9 @@ import com.askey.dvr.cdr7010.dashcam.core.encoder.IFrameListener;
 import com.askey.dvr.cdr7010.dashcam.core.gles.EglCore;
 import com.askey.dvr.cdr7010.dashcam.core.gles.OffscreenSurface;
 import com.askey.dvr.cdr7010.dashcam.core.gles.WindowSurface;
+import com.askey.dvr.cdr7010.dashcam.core.osd.GnssOSD;
+import com.askey.dvr.cdr7010.dashcam.core.osd.GroupOSD;
+import com.askey.dvr.cdr7010.dashcam.core.osd.TimestampOSD;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class EGLRenderer implements OnFrameAvailableListener {
@@ -27,6 +34,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
     private final static int MSG_DSLP_CLEAR = 5;
     private final static int MSG_UPDATE_FRAME = 6;
 
+    private Context mContext;
     private RenderHandler mRenderHandler;
     private HandlerThread mRenderThread;
     private IFrameListener mFrameListener;
@@ -36,7 +44,8 @@ public class EGLRenderer implements OnFrameAvailableListener {
         void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
-    public EGLRenderer(OnSurfaceTextureListener listener) {
+    public EGLRenderer(Context context, OnSurfaceTextureListener listener) {
+        mContext = context.getApplicationContext();
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper());
@@ -54,10 +63,6 @@ public class EGLRenderer implements OnFrameAvailableListener {
     @Override
     public void finalize() {
         mRenderThread.quit();
-    }
-
-    public void setSurfaceTextureListener(OnSurfaceTextureListener listener) {
-        mRenderHandler.mSurfaceTextureListener = listener;
     }
 
     public void setDisplaySurface(Surface surface, int width, int height) {
@@ -94,6 +99,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
         private final Object mDispSync = new Object();
         private final Object mEncSync = new Object();
         private OnSurfaceTextureListener mSurfaceTextureListener;
+        private GroupOSD mGroupOsd;
 
         public RenderHandler(Looper looper) {
             super(looper);
@@ -125,6 +131,11 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
             mTextureController = new VideoTextureController();
             mTextureController.prepare();
+
+            mGroupOsd = new GroupOSD();
+            mGroupOsd.addOSD(new TimestampOSD());
+            mGroupOsd.addOSD(new GnssOSD(mContext));
+
             mInputSurface = new SurfaceTexture(mTextureController.getTexture());
             mInputSurface.setDefaultBufferSize(1920, 1080);
             mInputSurface.setOnFrameAvailableListener(EGLRenderer.this);
@@ -148,6 +159,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     mEncoderSurface = null;
                 }
             }
+            mGroupOsd.release();
             if (mInputSurface != null) {
                 if (mSurfaceTextureListener != null) {
                     mSurfaceTextureListener.onSurfaceTextureDestroyed(mInputSurface);
@@ -234,6 +246,8 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     GLES20.glViewport(0, 0, 1920, 1080);
                     mTextureController.draw();
                     mEncoderSurface.setPresentationTime(mInputSurface.getTimestamp());
+                    mGroupOsd.draw();
+
                     if (mFrameListener != null) {
                         mFrameListener.frameAvailableSoon();
                     }

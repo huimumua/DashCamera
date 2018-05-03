@@ -112,7 +112,7 @@ public class DashCam {
                 e.printStackTrace();
             }
 
-            mRenderer = new EGLRenderer(new EGLRenderer.OnSurfaceTextureListener() {
+            mRenderer = new EGLRenderer(mContext, new EGLRenderer.OnSurfaceTextureListener() {
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
                     mSurfaceTexture = surfaceTexture;
