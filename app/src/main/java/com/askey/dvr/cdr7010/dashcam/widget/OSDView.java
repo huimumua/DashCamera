@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.FOTAFileStatus.FOTA_FILE_EXIST;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NOT_FIXES;
@@ -324,7 +325,9 @@ public class OSDView extends View {
         } else if(osdProvider.getSDcardStatusType() == MEDIA_REMOVED ){
             canvas.drawBitmap(sdcard_not_found,null,sdCardRectF,null);
         }
-        canvas.drawBitmap(update,null,updateRectF,null);
+        if(osdProvider.getFotaFileStatus() == FOTA_FILE_EXIST) {
+            canvas.drawBitmap(update, null, updateRectF, null);
+        }
         if(osdProvider.getSecondCameraStatus() == CONNECTED){
             canvas.drawBitmap(second_camera,null,secondCameraRectF,null);
         }

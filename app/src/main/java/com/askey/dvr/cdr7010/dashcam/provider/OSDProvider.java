@@ -58,6 +58,9 @@ public class OSDProvider{
     public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
         return GlobalLogic.getInstance().getSDCardInitStatus();
     }
+    public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus(){
+        return GlobalLogic.getInstance().getFotaFileStatus();
+    }
 
 
 }

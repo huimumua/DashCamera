@@ -46,6 +46,11 @@
                 <action android:name="android.location.GPS_ENABLED_CHANGE"/>
             </intent-filter>
         </receiver>
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.FOTAReceiver">
+            <intent-filter>
+                <action android:name="action_fota_status"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

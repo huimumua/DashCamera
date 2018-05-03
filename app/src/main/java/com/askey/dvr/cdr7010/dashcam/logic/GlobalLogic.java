@@ -8,6 +8,7 @@ import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.FOTAFileStatus.FOTA_FILE_NOT_EXIST;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
@@ -28,6 +29,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
     private UIElementStatusEnum.SDCardInitStatus sdCardInitStatus = INIT_SUCCESS;
+    private UIElementStatusEnum.FOTAFileStatus fotaFileStatus = FOTA_FILE_NOT_EXIST;
     private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
 
     public static GlobalLogic getInstance(){
@@ -83,6 +85,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
         return sdCardInitStatus;
+    }
+    public void setFOTAFileStatus(UIElementStatusEnum.FOTAFileStatus fotaFileStatus){
+        this.fotaFileStatus = fotaFileStatus;
+    }
+    public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus(){
+        return fotaFileStatus;
     }
 
     public boolean putInt(String key, int value){

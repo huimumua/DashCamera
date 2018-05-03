@@ -130,4 +130,16 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum FOTAFileStatus{
+        FOTA_FILE_EXIST(0),
+        FOTA_FILE_NOT_EXIST(1);
+        public final int value;
+        FOTAFileStatus(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
 }

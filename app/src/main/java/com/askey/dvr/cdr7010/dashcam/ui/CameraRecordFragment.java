@@ -215,6 +215,8 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC){
             GlobalLogic.getInstance().setMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? MIC_ON : MIC_OFF);
             LedMananger.getInstance().setLedMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? true : false);
+        } else if(messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE){
+            GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus)messageEvent.getData());
         }
         osdView.invalidateView();
     }
