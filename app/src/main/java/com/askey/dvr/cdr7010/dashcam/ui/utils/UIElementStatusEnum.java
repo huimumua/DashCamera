@@ -143,4 +143,22 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum SimCardStatus{
+        SIM_STATE_ABSENT(0),
+        SIM_STATE_NETWORK_LOCKED(1),
+        SIM_STATE_PIN_REQUIRED(2),
+        SIM_STATE_PUK_REQUIRED(3),
+        SIM_STATE_UNKNOWN(4),
+        SIM_STATE_READY(5);
+
+        public final int value;
+        SimCardStatus(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+
+    }
 }

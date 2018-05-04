@@ -61,6 +61,9 @@ public class OSDProvider{
     public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus(){
         return GlobalLogic.getInstance().getFotaFileStatus();
     }
+    public UIElementStatusEnum.SimCardStatus getSimCardStatus(){
+        return GlobalLogic.getInstance().getSimCardStatus();
+    }
 
 
 }

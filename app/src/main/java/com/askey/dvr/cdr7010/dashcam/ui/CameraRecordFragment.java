@@ -24,6 +24,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
+import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -42,6 +43,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 
 
 public class CameraRecordFragment extends Fragment {
@@ -53,6 +55,7 @@ public class CameraRecordFragment extends Fragment {
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
+    private static final int REQUEST_SIMCARD_PERMISSIONS = 1003;
     private static final String[] VIDEO_PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -61,6 +64,9 @@ public class CameraRecordFragment extends Fragment {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
 
+    };
+    private static final String[] SIM_PERMISSIONS ={
+            Manifest.permission.READ_PHONE_STATE,
     };
 
     private BroadcastReceiver mSDMonitor = new BroadcastReceiver() {
@@ -79,6 +85,13 @@ public class CameraRecordFragment extends Fragment {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
                 mMainCam.stopVideoRecord();
             }
+        }
+    };
+    private BroadcastReceiver simCardReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Logg.d(TAG, "onReceive intent="+intent);
+            EventUtil.sendEvent(new MessageEvent(Event.EventCode.EVENT_SIMCARD));
         }
     };
 
@@ -113,7 +126,7 @@ public class CameraRecordFragment extends Fragment {
         public void onEventStateChanged(boolean on) {
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
-                    on ? UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT :
+                    on ? RECORDING_EVENT :
                          UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
 
 
@@ -142,11 +155,21 @@ public class CameraRecordFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState){
         requestVideoPermissions();
         requestGPSPermissions();
+        requestSIMCardPermissions();
         GPSStatusManager.getInstance().recordLocation(true);
         osdView = (OSDView) view.findViewById(R.id.osd_view);
         osdView.init(1000);
         mMainCam = new DashCam(getActivity(), mDashCallback);
 
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        IntentFilter simCardFilter = new IntentFilter();
+        simCardFilter.addAction("android.intent.action.PHONE_STATE");
+        simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
+        getActivity().registerReceiver(simCardReceiver, simCardFilter);
     }
 
     @Override
@@ -186,6 +209,7 @@ public class CameraRecordFragment extends Fragment {
         osdView.unInit();
         EventUtil.unregister(this);
         GPSStatusManager.getInstance().recordLocation(false);
+        getActivity().unregisterReceiver(simCardReceiver);
         super.onDestroy();
     }
 
@@ -203,6 +227,11 @@ public class CameraRecordFragment extends Fragment {
     private void requestGPSPermissions(){
         if(!hasPermissionsGranted(GPS_PERMISSIONS)){
             requestPermissions(GPS_PERMISSIONS,REQUEST_GPS_PERMISSIONS);
+        }
+    }
+    private void requestSIMCardPermissions(){
+        if(!hasPermissionsGranted(SIM_PERMISSIONS)){
+            requestPermissions(SIM_PERMISSIONS,REQUEST_SIMCARD_PERMISSIONS);
         }
     }
 
@@ -227,7 +256,9 @@ public class CameraRecordFragment extends Fragment {
     private void handleMessageEvent(MessageEvent messageEvent){
         if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING) {
             GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
-            osdView.startRecordingCountDown();
+            if(messageEvent.getData() == RECORDING_EVENT){
+                osdView.startRecordingCountDown();
+            }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT){
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT){
@@ -241,6 +272,8 @@ public class CameraRecordFragment extends Fragment {
             LedMananger.getInstance().setLedMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? true : false);
         } else if(messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE){
             GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus)messageEvent.getData());
+        } else if(messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD){
+            SimCardManager.getInstant().setSimState(SimCardManager.getInstant().getSimState());
         }
         osdView.invalidateView();
     }

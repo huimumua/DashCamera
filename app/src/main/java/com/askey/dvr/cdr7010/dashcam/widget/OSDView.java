@@ -53,6 +53,10 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_NETWORK_LOCKED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PIN_REQUIRED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PUK_REQUIRED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_UNKNOWN;
 
 public class OSDView extends View {
     private static final int REFRESH_PREVIEW_TIME_TIMER = 0x500;
@@ -72,6 +76,7 @@ public class OSDView extends View {
     private RectF  updateRectF;
     private RectF  secondCameraRectF;
     private RectF  gpsRectF;
+    private RectF  simCardRectF;
     private Paint  timePaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -100,6 +105,7 @@ public class OSDView extends View {
     private Bitmap gps_signal_strength_not_fixes;
     private Bitmap gps_signal_strength_fixes;
     private Bitmap gps_signal_strength_none;
+    private Bitmap simcard_error;
     private OSDProvider osdProvider;
 
     public OSDView(Context context){
@@ -171,11 +177,14 @@ public class OSDView extends View {
         sdcard_recording = decodeResource(getResources(), R.drawable.icon_sdcard_recording);
         sdcard_testing = decodeResource(getResources(), R.drawable.icon_sdcard_testing);
 
-        secondCameraRectF = new RectF(11,162,35,178);
+        secondCameraRectF = new RectF(11,148,35,164);
         second_camera = decodeResource(getResources(), R.drawable.icon_2nd_camera);
 
-        updateRectF = new RectF(11,111,35,127);
+        updateRectF = new RectF(11,105,35,121);
         update = decodeResource(getResources(), R.drawable.icon_update);
+
+        simCardRectF = new RectF(11,190,35,206);
+        simcard_error = decodeResource(getResources(), R.drawable.icon_simcard_error);
 
         gpsRectF = new RectF(200,8,232,22);
         gps_signal_strength_not_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength);
@@ -236,13 +245,14 @@ public class OSDView extends View {
         public void run() {
             countTime--;
             if(countTime >= 0) {
-                handler.postDelayed(this, 1000);
+                timeHandler.postDelayed(this, 1000);
             }
             invalidate();
         }
     };
     public void startRecordingCountDown(){
         countTime = 6;
+        timeHandler.removeCallbacks(runnable);
         timeHandler.post(runnable);
     }
     public void invalidateView(){
@@ -308,7 +318,9 @@ public class OSDView extends View {
         }
         if(osdProvider.getSDCardInitStatus() == INIT_FAIL){
             canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
-        } else if(osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
+        } else if((osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS
+                || osdProvider.getRecordingStatus() == RECORDING_EVENT)
+                && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
             canvas.drawBitmap(sdcard_recording,null,sdCardRectF,null);
         }else if((osdProvider.getRecordingStatus() == RECORDING_STOP && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED)
                 || osdProvider.getSDcardStatusType() == MEDIA_CHECKING){
@@ -329,9 +341,15 @@ public class OSDView extends View {
         }
         if(osdProvider.getFotaFileStatus() == FOTA_FILE_EXIST) {
             canvas.drawBitmap(update, null, updateRectF, null);
-        }
+       }
         if(osdProvider.getSecondCameraStatus() == CONNECTED){
             canvas.drawBitmap(second_camera,null,secondCameraRectF,null);
+        }
+        if(osdProvider.getSimCardStatus() == SIM_STATE_NETWORK_LOCKED
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_PIN_REQUIRED
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_PUK_REQUIRED
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_UNKNOWN){
+            canvas.drawBitmap(simcard_error,null,simCardRectF,null);
         }
         if(osdProvider.getGpsStatus() == GPS_STRENGTH_FIXES){
             canvas.drawBitmap(gps_signal_strength_fixes,null,gpsRectF,null);

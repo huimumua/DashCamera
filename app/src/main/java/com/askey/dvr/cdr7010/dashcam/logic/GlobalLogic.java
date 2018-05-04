@@ -16,6 +16,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Parking
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_UNKNOWN;
 
 public class GlobalLogic{
     private static GlobalLogic globalLogic;
@@ -30,6 +31,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
     private UIElementStatusEnum.SDCardInitStatus sdCardInitStatus = INIT_SUCCESS;
     private UIElementStatusEnum.FOTAFileStatus fotaFileStatus = FOTA_FILE_NOT_EXIST;
+    private UIElementStatusEnum.SimCardStatus simCardStatus = SIM_STATE_UNKNOWN;
     private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
 
     public static GlobalLogic getInstance(){
@@ -91,6 +93,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus(){
         return fotaFileStatus;
+    }
+    public void setSimCardStatus(UIElementStatusEnum.SimCardStatus simCardStatus){
+        this.simCardStatus = simCardStatus;
+    }
+    public UIElementStatusEnum.SimCardStatus getSimCardStatus(){
+        return simCardStatus;
     }
 
     public boolean putInt(String key, int value){

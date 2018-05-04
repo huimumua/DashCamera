@@ -8,6 +8,7 @@ public final class Event{
        public static final int EVENT_SDCARD = 0x16;
        public static final int EVENT_MIC = 0x32;
        public static final int EVENT_FOTA_UPDATE = 0x64;
+       public static final int EVENT_SIMCARD = 0x128;
     // other more
    }
 }
