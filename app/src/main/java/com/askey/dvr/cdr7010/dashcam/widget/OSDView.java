@@ -37,6 +37,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_STOP;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
@@ -278,7 +279,8 @@ public class OSDView extends View {
             if(countTime>=0) {
                 drawTime(canvas, null,"0" + countTime, countTimeRectF);
             }
-        }else if(osdProvider.getRecordingStatus() == RECORDING_STOP){
+        }else if(osdProvider.getRecordingStatus() == RECORDING_STOP
+                ||osdProvider.getRecordingStatus() == RECORDING_ERROR){
             canvas.drawBitmap(stop_recording,null, recordingRectF, null);
         }
         if(osdProvider.getMicStatus() == MIC_ON){

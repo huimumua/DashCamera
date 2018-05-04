@@ -4,7 +4,8 @@ public class UIElementStatusEnum{
         RECORDING_UNKNOWN(0),
         RECORDING_CONTINUOUS(1),
         RECORDING_EVENT(2),
-        RECORDING_STOP(3);
+        RECORDING_STOP(3),
+        RECORDING_ERROR(4);
 
         public final int value;
         RecordingStatusType(int value){

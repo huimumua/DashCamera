@@ -15,8 +15,7 @@ public class LedMananger{
             instance = new LedMananger();
         return instance;
     }
-    public void setLedRecStatus(boolean isNormal){
-        boolean isInRecording = GlobalLogic.getInstance().isInRecording();
+    public void setLedRecStatus(boolean isNormal , boolean isInRecording){
         if(isInRecording && isNormal){
             this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_UPPER, AskeyLedManager.COLOR_GREEN);
         }else if(!isInRecording && isNormal){

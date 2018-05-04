@@ -86,6 +86,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStarted() {
             Logg.d(TAG, "DashState: onStarted");
+            LedMananger.getInstance().setLedRecStatus(true,true);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
         }
@@ -93,6 +94,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStoped() {
             Logg.d(TAG, "DashState: onStoped");
+            LedMananger.getInstance().setLedRecStatus(true,false);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
 
@@ -101,6 +103,9 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onError() {
             Logg.d(TAG, "DashState: onError");
+            LedMananger.getInstance().setLedRecStatus(false,false);
+            EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
+                    UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR));
 
         }
 
@@ -171,6 +176,7 @@ public class CameraRecordFragment extends Fragment {
         getActivity().unregisterReceiver(mSDMonitor);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
+        LedMananger.getInstance().setLedRecStatus(true,false);
         super.onPause();
     }
 
@@ -221,7 +227,6 @@ public class CameraRecordFragment extends Fragment {
     private void handleMessageEvent(MessageEvent messageEvent){
         if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING) {
             GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
-            setLedDisplay((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
             osdView.startRecordingCountDown();
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT){
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
@@ -238,15 +243,6 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus)messageEvent.getData());
         }
         osdView.invalidateView();
-    }
-    private void setLedDisplay(UIElementStatusEnum.RecordingStatusType recordingStatus){
-        if(recordingStatus == UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT || recordingStatus == UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS){
-            GlobalLogic.getInstance().setIsInRecording(true);
-            LedMananger.getInstance().setLedRecStatus(true);
-        }else{
-            GlobalLogic.getInstance().setIsInRecording(false);
-            LedMananger.getInstance().setLedRecStatus(true);
-        }
     }
 
     private final PhoneStateListener mListener = new PhoneStateListener(){
