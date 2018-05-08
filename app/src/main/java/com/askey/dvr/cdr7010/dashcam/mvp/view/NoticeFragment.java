@@ -88,7 +88,7 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
     }
 
     private void initData() {
-        GlobalLogic.getInstance().putInt("MIC",0);
+        GlobalLogic.getInstance().putInt("MIC",1);
         mPresenter.start();
     }
     @Override

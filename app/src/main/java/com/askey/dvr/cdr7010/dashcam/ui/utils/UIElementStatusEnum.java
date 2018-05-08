@@ -18,8 +18,8 @@ public class UIElementStatusEnum{
 
     }
     public enum MICStatusType{
-        MIC_ON(0),
-        MIC_OFF(1);
+        MIC_OFF(0),
+        MIC_ON(1);
         public final int value;
         MICStatusType(int value){
             this.value = value;
