@@ -18,7 +18,6 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         setContentView(R.layout.activity_notice);
         NoticeFragment noticeFragment = NoticeFragment.newInstance(null);
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
