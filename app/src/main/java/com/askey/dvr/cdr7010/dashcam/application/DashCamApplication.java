@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
+import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -24,6 +25,7 @@ public class DashCamApplication extends Application {
         super.onCreate();
         EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
         setAppContext(this);
+        TTSManager.getInstance().initTTS();
     }
 
     @Override
