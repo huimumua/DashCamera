@@ -3,11 +3,15 @@ package com.askey.dvr.cdr7010.dashcam.ui;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.telephony.PhoneStateListener;
@@ -29,6 +33,7 @@ import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
+import com.askey.platform.AskeySettings;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -74,16 +79,10 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_MEDIA_MOUNTED)) {
                 Logg.d(TAG, "SD Card MEDIA_MOUNTED");
-                if (mMainCam != null) {
-                    try {
-                        mMainCam.startVideoRecord();
-                    } catch (IOException e) {
-                        Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
-                    }
-                }
+                startVideoRecord();
             } else if (intent.getAction().equals(Intent.ACTION_MEDIA_BAD_REMOVAL)) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
-                mMainCam.stopVideoRecord();
+                stopVideoRecord();
             }
         }
     };
@@ -99,6 +98,9 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStarted() {
             Logg.d(TAG, "DashState: onStarted");
+            if (!getMicphoneEnable()) {
+                mMainCam.mute();
+            }
             LedMananger.getInstance().setLedRecStatus(true,true);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
@@ -185,17 +187,13 @@ public class CameraRecordFragment extends Fragment {
         filter.addDataScheme("file");
         getActivity().registerReceiver(mSDMonitor, filter);
 
-        try {
-            mMainCam.startVideoRecord();
-        } catch (IOException e) {
-            Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
-        }
+        startVideoRecord();
     }
 
     @Override
     public void onPause() {
         Logg.d(TAG,"onPause");
-        mMainCam.stopVideoRecord();
+        stopVideoRecord();
         getActivity().unregisterReceiver(mSDMonitor);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
@@ -268,8 +266,8 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SDCARD){
             GlobalLogic.getInstance().setSDCardInitStatus((UIElementStatusEnum.SDCardInitStatus)messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC){
-            GlobalLogic.getInstance().setMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? MIC_OFF : MIC_ON);
-            LedMananger.getInstance().setLedMicStatus(GlobalLogic.getInstance().getInt("MIC") == 0 ? false : true);
+            GlobalLogic.getInstance().setMicStatus(getMicphoneEnable() ? MIC_ON : MIC_OFF);
+            LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
         } else if(messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE){
             GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus)messageEvent.getData());
         } else if(messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD){
@@ -314,6 +312,61 @@ public class CameraRecordFragment extends Fragment {
             {
                 Logg.e(TAG, "Exception: " + ignored.toString());
             }
+        }
+    };
+
+    private boolean getMicphoneEnable() {
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        int on = 1;
+        try {
+            on = Settings.Global.getInt(contentResolver,
+                    AskeySettings.Global.RECSET_VOICE_RECORD);
+        } catch (Settings.SettingNotFoundException e) {
+            Logg.e(TAG, "SettingNotFoundException MIC");
+            Settings.Global.putInt(contentResolver,
+                    AskeySettings.Global.RECSET_VOICE_RECORD, 1);
+        }
+        return (on != 0);
+    }
+
+    private void startVideoRecord() {
+        if (mMainCam != null) {
+            try {
+                mMainCam.startVideoRecord();
+                if (!getMicphoneEnable()) {
+                    mMainCam.mute();
+                }
+            } catch (IOException e) {
+                Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
+            }
+
+            ContentResolver contentResolver = getActivity().getContentResolver();
+            contentResolver.registerContentObserver(
+                    Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
+                    false,
+                    mMicphoneSettingsObserver);
+        }
+    }
+
+    private void stopVideoRecord() {
+        if (mMainCam != null) {
+            mMainCam.stopVideoRecord();
+        }
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        contentResolver.unregisterContentObserver(mMicphoneSettingsObserver);
+    }
+
+    private ContentObserver mMicphoneSettingsObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (mMainCam != null) {
+                if (getMicphoneEnable()) {
+                    mMainCam.demute();
+                } else {
+                    mMainCam.mute();
+                }
+            }
+            super.onChange(selfChange);
         }
     };
 }

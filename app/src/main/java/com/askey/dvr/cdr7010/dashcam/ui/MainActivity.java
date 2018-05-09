@@ -15,6 +15,7 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.platform.AskeySettings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -32,30 +33,33 @@ public class MainActivity extends AppCompatActivity {
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if( event.getAction() == KeyEvent.ACTION_DOWN){
-            switch(event.getKeyCode()){
-                case KeyAdapter.KEY_VOLUME_DOWN:
-                    audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION,AudioManager.ADJUST_LOWER,
-                            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
-                    return true;
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
                 case KeyAdapter.KEY_MENU:
-                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME,Const.CLASS_NAME,false);
+                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
                     return true;
                 case KeyAdapter.KEY_VOLUME_UP:
                     audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION,AudioManager.ADJUST_RAISE,
+                            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                    return true;
+                case KeyAdapter.KEY_VOLUME_DOWN:
+                    audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION,AudioManager.ADJUST_LOWER,
                             AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
                     return true;
             }
         }
         return super.dispatchKeyEvent(event);
     }
+
     @Override
     public void onBackPressed() {
-        int micValue = GlobalLogic.getInstance().getInt("MIC");
-        boolean value = (micValue ==0) ? GlobalLogic.getInstance().putInt("MIC",1) : GlobalLogic.getInstance().putInt("MIC",0);
-        EventUtil.sendEvent(new MessageEvent<Boolean>(Event.EventCode.EVENT_MIC,value));
+        int micValue = GlobalLogic.getInstance().getInt(AskeySettings.Global.RECSET_VOICE_RECORD);
+        int newVal = (micValue == 0) ? 1 : 0;
+        boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
+        EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
         return;
     }
 }

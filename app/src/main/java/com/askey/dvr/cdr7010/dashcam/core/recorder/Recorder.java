@@ -22,7 +22,6 @@ public class Recorder implements IFrameListener {
     private MediaAudioEncoder mAudioEncoder;
     private MediaMuxerWrapper mMuxer;
 
-    private final Object mWait = new Object();
     private final Object mSync = new Object();
 
     private StateCallback mStateCallback;
@@ -75,6 +74,14 @@ public class Recorder implements IFrameListener {
         mMuxer = null;
         mVideoEncoder = null;
         mAudioEncoder = null;
+    }
+
+    public void mute() {
+        mAudioEncoder.pause();
+    }
+
+    public void demute() {
+        mAudioEncoder.resume();
     }
 
     @Override

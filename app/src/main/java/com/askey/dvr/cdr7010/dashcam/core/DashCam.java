@@ -2,7 +2,6 @@ package com.askey.dvr.cdr7010.dashcam.core;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
@@ -80,7 +79,7 @@ public class DashCam {
     }
 
     public void startVideoRecord() throws IOException {
-        Log.d(TAG, "startVideoRecord");
+        Logg.d(TAG, "startVideoRecord");
 
         if (!SDCardUtils.isSDCardEnable()) {
             if (mStateCallback != null) {
@@ -131,8 +130,8 @@ public class DashCam {
         }
     }
 
-    public void startInternal() {
-        Log.d(TAG, "startInternal");
+    private void startInternal() {
+        Logg.d(TAG, "startInternal");
         if (mRecorder != null) {
             mRecorder.startRecording();
         }
@@ -143,7 +142,7 @@ public class DashCam {
     }
 
     public void stopVideoRecord() {
-        Log.d(TAG, "stopVideoRecord");
+        Logg.d(TAG, "stopVideoRecord");
 
         if (!mIsRunning) {
             return;
@@ -169,6 +168,20 @@ public class DashCam {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void mute() {
+        Logg.d(TAG, "mute");
+        if (mRecorder != null) {
+            mRecorder.mute();
+        }
+    }
+
+    public void demute() {
+        Logg.d(TAG, "demute");
+        if (mRecorder != null) {
+            mRecorder.demute();
         }
     }
 }
