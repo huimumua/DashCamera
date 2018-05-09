@@ -18,7 +18,10 @@ import java.util.List;
 
 public class ItemData implements Parcelable {
     private int itemTextID;
+    private boolean disabled;
+
     private boolean isDir;
+    private int mediaID;
     private String filePath;
     private String fileName;
     private long fileTime;
@@ -70,15 +73,35 @@ public class ItemData implements Parcelable {
         this.fileTime = fileTime;
     }
 
+    public void setDirFileItem(List<ItemData> dirFileItem) {
+        this.dirFileItem = dirFileItem;
+    }
+
     public List<ItemData> getDirFileItem() {
         return dirFileItem;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public int getMediaID() {
+        return mediaID;
+    }
+
+    public void setMediaID(int mediaID) {
+        this.mediaID = mediaID;
     }
 
     @Override
     public String toString() {
         return "ItemData{" +
-                "itemTextID=" + itemTextID +
                 ", isDir=" + isDir +
+                ", mediaID=" + mediaID +
                 ", filePath='" + filePath + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", fileTime=" + fileTime +
@@ -91,7 +114,10 @@ public class ItemData implements Parcelable {
      */
     private ItemData(Parcel in) {
         itemTextID = in.readInt();
+        disabled = in.readByte() != 0;
+
         isDir = in.readByte() != 0; //isDir == true if byte != 0
+        mediaID = in.readInt();
         filePath = in.readString();
         fileName = in.readString();
         fileTime = in.readLong();
@@ -121,7 +147,10 @@ public class ItemData implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(itemTextID);
+        dest.writeByte((byte) (disabled ? 1 : 0));
+
         dest.writeByte((byte) (isDir ? 1 : 0)); //if isDir == true, byte == 1
+        dest.writeInt(mediaID);
         dest.writeString(filePath);
         dest.writeString(fileName);
         dest.writeLong(fileTime);

@@ -57,5 +57,13 @@ interface IFileManagerAidlInterface {
     * */
      List <SdcardInfo> getSdcardInfo();
 
+     /**
+     * 检测sdcard中是否有update.zip文件
+     * */
+     boolean checkNewSystemVersion();
+
+
+
+
 
 }
