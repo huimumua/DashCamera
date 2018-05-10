@@ -15,11 +15,13 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
 
 
 public class MainActivity extends AppCompatActivity {
     private AudioManager audioManager;
+    private int maxVolume,currentVolume;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
     }
 
     @Override
@@ -42,12 +45,18 @@ public class MainActivity extends AppCompatActivity {
                     ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
                     return true;
                 case KeyAdapter.KEY_VOLUME_UP:
-                    audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION,AudioManager.ADJUST_RAISE,
-                            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                    currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)+1;
+                    if(currentVolume<=maxVolume){
+                        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION,currentVolume,
+                                AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                    }
                     return true;
                 case KeyAdapter.KEY_VOLUME_DOWN:
-                    audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION,AudioManager.ADJUST_LOWER,
-                            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                    currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)-1;
+                    if(currentVolume>=0){
+                        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION,currentVolume,
+                                AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                    }
                     return true;
             }
         }
