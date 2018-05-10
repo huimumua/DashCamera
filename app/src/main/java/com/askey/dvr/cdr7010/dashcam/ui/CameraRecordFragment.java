@@ -40,6 +40,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
@@ -57,6 +59,7 @@ public class CameraRecordFragment extends Fragment {
     private OSDView osdView;
     private TelephonyManager mTelephonyManager;
     private UIElementStatusEnum.LTEStatusType lteLevel;
+    private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
@@ -98,8 +101,15 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStarted() {
             Logg.d(TAG, "DashState: onStarted");
-            if (!getMicphoneEnable()) {
-                mMainCam.mute();
+            if (mExecutor != null) {
+                mExecutor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!getMicphoneEnable()) {
+                            mMainCam.mute();
+                        }
+                    }
+                });
             }
             LedMananger.getInstance().setLedRecStatus(true,true);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
@@ -359,12 +369,17 @@ public class CameraRecordFragment extends Fragment {
     private ContentObserver mMicphoneSettingsObserver = new ContentObserver(new Handler()) {
         @Override
         public void onChange(boolean selfChange) {
-            if (mMainCam != null) {
-                if (getMicphoneEnable()) {
-                    mMainCam.demute();
-                } else {
-                    mMainCam.mute();
-                }
+            if (mMainCam != null && mExecutor != null) {
+                mExecutor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getMicphoneEnable()) {
+                            mMainCam.demute();
+                        } else {
+                            mMainCam.mute();
+                        }
+                    }
+                });
             }
             super.onChange(selfChange);
         }
