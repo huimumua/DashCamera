@@ -62,6 +62,11 @@ interface IFileManagerAidlInterface {
      * */
      boolean checkNewSystemVersion();
 
+     /**
+     *检测sdcard是否可用
+     * */
+     boolean checkSdcardAvailable();
+
 
 
 
