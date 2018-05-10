@@ -35,6 +35,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
     private final static int MSG_UPDATE_FRAME = 6;
 
     private Context mContext;
+    private boolean mVideoStamp;
     private RenderHandler mRenderHandler;
     private HandlerThread mRenderThread;
     private IFrameListener mFrameListener;
@@ -44,8 +45,9 @@ public class EGLRenderer implements OnFrameAvailableListener {
         void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
-    public EGLRenderer(Context context, OnSurfaceTextureListener listener) {
+    public EGLRenderer(Context context, boolean videoStamp, OnSurfaceTextureListener listener) {
         mContext = context.getApplicationContext();
+        mVideoStamp = videoStamp;
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper());
@@ -132,9 +134,11 @@ public class EGLRenderer implements OnFrameAvailableListener {
             mTextureController = new VideoTextureController();
             mTextureController.prepare();
 
-            mGroupOsd = new GroupOSD();
-            mGroupOsd.addOSD(new TimestampOSD());
-            mGroupOsd.addOSD(new GnssOSD(mContext));
+            if (mVideoStamp) {
+                mGroupOsd = new GroupOSD();
+                mGroupOsd.addOSD(new TimestampOSD());
+                mGroupOsd.addOSD(new GnssOSD(mContext));
+            }
 
             mInputSurface = new SurfaceTexture(mTextureController.getTexture());
             mInputSurface.setDefaultBufferSize(1920, 1080);
@@ -159,7 +163,10 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     mEncoderSurface = null;
                 }
             }
-            mGroupOsd.release();
+            if (mGroupOsd != null) {
+                mGroupOsd.release();
+                mGroupOsd = null;
+            }
             if (mInputSurface != null) {
                 if (mSurfaceTextureListener != null) {
                     mSurfaceTextureListener.onSurfaceTextureDestroyed(mInputSurface);
@@ -246,7 +253,10 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     GLES20.glViewport(0, 0, 1920, 1080);
                     mTextureController.draw();
                     mEncoderSurface.setPresentationTime(mInputSurface.getTimestamp());
-                    mGroupOsd.draw();
+
+                    if (mGroupOsd != null) {
+                        mGroupOsd.draw();
+                    }
 
                     if (mFrameListener != null) {
                         mFrameListener.frameAvailableSoon();

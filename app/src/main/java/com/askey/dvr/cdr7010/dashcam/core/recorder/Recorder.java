@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Surface;
 
+import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.IFrameListener;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaAudioEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaEncoder;
@@ -18,6 +19,7 @@ public class Recorder implements IFrameListener {
     private final static String TAG = "Recorder";
 
     private Context mContext;
+    private RecordConfig mConfig;
     private MediaVideoEncoder mVideoEncoder;
     private MediaAudioEncoder mAudioEncoder;
     private MediaMuxerWrapper mMuxer;
@@ -33,8 +35,11 @@ public class Recorder implements IFrameListener {
         void onEventStateChanged(boolean on);
     }
 
-    public Recorder(@NonNull Context context, @Nullable StateCallback callback) {
+    public Recorder(@NonNull Context context,
+                    @NonNull RecordConfig config,
+                    @Nullable StateCallback callback) {
         mContext = context.getApplicationContext();
+        mConfig = config;
         mStateCallback = callback;
     }
 
@@ -46,7 +51,10 @@ public class Recorder implements IFrameListener {
             Logg.e(TAG, "Exception: " + e.getMessage());
             throw new IOException("create muxer error.");
         }
-        mVideoEncoder = new MediaVideoEncoder(mMuxer, mMediaEncoderListener, 1920, 1080);
+        mVideoEncoder = new MediaVideoEncoder(mMuxer,
+                mMediaEncoderListener,
+                mConfig.videoWidth(),
+                mConfig.videoHeight());
         mAudioEncoder = new MediaAudioEncoder(mMuxer, mMediaEncoderListener);
 
         try {

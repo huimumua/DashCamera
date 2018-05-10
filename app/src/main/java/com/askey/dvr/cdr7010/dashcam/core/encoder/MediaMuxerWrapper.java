@@ -374,11 +374,13 @@ public class MediaMuxerWrapper {
 
             if ((type == SAMPLE_TYPE_VIDEO) && ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0)) {
                 final MediaMuxerWrapper parent = weakParent.get();
+                if (parent == null) {
+                    return;
+                }
+
                 if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
-                    if (parent != null) {
-                        parent.closeMuxer(muxer);
-                        muxer = null;
-                    }
+                    parent.closeMuxer(muxer);
+                    muxer = null;
                 }
 
                 if (muxer == null) {

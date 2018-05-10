@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
+import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -171,7 +172,6 @@ public class CameraRecordFragment extends Fragment {
         GPSStatusManager.getInstance().recordLocation(true);
         osdView = (OSDView) view.findViewById(R.id.osd_view);
         osdView.init(1000);
-        mMainCam = new DashCam(getActivity(), mDashCallback);
 
     }
 
@@ -196,6 +196,17 @@ public class CameraRecordFragment extends Fragment {
         filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
         filter.addDataScheme("file");
         getActivity().registerReceiver(mSDMonitor, filter);
+
+        final boolean stamp = getRecordStamp();
+        final boolean audio = getMicphoneEnable();
+        RecordConfig mainConfig = RecordConfig.builder()
+                .cameraId(0)
+                .videoWidth(1920)
+                .videoHeight(1080)
+                .videoStampEnable(stamp)
+                .audioRecordEnable(audio)
+                .build();
+        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
 
         startVideoRecord();
     }
@@ -335,6 +346,20 @@ public class CameraRecordFragment extends Fragment {
             Logg.e(TAG, "SettingNotFoundException MIC");
             Settings.Global.putInt(contentResolver,
                     AskeySettings.Global.RECSET_VOICE_RECORD, 1);
+        }
+        return (on != 0);
+    }
+
+    private boolean getRecordStamp() {
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        int on = 1;
+        try {
+            on = Settings.Global.getInt(contentResolver,
+                    AskeySettings.Global.RECSET_INFO_STAMP);
+        } catch (Settings.SettingNotFoundException e) {
+            Logg.e(TAG, "SettingNotFoundException RECSET_INFO_STAMP");
+            Settings.Global.putInt(contentResolver,
+                    AskeySettings.Global.RECSET_INFO_STAMP, 1);
         }
         return (on != 0);
     }

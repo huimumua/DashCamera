@@ -17,6 +17,7 @@ public class DashCam {
 
     private static final String TAG = "DashCam";
     private Context mContext;
+    private RecordConfig mConfig;
     private Camera2Controller mCamera2Controller;
     private EGLRenderer mRenderer;
     private Recorder mRecorder;
@@ -73,8 +74,9 @@ public class DashCam {
         }
     };
 
-    public DashCam(Context context, StateCallback callback) {
+    public DashCam(Context context, RecordConfig config, StateCallback callback) {
         mContext = context.getApplicationContext();
+        mConfig = config;
         mStateCallback = callback;
     }
 
@@ -102,16 +104,22 @@ public class DashCam {
 
             mCamera2Controller = new Camera2Controller(mContext);
             mCamera2Controller.startBackgroundThread();
-            mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);
+            if (mConfig.cameraId() == 0) {
+                mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);
+            } else {
+                mCamera2Controller.open(Camera2Controller.CAMERA.EXT);
+            }
 
-            mRecorder = new Recorder(mContext, mRecorderCallback);
+            mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
             try {
                 mRecorder.prepare();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            mRenderer = new EGLRenderer(mContext, new EGLRenderer.OnSurfaceTextureListener() {
+            mRenderer = new EGLRenderer(mContext,
+                    mConfig.videoStampEnable(),
+                    new EGLRenderer.OnSurfaceTextureListener() {
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
                     mSurfaceTexture = surfaceTexture;
