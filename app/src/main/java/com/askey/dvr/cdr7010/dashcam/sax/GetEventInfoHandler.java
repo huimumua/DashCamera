@@ -46,6 +46,13 @@ public class GetEventInfoHandler extends DefaultHandler{
                 eventInfo.setPriority(-1);
             }
         }
+        if(qName.equals("event_type")){
+            try {
+                eventInfo.setEventType(Integer.parseInt(value));
+            }catch(Exception e){
+                eventInfo.setEventType(-1);
+            }
+        }
         if(qName.equals("name")){
             eventInfo.setEventName(value);
         }
