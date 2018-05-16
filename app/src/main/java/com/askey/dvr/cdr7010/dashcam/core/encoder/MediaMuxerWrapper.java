@@ -297,6 +297,7 @@ public class MediaMuxerWrapper {
                     mEventState.doProcess();
                     Event event = mEventState.getEvent();
                     eventId = event.getId();
+                    time = event.getTime();
                 }
             }
         }
@@ -315,10 +316,9 @@ public class MediaMuxerWrapper {
                     Logg.e(LOG_TAG, "closeSegment - > failed stopping muxer", e);
                 }
 
-                long eventTimeOffsetMs = tmpMuxer.eventTimeMs() - tmpMuxer.startTimeMs();
                 if (mSegmentCallback != null) {
                     mSegmentCallback.segmentCompletedAsync(tmpMuxer.event(),
-                            eventTimeOffsetMs,
+                            0,
                             tmpMuxer.filePath(),
                             tmpMuxer.startTimeMs(),
                             tmpMuxer.duration());

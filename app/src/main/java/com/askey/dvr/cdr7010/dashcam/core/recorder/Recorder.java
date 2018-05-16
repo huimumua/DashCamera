@@ -11,9 +11,11 @@ import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaAudioEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaVideoEncoder;
+import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Recorder implements IFrameListener {
     private final static String TAG = "Recorder";
@@ -134,6 +136,14 @@ public class Recorder implements IFrameListener {
         @Override
         public void segmentCompletedAsync(int event, final long eventTimeMs, final String path, final long startTimeMs, long durationMs) {
             Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " " + path);
+            if (event != 0) {
+                List<String> pictures = Snapshot.take3Pictures(path, startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext));
+                if (pictures != null) {
+                    for (String pic : pictures) {
+                        Logg.d(TAG, pic);
+                    }
+                }
+            }
         }
     };
 

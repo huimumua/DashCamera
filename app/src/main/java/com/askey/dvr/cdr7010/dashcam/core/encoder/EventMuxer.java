@@ -115,7 +115,7 @@ public class EventMuxer implements Runnable{
                         if (sliceCount >= 15 || mFlagStop) {
                             final AndroidMuxer muxer = mMuxer;
                             final int event = eventId;
-                            final long time = eventTime / 1000L;
+                            final long time = eventTime;
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {

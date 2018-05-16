@@ -55,23 +55,27 @@ public class FileManager {
         return INSTANCE;
     }
 
-    private String buildFilePath(long timeStamp, @NonNull String fileType) throws RemoteException {
+    private String buildFilePath(long timeStamp, @NonNull String fileType, String ext) throws RemoteException {
         if (mService == null) {
             throw new RemoteException("No FileManagement service.");
         }
 
         String fileName;
         synchronized (DATETIME_FORMAT) {
-            fileName = DATETIME_FORMAT.format(new Date(timeStamp)) + ".mp4";
+            fileName = DATETIME_FORMAT.format(new Date(timeStamp)) + ext;
         }
         return mService.openSdcard(fileName, fileType);
     }
 
     public String getFilePathForNormal(long timeStamp) throws RemoteException {
-        return buildFilePath(timeStamp, "NORMAL");
+        return buildFilePath(timeStamp, "NORMAL", ".mp4");
     }
 
     public String getFilePathForEvent(long timeStamp) throws RemoteException {
-        return buildFilePath(timeStamp, "EVENT");
+        return buildFilePath(timeStamp, "EVENT", ".mp4");
+    }
+
+    public String getFilePathForPicture(long timeStamp) throws RemoteException {
+        return buildFilePath(timeStamp, "PICTURE", ".jpg");
     }
 }
