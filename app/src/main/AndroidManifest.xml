@@ -55,6 +55,12 @@
                 <action android:name="action_fota_status"/>
             </intent-filter>
         </receiver>
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.JvcEventReceiver">
+            <intent-filter>
+                <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT"/>
+                <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
