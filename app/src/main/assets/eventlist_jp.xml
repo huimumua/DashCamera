@@ -27,7 +27,7 @@
     <event>
         <id>3</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>123</event_type>
         <name>イベント記録開始</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -39,7 +39,7 @@
     <event>
         <id>4</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>124</event_type>
         <name>イベント記録停止</name>
         <description></description>
         <voice_guidence></voice_guidence>
