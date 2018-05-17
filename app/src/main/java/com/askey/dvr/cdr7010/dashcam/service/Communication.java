@@ -71,12 +71,14 @@ public class Communication {
     private ICommunicationCallback mStatusChangeCB = new ICommunicationCallback.Stub() {
         @Override
         public void reportInsuranceTerm(int status, String start, String end, int flag) throws RemoteException {
+            Logg.d(LOG_TAG, "reportInsuranceTerm: status=" + status + ", start=" + start + ", end=" + end + ", flag=" + flag);
 
         }
 
         @Override
         public void reportDrivingReport() throws RemoteException {
             //id 52, 運転レポート Driving report, eventType define 101
+            Logg.d(LOG_TAG, "reportDrivingReport: ");
             int eventType = 101;
             long timeStamp = System.currentTimeMillis();
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
@@ -90,6 +92,7 @@ public class Communication {
         @Override
         public void reportManthlyDrivingReport() throws RemoteException {
             //id 53, 月間運転レポート Monthly driving report, eventType define 102
+            Logg.d(LOG_TAG, "reportManthlyDrivingReport: ");
             int eventType = 102;
             long timeStamp = System.currentTimeMillis();
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
@@ -103,6 +106,7 @@ public class Communication {
         @Override
         public void reportServerNotifocation() throws RemoteException {
             //id 51, お知らせ Notice, eventType define 100
+            Logg.d(LOG_TAG, "reportServerNotifocation: ");
             int eventType = 100;
             long timeStamp = System.currentTimeMillis();
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
@@ -116,6 +120,7 @@ public class Communication {
         @Override
         public void reportDrivingAdvice() throws RemoteException {
             //id 54, 運転前アドバイス Advice before driving, eventType define 103
+            Logg.d(LOG_TAG, "reportDrivingAdvice: ");
             int eventType = 103;
             long timeStamp = System.currentTimeMillis();
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
@@ -128,36 +133,43 @@ public class Communication {
 
         @Override
         public void reportRecorderSettings(int status, int volume, long settings) throws RemoteException {
+            Logg.d(LOG_TAG, "reportRecorderSettings: status=" + status + ", volume=" + volume + ", settings=" + settings);
 
         }
 
         @Override
         public void reportTxEventProgress(int progress, int total) throws RemoteException {
+            Logg.d(LOG_TAG, "reportTxEventProgress: progress=" + progress + ", total=" + total);
 
         }
 
         @Override
         public void reportRealTimeAlert(int alertID) throws RemoteException {
+            Logg.d(LOG_TAG, "reportRealTimeAlert: alertID=" + alertID);
 
         }
 
         @Override
         public void reportTripDataResult(int status) throws RemoteException {
+            Logg.d(LOG_TAG, "reportTripDataResult: status=" + status);
 
         }
 
         @Override
         public void reportEventDataResult(int status) throws RemoteException {
+            Logg.d(LOG_TAG, "reportEventDataResult: status=" + status);
 
         }
 
         @Override
         public void reportVersionUpInformation() throws RemoteException {
+            Logg.d(LOG_TAG, "reportVersionUpInformation: ");
 
         }
 
         @Override
         public void reportVersionUpData() throws RemoteException {
+            Logg.d(LOG_TAG, "reportVersionUpData: ");
 
         }
     };

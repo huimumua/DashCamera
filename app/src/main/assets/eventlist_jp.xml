@@ -663,7 +663,7 @@
     <event>
         <id>56</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>121</event_type>
         <name>ユーザー切り替え_ユーザー操作</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -687,7 +687,7 @@
     <event>
         <id>58</id>
         <priority></priority>
-        <event_type></event_type>
+        <event_type>122</event_type>
         <name>設定変更_ユーザー操作</name>
         <description></description>
         <voice_guidence></voice_guidence>
