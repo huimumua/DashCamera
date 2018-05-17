@@ -1,26 +1,35 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
+import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.widget.SdCardDialog;
 import com.askey.platform.AskeySettings;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
+    public static final int DIALOG_TYPE_SDCARD =1;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
+    private Dialog dialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+        DialogManager.getIntance().registerContext(this);
     }
 
     @Override
@@ -59,6 +69,44 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id, Bundle args){
+        Logg.d(TAG,"id="+id);
+        switch(id){
+            case DIALOG_TYPE_SDCARD:
+                dialog = new SdCardDialog(this,R.style.dialogNoTitle);
+                ((SdCardDialog)dialog).setMessage(args.getString("Message"));
+                break;
+        }
+        return dialog;
+    }
+    @Override
+    protected  void onPrepareDialog(int id,Dialog dialog,Bundle args){
+        super.onPrepareDialog(id,dialog,args);
+        if(id == DIALOG_TYPE_SDCARD){
+            SdCardDialog sdCardDialog =(SdCardDialog)dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
+    }
+
+    public boolean isDialogShowing(){
+        if(!isFinishing() && null != dialog && dialog.isShowing()){
+            return true;
+        }
+        return false;
+    }
+    public void dismissDialog(){
+        if(!isFinishing() && null != dialog && dialog.isShowing()){
+            dialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onDestroy(){
+        DialogManager.getIntance().unregisterContext();
+        super.onDestroy();
     }
 
     @Override
