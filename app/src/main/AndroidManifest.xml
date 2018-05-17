@@ -59,6 +59,7 @@
             <intent-filter>
                 <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT"/>
                 <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
+                <action android:name="com.jvckenwood.communication.VOIP_CALL"/>
             </intent-filter>
         </receiver>
     </application>

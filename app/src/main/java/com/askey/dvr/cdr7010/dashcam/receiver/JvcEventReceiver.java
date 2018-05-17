@@ -12,10 +12,10 @@ public class JvcEventReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "JvcEventReceiver";
     private static final String ACTION_EVENT_DISPLAY_ALERT = "com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT";
     private static final String ACTION_EVENT_RECORD_REQUEST = "com.jvckenwood.eventsending.EVENT_RECORD_REQUEST";
+    private static final String ACTION_COMMUNICATION_VOIP_CALL = "com.jvckenwood.communication.VOIP_CALL";
     private static final String EXTRA_EVENT_TYPE = "eventType";
     private static final String EXTRA_TIME_STAMP = "timeStamp";
-
-
+    private static final String EXTRA_EVENT_NO = "eventNo";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -27,6 +27,12 @@ public class JvcEventReceiver extends BroadcastReceiver{
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
             if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }else if(action.equals(ACTION_EVENT_RECORD_REQUEST)){
+            int eventNo = intent.getIntExtra(EXTRA_EVENT_NO, -1);
+            int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
+            long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
+
+        }else if(action.equals(ACTION_COMMUNICATION_VOIP_CALL)){
+            //do voip call
 
         }
     }

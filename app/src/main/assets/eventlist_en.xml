@@ -3,7 +3,7 @@
     <event>
         <id>1</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>104</event_type>
         <name>Continuous Recording start</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -15,7 +15,7 @@
     <event >
         <id>2</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>105</event_type>
         <name>Continuous Recording end</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -75,7 +75,7 @@
     <event>
         <id>7</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>106</event_type>
         <name>Audio recording ON</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -87,7 +87,7 @@
     <event>
         <id>8</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>107</event_type>
         <name>Audio recording OFF</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -423,7 +423,7 @@
     <event>
         <id>36</id>
         <priority>15</priority>
-        <event_type></event_type>
+        <event_type>108</event_type>
         <name>location information</name>
         <description>GPS detecting</description>
         <voice_guidence></voice_guidence>
@@ -435,7 +435,7 @@
     <event>
         <id>37</id>
         <priority>15</priority>
-        <event_type></event_type>
+        <event_type>109</event_type>
         <name>location information error</name>
         <description>GPS detecting error</description>
         <voice_guidence></voice_guidence>
@@ -447,7 +447,7 @@
     <event>
         <id>38</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>110</event_type>
         <name>No SD card inserted</name>
         <description>No SD card</description>
         <voice_guidence></voice_guidence>
@@ -459,7 +459,7 @@
     <event>
         <id>39</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>111</event_type>
         <name>SD card illegal / unformatted</name>
         <description>Abnormal SD card format, format needed</description>
         <voice_guidence></voice_guidence>
@@ -471,7 +471,7 @@
     <event>
         <id>40</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>112</event_type>
         <name>SD card not supported</name>
         <description>SD card not supported</description>
         <voice_guidence></voice_guidence>
@@ -483,7 +483,7 @@
     <event>
         <id>41</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>113</event_type>
         <name>SD card error / unrecognizable</name>
         <description>SD card error</description>
         <voice_guidence></voice_guidence>
@@ -495,7 +495,7 @@
     <event>
         <id>42</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>114</event_type>
         <name>Stop recording by detecting abnormality</name>
         <description>Stop recording</description>
         <voice_guidence></voice_guidence>
@@ -507,7 +507,7 @@
     <event>
         <id>43</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>115</event_type>
         <name>When the number of event recording files has reached the limit</name>
         <description>Event recordng fail.(Count over)</description>
         <voice_guidence></voice_guidence>
@@ -519,7 +519,7 @@
     <event>
         <id>44</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>116</event_type>
         <name>Insufficient SD card space</name>
         <description>SD card out of space</description>
         <voice_guidence></voice_guidence>
@@ -531,7 +531,7 @@
     <event>
         <id>45</id>
         <priority>6</priority>
-        <event_type></event_type>
+        <event_type>117</event_type>
         <name>High temperature threshold Lv 1</name>
         <description>Monitor will be off for overheat</description>
         <voice_guidence></voice_guidence>
@@ -543,7 +543,7 @@
     <event>
         <id>46</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>118</event_type>
         <name>High temperature threshold Lv 2</name>
         <description>Stop recording for overheat</description>
         <voice_guidence></voice_guidence>
@@ -555,7 +555,7 @@
     <event>
         <id>47</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>119</event_type>
         <name>High temperature threshold Lv 3</name>
         <description>Poweroff for overheat</description>
         <voice_guidence></voice_guidence>
@@ -567,7 +567,7 @@
     <event>
         <id>48</id>
         <priority>0</priority>
-        <event_type>27</event_type>
+        <event_type>120</event_type>
         <name>Emergency call(user)</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -579,7 +579,7 @@
     <event>
         <id>49</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>27</event_type>
         <name>Emergency call(surver)</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -603,7 +603,7 @@
     <event>
         <id>51</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>100</event_type>
         <name>Notice</name>
         <description>Notice</description>
         <voice_guidence></voice_guidence>
@@ -615,7 +615,7 @@
     <event>
         <id>52</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>101</event_type>
         <name>Driving report</name>
         <description>Driving report</description>
         <voice_guidence></voice_guidence>
@@ -627,7 +627,7 @@
     <event>
         <id>53</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>102</event_type>
         <name>Monthly driving report</name>
         <description>Monthly driving report</description>
         <voice_guidence></voice_guidence>
@@ -639,7 +639,7 @@
     <event>
         <id>54</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>103</event_type>
         <name>Advice before driving</name>
         <description>Driving advice</description>
         <voice_guidence></voice_guidence>

@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.ICommunication;
 import com.jvckenwood.communication.ICommunicationCallback;
@@ -75,22 +76,54 @@ public class Communication {
 
         @Override
         public void reportDrivingReport() throws RemoteException {
-
+            //id 52, 運転レポート Driving report, eventType define 101
+            int eventType = 101;
+            long timeStamp = System.currentTimeMillis();
+            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+            if(eventInfo == null){
+                Logg.e(LOG_TAG, "reportDrivingReport: can't find EventInfo, eventType=" + eventType);
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }
 
         @Override
         public void reportManthlyDrivingReport() throws RemoteException {
-
+            //id 53, 月間運転レポート Monthly driving report, eventType define 102
+            int eventType = 102;
+            long timeStamp = System.currentTimeMillis();
+            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+            if(eventInfo == null){
+                Logg.e(LOG_TAG, "reportManthlyDrivingReport: can't find EventInfo, eventType=" + eventType);
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }
 
         @Override
         public void reportServerNotifocation() throws RemoteException {
-
+            //id 51, お知らせ Notice, eventType define 100
+            int eventType = 100;
+            long timeStamp = System.currentTimeMillis();
+            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+            if(eventInfo == null){
+                Logg.e(LOG_TAG, "reportServerNotifocation: can't find EventInfo, eventType=" + eventType);
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }
 
         @Override
         public void reportDrivingAdvice() throws RemoteException {
-
+            //id 54, 運転前アドバイス Advice before driving, eventType define 103
+            int eventType = 103;
+            long timeStamp = System.currentTimeMillis();
+            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+            if(eventInfo == null){
+                Logg.e(LOG_TAG, "reportDrivingAdvice: can't find EventInfo, eventType=" + eventType);
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }
 
         @Override

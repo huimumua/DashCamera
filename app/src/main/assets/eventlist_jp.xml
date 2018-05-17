@@ -3,7 +3,7 @@
     <event>
         <id>1</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>104</event_type>
         <name>常時録画開始</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -15,7 +15,7 @@
     <event >
         <id>2</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>105</event_type>
         <name>常時録画停止</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -75,7 +75,7 @@
     <event>
         <id>7</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>106</event_type>
         <name>音声記録ON</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -87,7 +87,7 @@
     <event>
         <id>8</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>107</event_type>
         <name>音声記録OFF</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -423,7 +423,7 @@
     <event>
         <id>36</id>
         <priority>15</priority>
-        <event_type></event_type>
+        <event_type>108</event_type>
         <name>GPS測位</name>
         <description>GPSを測位しました</description>
         <voice_guidence>GPSを測位しました</voice_guidence>
@@ -435,7 +435,7 @@
     <event>
         <id>37</id>
         <priority>15</priority>
-        <event_type></event_type>
+        <event_type>109</event_type>
         <name>GPS測位エラー</name>
         <description>GPSが見つかりませんでした</description>
         <voice_guidence>GPSが見つかりませんでした</voice_guidence>
@@ -447,7 +447,7 @@
     <event>
         <id>38</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>110</event_type>
         <name>SDカード未挿入</name>
         <description>SDカードがありません</description>
         <voice_guidence>SDカードがありません</voice_guidence>
@@ -459,7 +459,7 @@
     <event>
         <id>39</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>111</event_type>
         <name>SDカード不正/未フォーマット</name>
         <description>SDカードの初期化が必要です</description>
         <voice_guidence>SDカードの初期化が必要です</voice_guidence>
@@ -471,7 +471,7 @@
     <event>
         <id>40</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>112</event_type>
         <name>SDカード非対応</name>
         <description>非対応のSDカードです</description>
         <voice_guidence>非対応のSDカードです</voice_guidence>
@@ -483,7 +483,7 @@
     <event>
         <id>41</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>113</event_type>
         <name>SDカード異常/認識不可</name>
         <description>SDカードエラーです</description>
         <voice_guidence>SDカードエラーです</voice_guidence>
@@ -495,7 +495,7 @@
     <event>
         <id>42</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>114</event_type>
         <name>異常検出による録画停止</name>
         <description>録画を中止しました</description>
         <voice_guidence>録画を中止しました</voice_guidence>
@@ -507,7 +507,7 @@
     <event>
         <id>43</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>115</event_type>
         <name>ファイル数オーバーによるイベント記録の失敗</name>
         <description>イベント記録失敗（ファイル上限</description>
         <voice_guidence></voice_guidence>
@@ -519,7 +519,7 @@
     <event>
         <id>44</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>116</event_type>
         <name>ＳＤカードの空き容量不足</name>
         <description>SDカードの空きがありません</description>
         <voice_guidence></voice_guidence>
@@ -531,7 +531,7 @@
     <event>
         <id>45</id>
         <priority>6</priority>
-        <event_type></event_type>
+        <event_type>117</event_type>
         <name>高温閾値Lv1に達した場合</name>
         <description>高温のためモニター画面を消灯します</description>
         <voice_guidence></voice_guidence>
@@ -543,7 +543,7 @@
     <event>
         <id>46</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>118</event_type>
         <name>高温閾値Lv2に達した場合</name>
         <description>高温のため録画を中止しました</description>
         <voice_guidence></voice_guidence>
@@ -555,7 +555,7 @@
     <event>
         <id>47</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>119</event_type>
         <name>高温閾値Lv3に達した場合</name>
         <description>高温のため電源を切ります</description>
         <voice_guidence></voice_guidence>
@@ -567,7 +567,7 @@
     <event>
         <id>48</id>
         <priority>0</priority>
-        <event_type>27</event_type>
+        <event_type>120</event_type>
         <name>緊急通報_ユーザー</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -579,7 +579,7 @@
     <event>
         <id>49</id>
         <priority>0</priority>
-        <event_type></event_type>
+        <event_type>27</event_type>
         <name>緊急通報_サーバー </name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -603,7 +603,7 @@
     <event>
         <id>51</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>100</event_type>
         <name>お知らせ</name>
         <description>お知らせ</description>
         <voice_guidence></voice_guidence>
@@ -615,7 +615,7 @@
     <event>
         <id>52</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>101</event_type>
         <name>運転レポート</name>
         <description>運転レポート</description>
         <voice_guidence></voice_guidence>
@@ -627,7 +627,7 @@
     <event>
         <id>53</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>102</event_type>
         <name>月間運転レポート</name>
         <description>月間運転レポート</description>
         <voice_guidence></voice_guidence>
@@ -639,7 +639,7 @@
     <event>
         <id>54</id>
         <priority>20</priority>
-        <event_type></event_type>
+        <event_type>103</event_type>
         <name>運転前アドバイス</name>
         <description>運転前アドバイス</description>
         <voice_guidence></voice_guidence>
