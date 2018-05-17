@@ -26,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        FileManager.getInstance(this); // bindService
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, CameraRecordFragment.newInstance())

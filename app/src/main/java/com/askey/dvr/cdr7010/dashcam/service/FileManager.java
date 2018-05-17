@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.ContentObserver;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ public class FileManager {
     private IFileManagerAidlInterface mService;
     private static final SimpleDateFormat DATETIME_FORMAT =
             new SimpleDateFormat("yyMMddHHmmss", Locale.US);
+    private Context mContext;
 
     private ServiceConnection mConn = new ServiceConnection() {
         @Override
@@ -38,6 +40,7 @@ public class FileManager {
     };
 
     private FileManager(Context context) {
+        mContext = context.getApplicationContext();
         Intent bindIntent = new Intent();
         bindIntent.setAction("com.askey.filemanagerservice.action");
         bindIntent.setPackage("com.askey.dvr.cdr7010.filemanagement");
@@ -53,6 +56,13 @@ public class FileManager {
             }
         }
         return INSTANCE;
+    }
+
+    public void release() {
+        if (mConn != null) {
+            mContext.unbindService(mConn);
+            mConn = null;
+        }
     }
 
     private String buildFilePath(long timeStamp, @NonNull String fileType, String ext) throws RemoteException {
@@ -77,5 +87,12 @@ public class FileManager {
 
     public String getFilePathForPicture(long timeStamp) throws RemoteException {
         return buildFilePath(timeStamp, "PICTURE", ".jpg");
+    }
+
+    public boolean isSdcardAvailable() throws RemoteException {
+        if (mService == null) {
+            throw new RemoteException("No FileManagement service.");
+        }
+        return mService.checkSdcardAvailable();
     }
 }

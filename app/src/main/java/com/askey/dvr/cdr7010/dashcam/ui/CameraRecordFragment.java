@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -28,6 +29,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
@@ -79,18 +81,34 @@ public class CameraRecordFragment extends Fragment {
             Manifest.permission.READ_PHONE_STATE,
     };
 
-    private BroadcastReceiver mSDMonitor = new BroadcastReceiver() {
+    private BroadcastReceiver mSdAvailableListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Intent.ACTION_MEDIA_MOUNTED)) {
-                Logg.d(TAG, "SD Card MEDIA_MOUNTED");
-                startVideoRecord();
-            } else if (intent.getAction().equals(Intent.ACTION_MEDIA_BAD_REMOVAL)) {
+            if (intent.getAction().equals("com.askey.dvr.cdr7010.dashcam.limit")) {
+                final String ex = intent.getStringExtra("cmd_ex");
+                Logg.e(TAG, "ex: " + ex);
+                if ("show_sdcard_init_success".equals(ex)) {
+                    Logg.d(TAG, "SD Card available");
+                    try {
+                        startVideoRecord();
+                    } catch (Exception e) {
+                        Logg.e(TAG, "start video record fail.");
+                    }
+                }
+            }
+        }
+    };
+
+    private BroadcastReceiver mSdBadRemovalListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_MEDIA_BAD_REMOVAL)) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
                 stopVideoRecord();
             }
         }
     };
+
     private BroadcastReceiver simCardReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -194,10 +212,13 @@ public class CameraRecordFragment extends Fragment {
         mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
         filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
         filter.addDataScheme("file");
-        getActivity().registerReceiver(mSDMonitor, filter);
+        getActivity().registerReceiver(mSdBadRemovalListener, filter);
+
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction("com.askey.dvr.cdr7010.dashcam.limit");
+        getActivity().registerReceiver(mSdAvailableListener, filter2);
 
         final boolean stamp = getRecordStamp();
         final boolean audio = getMicphoneEnable();
@@ -210,14 +231,19 @@ public class CameraRecordFragment extends Fragment {
                 .build();
         mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
 
-        startVideoRecord();
+        try {
+            startVideoRecord();
+        } catch (Exception e) {
+            Logg.e(TAG, "onResume: start video record fail.");
+        }
     }
 
     @Override
     public void onPause() {
         Logg.d(TAG,"onPause");
         stopVideoRecord();
-        getActivity().unregisterReceiver(mSDMonitor);
+        getActivity().unregisterReceiver(mSdAvailableListener);
+        getActivity().unregisterReceiver(mSdBadRemovalListener);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
         LedMananger.getInstance().setLedRecStatus(true,false);
@@ -366,23 +392,25 @@ public class CameraRecordFragment extends Fragment {
         return (on != 0);
     }
 
-    private void startVideoRecord() {
-        if (mMainCam != null) {
-            try {
-                mMainCam.startVideoRecord();
-                if (!getMicphoneEnable()) {
-                    mMainCam.mute();
-                }
-            } catch (IOException e) {
-                Logg.e(TAG, "Fail to start video recording with " + e.getMessage());
-            }
-
-            ContentResolver contentResolver = getActivity().getContentResolver();
-            contentResolver.registerContentObserver(
-                    Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
-                    false,
-                    mMicphoneSettingsObserver);
+    private void startVideoRecord() throws Exception {
+        boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
+        if (!sdcardAvailable) {
+            throw new RuntimeException("sd card unavailable");
         }
+        if (mMainCam == null) {
+            throw new RuntimeException("camera unavailable");
+        }
+
+        mMainCam.startVideoRecord();
+        if (!getMicphoneEnable()) {
+            mMainCam.mute();
+        }
+
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
+                false,
+                mMicphoneSettingsObserver);
     }
 
     private void stopVideoRecord() {
