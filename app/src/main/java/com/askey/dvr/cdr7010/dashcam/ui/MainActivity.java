@@ -2,6 +2,7 @@ package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -76,10 +77,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected Dialog onCreateDialog(int id, Bundle args){
         Logg.d(TAG,"onCreateDialog id="+id);
+        final int dialogMode = id;
+        DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(which == Dialog.BUTTON_POSITIVE){
+                    MainActivity.this.onHandleCommDialogEvent((Dialog)dialog,0,dialogMode);
+                }
+                if(which == Dialog.BUTTON_NEGATIVE){
+                    MainActivity.this.onHandleCommDialogEvent((Dialog)dialog,1,dialogMode);
+                }
+            }
+        };
         switch(id){
             case DIALOG_TYPE_SDCARD:
                 dialog = new CommDialog(this,R.style.dialogNoTitle);
                 ((CommDialog)dialog).setMessage(args.getString("Message"));
+                ((CommDialog)dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
+                ((CommDialog)dialog).setNegativeButtonListener(onClickListener);
+                ((CommDialog)dialog).setPositiveButtonListener(onClickListener);
                 break;
             case DIALOG_TYPE_WARNING:
                 dialog = new WarningDialog(this,R.style.dialogNoTitle);
@@ -88,8 +104,16 @@ public class MainActivity extends AppCompatActivity {
             case DIALOG_TYPE_COMM_TEXT:
                 dialog = new CommDialog(this,R.style.dialogNoTitle);
                 ((CommDialog)dialog).setMessage(args.getString("Message"));
+                ((CommDialog)dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
+                ((CommDialog)dialog).setNegativeButtonListener(onClickListener);
+                ((CommDialog)dialog).setPositiveButtonListener(onClickListener);
                 break;
             case DIALOG_TYPE_COMM_CONFIRM:
+                dialog = new CommDialog(this,R.style.dialogNoTitle);
+                ((CommDialog)dialog).setMessage(args.getString("Message"));
+                ((CommDialog)dialog).setType(CommDialog.TYPE_BUTTON_OK);
+                ((CommDialog)dialog).setNegativeButtonListener(onClickListener);
+                ((CommDialog)dialog).setPositiveButtonListener(onClickListener);
                 break;
             default:
         }
@@ -99,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
     protected  void onPrepareDialog(int id,Dialog dialog,Bundle args){
         super.onPrepareDialog(id,dialog,args);
         dialogType = id;
-        Logg.d(TAG,"onPrepareDialog id="+id);
         if(id == DIALOG_TYPE_SDCARD){
             CommDialog sdCardDialog =(CommDialog)dialog;
             sdCardDialog.setMessage(args.getString("Message"));
@@ -119,6 +142,33 @@ public class MainActivity extends AppCompatActivity {
     }
     public int getDialogType(){
         return dialogType;
+    }
+    public boolean onHandleCommDialogEvent(Dialog dialog,int event,int dialogMode){
+        if(event == 0){
+            switch (dialogMode){
+                case DIALOG_TYPE_SDCARD:
+                    break;
+                case DIALOG_TYPE_COMM_TEXT:
+                    break;
+                case DIALOG_TYPE_COMM_CONFIRM:
+                    break;
+                case DIALOG_TYPE_WARNING:
+                    break;
+            }
+        }
+        if(event == 1){
+            switch (dialogMode){
+                case DIALOG_TYPE_SDCARD:
+                    break;
+                case DIALOG_TYPE_COMM_TEXT:
+                    break;
+                case DIALOG_TYPE_COMM_CONFIRM:
+                    break;
+                case DIALOG_TYPE_WARNING:
+                    break;
+            }
+        }
+        return true;
     }
 
     @Override
