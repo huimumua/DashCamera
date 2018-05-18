@@ -40,8 +40,13 @@
             android:exported="true">
         </activity>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
-            <intent-filter>
+            <intent-filter android:priority="1000" >
                 <action android:name="com.askey.dvr.cdr7010.dashcam.limit"/>
+                <action android:name="action_sdcard_status"/>
+
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.MEDIA_EJECT" />
+                <data android:scheme="file"/>
             </intent-filter>
         </receiver>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.GPSReceiver">

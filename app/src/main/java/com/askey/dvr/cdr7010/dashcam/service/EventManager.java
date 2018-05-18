@@ -107,6 +107,7 @@ public class EventManager {
     }
 
     public void handOutEventInfo(EventInfo eventInfo, long timeStamp){
+        Logg.d(LOG_TAG, "handOutEventInfo: id=" + eventInfo.getId() + ", eventType=" + eventInfo.getEventType() + ", eventName=" + eventInfo.getEventName());
         if(eventInfo.isSupportPopUp()){
             for(EventCallback eventCallback : mPopUpEventCallbackList)
                 eventCallback.onEvent(eventInfo, timeStamp);
