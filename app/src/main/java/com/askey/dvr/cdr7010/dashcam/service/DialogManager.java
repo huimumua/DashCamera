@@ -50,7 +50,7 @@ public class DialogManager{
     }
     public void dismissDialog(int dialogType){
         if(mContext != null && (mContext instanceof Activity)){
-            if(((MainActivity)mContext).isDialogShowing()) {
+            if(((MainActivity)mContext).getDialogType() == dialogType &&((MainActivity)mContext).isDialogShowing()) {
                 ((MainActivity) mContext).dismissDialog(dialogType);
             }
         }

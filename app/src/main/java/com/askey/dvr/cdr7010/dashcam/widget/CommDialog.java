@@ -9,26 +9,26 @@ import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 
-public class SdCardDialog extends Dialog{
+public class CommDialog extends Dialog{
     private TextView messageText;
     private Context mContext;
     private String msg;
-    public SdCardDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
+    public CommDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
         super(context,cancelable,cancelListener);
         mContext =context;
     }
-    public SdCardDialog(Context context,int theme){
+    public CommDialog(Context context, int theme){
         super(context,theme);
         mContext = context;
     }
-    public SdCardDialog(Context context){
+    public CommDialog(Context context){
         super(context);
         mContext = context;
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_sdcard);
+        setContentView(R.layout.dialog_comm);
         android.view.WindowManager.LayoutParams parames = getWindow().getAttributes();
         parames.height = 136;
         parames.width = 248;
