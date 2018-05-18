@@ -86,7 +86,6 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.askey.dvr.cdr7010.dashcam.limit")) {
                 final String ex = intent.getStringExtra("cmd_ex");
-                Logg.e(TAG, "ex: " + ex);
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {

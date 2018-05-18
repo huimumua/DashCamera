@@ -132,7 +132,8 @@ public class Snapshot {
                         fileNames.add(filePath);
                         Logg.d(TAG, "save jpeg: " + filePath);
                     } catch (RemoteException e) {
-                        e.printStackTrace();
+                        Logg.e(TAG, "fail to get file path from FileManager with error: "
+                                + e.getMessage());
                     }
                     decoder.releaseOutputBuffer(outputBufferId, true);
                 }

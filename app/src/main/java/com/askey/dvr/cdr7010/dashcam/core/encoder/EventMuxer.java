@@ -94,13 +94,13 @@ public class EventMuxer implements Runnable{
                 Slice s = eventSlices.get(sliceCount++);
                 if (s != null) {
                     if (mMuxer == null) {
-                        String path = null;
                         try {
-                            path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
+                            String path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
+                            mMuxer = createMuxer(path, eventId, eventTime);
                         } catch (RemoteException e) {
-                            e.printStackTrace();
+                            Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
+                                    + e.getMessage());
                         }
-                        createMuxer(path, eventId, eventTime);
                     }
 
                     if (mFlagTerm) {
@@ -143,9 +143,9 @@ public class EventMuxer implements Runnable{
         Logg.d(LOG_TAG, "EventMuxer thread exit");
     }
 
-    public EventMuxer(@NonNull Context context,
-                      @Nullable final SegmentCallback callback,
-                      Handler handler) {
+    EventMuxer(@NonNull Context context,
+               @Nullable final SegmentCallback callback,
+               Handler handler) {
         mContext = context.getApplicationContext();
         mCallback = callback;
         mHandler = handler;
@@ -184,16 +184,17 @@ public class EventMuxer implements Runnable{
         return mMuxer != null;
     }
 
-    void createMuxer(final String path, final int eventId, final long eventTime) {
+    AndroidMuxer createMuxer(final String path, final int eventId, final long eventTime) {
+        AndroidMuxer muxer = null;
         try {
             if (mCallback != null) {
                 mCallback.segmentStartPrepareSync(eventId, path);
             }
-            mMuxer = new AndroidMuxer(path);
-            mMuxer.addTrack(SAMPLE_TYPE_VIDEO, mVideoFormat);
-            mMuxer.addTrack(SAMPLE_TYPE_AUDIO, mAudioFormat);
-            mMuxer.setMaxDuration(15 * 1000L);
-            mMuxer.start(eventTime);
+            muxer = new AndroidMuxer(path);
+            muxer.addTrack(SAMPLE_TYPE_VIDEO, mVideoFormat);
+            muxer.addTrack(SAMPLE_TYPE_AUDIO, mAudioFormat);
+            muxer.setMaxDuration(15 * 1000L);
+            muxer.start(eventTime);
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -205,9 +206,10 @@ public class EventMuxer implements Runnable{
         } catch (IOException e) {
             Logg.e(LOG_TAG, "Fail to create muxer");
         }
+        return muxer;
     }
 
-    void writeSampleDataFromSlice(String slice) {
+    private void writeSampleDataFromSlice(String slice) {
         File file = new File(slice);
         RandomAccessFile fin = null;
         try {
@@ -260,7 +262,7 @@ public class EventMuxer implements Runnable{
     }
 
     private static class Slice {
-        public Slice(int eventId, long time, String file) {
+        Slice(int eventId, long time, String file) {
             this.eventId = eventId;
             this.eventTime = time;
             this.file = file;

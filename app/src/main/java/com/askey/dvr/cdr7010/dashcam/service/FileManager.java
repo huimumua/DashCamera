@@ -74,7 +74,11 @@ public class FileManager {
         synchronized (DATETIME_FORMAT) {
             fileName = DATETIME_FORMAT.format(new Date(timeStamp)) + ext;
         }
-        return mService.openSdcard(fileName, fileType);
+        final String path = mService.openSdcard(fileName, fileType);
+        if (path == null) {
+            throw new RemoteException("null file path from FileManagement service.");
+        }
+        return path;
     }
 
     public String getFilePathForNormal(long timeStamp) throws RemoteException {

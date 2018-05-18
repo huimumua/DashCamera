@@ -386,9 +386,6 @@ public class MediaMuxerWrapper {
                 if (muxer == null) {
                     try {
                         String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
-                        if (path == null)
-                            return;
-
                         muxer = new AndroidMuxer(path);
                         if (parent.mSegmentCallback != null) {
                             parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
@@ -406,7 +403,11 @@ public class MediaMuxerWrapper {
                                 }
                             }
                         });
-                    } catch (IOException | RemoteException e) {
+                    } catch (RemoteException e) {
+                        Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
+                                + e.getMessage());
+                        return;
+                    } catch (IOException e) {
                         Logg.e(LOG_TAG, "Fail to create mp4 muxer with exception: " + e.getMessage());
                         return;
                     }
