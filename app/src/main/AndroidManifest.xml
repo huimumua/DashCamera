@@ -59,7 +59,16 @@
             <intent-filter>
                 <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT"/>
                 <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.CommunicationReceiver">
+            <intent-filter>
                 <action android:name="com.jvckenwood.communication.VOIP_CALL"/>
+                <action android:name="com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE"/>
+                <action android:name="com.jvckenwood.communication.TRIPID_UPDATE_NOTIFICATION"/>
+                <action android:name="com.jvckenwood.communication.WEATHER_ALERT_RESPONSE"/>
+                <action android:name="com.jvckenwood.communication.TRIPID_VERSIONUP_RESPONSE"/>
+                <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE"/>
             </intent-filter>
         </receiver>
     </application>
