@@ -91,7 +91,7 @@ public class CameraRecordFragment extends Fragment {
                     try {
                         startVideoRecord();
                     } catch (Exception e) {
-                        Logg.e(TAG, "start video record fail.");
+                        Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
                 }
             }
@@ -233,7 +233,7 @@ public class CameraRecordFragment extends Fragment {
         try {
             startVideoRecord();
         } catch (Exception e) {
-            Logg.e(TAG, "onResume: start video record fail.");
+            Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
         }
     }
 
