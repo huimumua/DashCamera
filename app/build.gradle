@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         singnedconfig {
-            keyAlias 'kenwood'
-            keyPassword 'android'
-            storeFile file('../tools/debug.keystore')
-            storePassword 'android'
+            storeFile file(PLATFORM_STORE_FILE)
+            keyAlias PLATFORM_KEY_ALIAS
+            keyPassword PLATFORM_KEY_PASSWORD
+            storePassword PLATFORM_STORE_PASSWORD
         }
     }
 
