@@ -76,10 +76,13 @@ public class AndroidMuxer {
         if (format == null)
             return;
 
-        if (type == MediaMuxerWrapper.SAMPLE_TYPE_AUDIO)
-            mAudIdx = mMuxer.addTrack(format);
-        else
-            mVidIdx = mMuxer.addTrack(format);
+        try {
+            if (type == MediaMuxerWrapper.SAMPLE_TYPE_AUDIO)
+                mAudIdx = mMuxer.addTrack(format);
+            else
+                mVidIdx = mMuxer.addTrack(format);
+        } catch (Exception e) {
+        }
     }
 
     void writeSampleData(int type, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo) {
@@ -102,21 +105,31 @@ public class AndroidMuxer {
             mFrameCount++;
         }
         int idx = (type == MediaMuxerWrapper.SAMPLE_TYPE_AUDIO) ? mAudIdx : mVidIdx;
-        mMuxer.writeSampleData(idx, byteBuf, bufferInfo);
+        try {
+            mMuxer.writeSampleData(idx, byteBuf, bufferInfo);
+        } catch (Exception e) {
+        }
     }
 
     private void writeAudioSilenceFrame(long ptsUs) {
         ByteBuffer buffer = ByteBuffer.wrap(AAC_MONO_SILENCE_FRAME_WITH_SIZE);
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
         bufferInfo.set(0, AAC_MONO_SILENCE_FRAME_WITH_SIZE.length, ptsUs, 0);
-        mMuxer.writeSampleData(mAudIdx, buffer, bufferInfo);
+        try {
+            mMuxer.writeSampleData(mAudIdx, buffer, bufferInfo);
+        } catch (Exception e) {
+        }
     }
 
     void start(long time) {
-        if (!mStarted) {
-            mMuxer.start();
-            mStartTimeMs = time;
-            mStarted = true;
+        try {
+            if (!mStarted) {
+                mMuxer.start();
+                mStartTimeMs = time;
+                mStarted = true;
+            }
+        } catch (Exception e) {
+            Logg.e(LOG_TAG, "fail with exception: " + e.getMessage());
         }
     }
 
