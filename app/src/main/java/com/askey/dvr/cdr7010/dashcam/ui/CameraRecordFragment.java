@@ -116,6 +116,16 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
+    private BroadcastReceiver mShutdownReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
+                Logg.d(TAG, "BroadcastReceiver: Intent.ACTION_SHUTDOWN");
+                stopVideoRecord();
+            }
+        }
+    };
+
     DashCam.StateCallback mDashCallback = new DashCam.StateCallback() {
         @Override
         public void onStarted() {
@@ -219,6 +229,8 @@ public class CameraRecordFragment extends Fragment {
         filter2.addAction("com.askey.dvr.cdr7010.dashcam.limit");
         getActivity().registerReceiver(mSdAvailableListener, filter2);
 
+        getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
+
         final boolean stamp = getRecordStamp();
         final boolean audio = getMicphoneEnable();
         RecordConfig mainConfig = RecordConfig.builder()
@@ -243,6 +255,7 @@ public class CameraRecordFragment extends Fragment {
         stopVideoRecord();
         getActivity().unregisterReceiver(mSdAvailableListener);
         getActivity().unregisterReceiver(mSdBadRemovalListener);
+        getActivity().unregisterReceiver(mShutdownReceiver);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
         LedMananger.getInstance().setLedRecStatus(true,false);
