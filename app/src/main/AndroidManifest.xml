@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- 定位权限 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -26,7 +27,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.FullScreen">
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.notice.NoticeActivity"
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +38,9 @@
             </intent-filter>
         </activity>
         <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
+            android:exported="true">
+        </activity>
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity"
             android:exported="true">
         </activity>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">

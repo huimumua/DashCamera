@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.askey.dvr.cdr7010.dashcam.ui.MainActivity;
+import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 
 public class DialogManager{
     private static final String TAG = DialogManager.class.getSimpleName();
@@ -29,36 +29,47 @@ public class DialogManager{
     public void unregisterContext(){
         mContext = null;
     }
+    public void showDialog(int dialogType,String message,boolean resize){
+        if(mContext != null && (mContext instanceof Activity)){
+            Bundle bundle = new Bundle();
+            bundle.putString("Message",message);
+            if(resize){
+                bundle.putInt("Width",300);
+                bundle.putInt("Height",136);
+            }
+            ((DialogActivity)mContext).showDialog(dialogType,bundle);
+        }
+    }
     public void showDialog(int dialogType,int eventType){
         int priority = EventManager.getInstance().getEventInfoByEventType(eventType).getPriority();
         String message = EventManager.getInstance().getEventInfoByEventType(eventType).getEventDescription();
         if(mContext != null && (mContext instanceof Activity)){
-            if(((MainActivity)mContext).isDialogShowing()){
+            if(((DialogActivity)mContext).isDialogShowing()){
                 if(priority < lastPriority){
-                    ((MainActivity)mContext).dismissDialog();
+                    ((DialogActivity)mContext).dismissDialog();
                     Bundle bundle = new Bundle();
                     bundle.putString("Message",message);
-                    ((MainActivity)mContext).showDialog(dialogType,bundle);
+                    ((DialogActivity)mContext).showDialog(dialogType,bundle);
                     lastPriority = priority;
                 }
             }else{
                 Bundle bundle = new Bundle();
                 bundle.putString("Message",message);
-                ((MainActivity)mContext).showDialog(dialogType,bundle);
+                ((DialogActivity)mContext).showDialog(dialogType,bundle);
             }
         }
     }
     public void dismissDialog(int dialogType){
         if(mContext != null && (mContext instanceof Activity)){
-            if(((MainActivity)mContext).getDialogType() == dialogType &&((MainActivity)mContext).isDialogShowing()) {
-                ((MainActivity) mContext).dismissDialog(dialogType);
+            if(((DialogActivity)mContext).getDialogType() == dialogType &&((DialogActivity)mContext).isDialogShowing()) {
+                ((DialogActivity) mContext).dismissDialog(dialogType);
             }
         }
     }
     public void dismissDialog(){
         if(mContext != null && (mContext instanceof Activity)){
-            if(((MainActivity)mContext).isDialogShowing()) {
-                ((MainActivity) mContext).dismissDialog();
+            if(((DialogActivity)mContext).isDialogShowing()) {
+                ((DialogActivity) mContext).dismissDialog();
             }
         }
     }

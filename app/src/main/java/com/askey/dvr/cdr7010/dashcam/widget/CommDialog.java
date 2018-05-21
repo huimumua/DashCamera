@@ -28,6 +28,8 @@ public class CommDialog extends Dialog{
     private  String BUTTON_CANCEL_MSG = Const.STR_BUTTON_CANCEL;
     private OnClickListener mPositiveButtonListener;
     private OnClickListener mNegativeButtonListener;
+    private int width = 0;
+    private int height = 0;
 
     public CommDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
         super(context,cancelable,cancelListener);
@@ -46,8 +48,8 @@ public class CommDialog extends Dialog{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_comm);
         android.view.WindowManager.LayoutParams parames = getWindow().getAttributes();
-        parames.height = 136;
-        parames.width = 248;
+        parames.height = height ==0 ? 136 : height;
+        parames.width = width == 0 ? 248 : width;
         getWindow().setAttributes(parames);
         setCanceledOnTouchOutside(false);
         initViews();
@@ -127,6 +129,12 @@ public class CommDialog extends Dialog{
     }
     public void setButtonCancelMsg(String msg){
         BUTTON_CANCEL_MSG = msg;
+    }
+    public void setDialogWidth(int width){
+        this.width =width;
+    }
+    public void setDialogHeight(int height){
+        this.height = height;
     }
     public void setPositiveButtonListener(final OnClickListener onClickListener){
         this.mPositiveButtonListener = onClickListener;
