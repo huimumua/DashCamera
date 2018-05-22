@@ -108,7 +108,31 @@ public class MainActivity extends DialogActivity {
     private EventManager.EventCallback ledEventCallback = new EventManager.EventCallback(){
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp){
-
+            switch(eventInfo.getEventType()){
+                case Event.CONTINUOUS_RECORDING_START:
+                case Event.EVENT_RECORDING_START:
+                    LedMananger.getInstance().setLedRecStatus(true,true);
+                    break;
+                case Event.CONTINUOUS_RECORDING_END:
+                case Event.EVENT_RECORDING_END:
+                case Event.RECORDING_STOP:
+                case Event.HIGH_TEMPERATURE_THRESHOLD:
+                    LedMananger.getInstance().setLedRecStatus(true,false);
+                    break;
+                case Event.SDCARD_UNMOUNTED:
+                case Event.SDCARD_UNFORMATTED:
+                case Event.SDCARD_UNSUPPORTED:
+                case Event.SDCARD_ERROR:
+                    LedMananger.getInstance().setLedRecStatus(false,false);
+                    break;
+                case Event.AUDIO_RECORDING_ON:
+                    LedMananger.getInstance().setLedMicStatus(true);
+                    break;
+                case Event.AUDIO_RECORDING_OFF:
+                    LedMananger.getInstance().setLedMicStatus(false);
+                    break;
+                default:
+            }
 
         }
     };
