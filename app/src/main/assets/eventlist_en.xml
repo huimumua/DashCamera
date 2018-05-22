@@ -445,7 +445,7 @@
     <event>
         <id>35</id>
         <priority>2</priority>
-        <event_type></event_type>
+        <event_type>28</event_type>
         <dialog_type>2</dialog_type>
         <name>pedestrian collision</name>
         <description>Pedestrian alert</description>
