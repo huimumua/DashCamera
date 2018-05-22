@@ -11,10 +11,13 @@ import android.view.KeyEvent;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
@@ -41,6 +44,10 @@ public class MainActivity extends DialogActivity {
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+        EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
+        EventManager.getInstance().registIconEventCallback(iconEventCallback);
+        EventManager.getInstance().registLedEventCallback(ledEventCallback);
+        EventManager.getInstance().registTtsEventCallback(ttsEventCallback);
     }
 
     @Override
@@ -71,6 +78,10 @@ public class MainActivity extends DialogActivity {
 
     @Override
     public void onDestroy(){
+        EventManager.getInstance().unRegistPopUpEventCallback(popUpEventCallback);
+        EventManager.getInstance().unRegistIconEventCallback(iconEventCallback);
+        EventManager.getInstance().unRegistLedEventCallback(ledEventCallback);
+        EventManager.getInstance().unRegistTtsEventCallback(ttsEventCallback);
         super.onDestroy();
     }
 
@@ -82,4 +93,29 @@ public class MainActivity extends DialogActivity {
         EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
         return;
     }
+    private EventManager.EventCallback popUpEventCallback = new EventManager.EventCallback(){
+        @Override
+       public void onEvent(EventInfo eventInfo, long timeStamp){
+             DialogManager.getIntance().showDialog(eventInfo.getEventType());
+        }
+    };
+    private EventManager.EventCallback iconEventCallback = new EventManager.EventCallback(){
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp){
+
+        }
+    };
+    private EventManager.EventCallback ledEventCallback = new EventManager.EventCallback(){
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp){
+
+
+        }
+    };
+    private EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback(){
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp){
+
+        }
+    };
 }

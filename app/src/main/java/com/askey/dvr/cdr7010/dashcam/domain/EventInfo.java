@@ -7,6 +7,7 @@ public class EventInfo implements Serializable{
     private int id = 0;
     private int priority = -1;
     private int eventType = -1;
+    private int dialogType = -1;
     private String eventName;
     private boolean isSupportPopUp;
     private boolean isSupportIcon;
@@ -38,6 +39,18 @@ public class EventInfo implements Serializable{
      */
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+    /**
+     * @return the dialogType
+     */
+    public int getDialogType() {
+        return dialogType;
+    }
+    /**
+     * @param dialogType the dialogType to set
+     */
+    public void setDialogType(int dialogType) {
+        this.dialogType = dialogType;
     }
     /**
      * @return the eventType
@@ -137,7 +150,8 @@ public class EventInfo implements Serializable{
     }
     @Override
     public String toString(){
-        return "EventInfo[ id="+id+",priority="+priority+",eventType="+ eventType +",eventName="+eventName
+        return "EventInfo[ id="+id+",priority="+priority+",eventType="+ eventType +",dialogType="+dialogType
+                +",eventName="+eventName
                 +",eventDescription="+eventDescription+",voiceGuidence="+voiceGuidence
                 +",isSupportPopUp="+isSupportPopUp+",isSupportIcon="+isSupportIcon
                 +",isSupportLed="+isSupportLed+",isSupportSpeech="+isSupportSpeech

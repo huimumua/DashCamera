@@ -4,6 +4,7 @@
         <id>1</id>
         <priority>20</priority>
         <event_type>104</event_type>
+        <dialog_type></dialog_type>
         <name>常時録画開始</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -16,6 +17,7 @@
         <id>2</id>
         <priority>20</priority>
         <event_type>105</event_type>
+        <dialog_type></dialog_type>
         <name>常時録画停止</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -28,6 +30,7 @@
         <id>3</id>
         <priority>20</priority>
         <event_type>123</event_type>
+        <dialog_type>3</dialog_type>
         <name>イベント記録開始</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -40,6 +43,7 @@
         <id>4</id>
         <priority>20</priority>
         <event_type>124</event_type>
+        <dialog_type></dialog_type>
         <name>イベント記録停止</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -52,6 +56,7 @@
         <id>5</id>
         <priority>20</priority>
         <event_type></event_type>
+        <dialog_type></dialog_type>
         <name>ファイル削除</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -64,6 +69,7 @@
         <id>6</id>
         <priority>0</priority>
         <event_type></event_type>
+        <dialog_type></dialog_type>
         <name>再生異常停止</name>
         <description></description>
         <voice_guidence>再生を中止しました</voice_guidence>
@@ -76,6 +82,7 @@
         <id>7</id>
         <priority>20</priority>
         <event_type>106</event_type>
+        <dialog_type></dialog_type>
         <name>音声記録ON</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -88,6 +95,7 @@
         <id>8</id>
         <priority>20</priority>
         <event_type>107</event_type>
+        <dialog_type></dialog_type>
         <name>音声記録OFF</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -100,6 +108,7 @@
         <id>9</id>
         <priority>0</priority>
         <event_type>0</event_type>
+        <dialog_type>2</dialog_type>
         <name>衝撃検知</name>
         <description></description>
         <voice_guidence>衝撃を検知しました</voice_guidence>
@@ -112,6 +121,7 @@
         <id>10</id>
         <priority>9</priority>
         <event_type>1</event_type>
+        <dialog_type>2</dialog_type>
         <name>走行時間が2時間を超えたことが 検知された</name>
         <description></description>
         <voice_guidence>走行時間が２時間を超えました。休憩されてはいかがでしょうか。</voice_guidence>
@@ -124,6 +134,7 @@
         <id>11</id>
         <priority>5</priority>
         <event_type>9</event_type>
+        <dialog_type>2</dialog_type>
         <name>急加速が5回検知された</name>
         <description></description>
         <voice_guidence>急加速が増えています。ご注意ください。</voice_guidence>
@@ -136,6 +147,7 @@
         <id>12</id>
         <priority>5</priority>
         <event_type>10</event_type>
+        <dialog_type>2</dialog_type>
         <name>急減速が5回検知された</name>
         <description></description>
         <voice_guidence>急減速が増えています。ご注意ください。</voice_guidence>
@@ -148,6 +160,7 @@
         <id>13</id>
         <priority>10</priority>
         <event_type>2</event_type>
+        <dialog_type>2</dialog_type>
         <name>急ハンドルが検知された</name>
         <description></description>
         <voice_guidence>急ハンドルが増えています。ご注意ください。</voice_guidence>
@@ -160,6 +173,7 @@
         <id>14</id>
         <priority>11</priority>
         <event_type>3</event_type>
+        <dialog_type>2</dialog_type>
         <name>ハンドルのふらつきが検知された</name>
         <description></description>
         <voice_guidence>ふらつきが多いようです。ご注意ください。</voice_guidence>
@@ -172,6 +186,7 @@
         <id>15</id>
         <priority>1</priority>
         <event_type>11</event_type>
+        <dialog_type>2</dialog_type>
         <name>逆走していることが検知された(逆走検知)</name>
         <description></description>
         <voice_guidence>逆走していませんか。進行方向を確認してください。</voice_guidence>
@@ -184,6 +199,7 @@
         <id>16</id>
         <priority>6</priority>
         <event_type>13</event_type>
+        <dialog_type>2</dialog_type>
         <name>設定した指定区域を逸脱した(圏外検知)</name>
         <description></description>
         <voice_guidence>指定区域外に出ました。</voice_guidence>
@@ -196,6 +212,7 @@
         <id>17</id>
         <priority>4</priority>
         <event_type>14</event_type>
+        <dialog_type>2</dialog_type>
         <name>事故多発地点を走行することが検知された(事故多発)</name>
         <description>事故多発地点注意</description>
         <voice_guidence>この先、事故多発地点です。ご注意ください。</voice_guidence>
@@ -208,6 +225,7 @@
         <id>18</id>
         <priority>7</priority>
         <event_type>12</event_type>
+        <dialog_type>2</dialog_type>
         <name>制限速度30kmの地域を走行することが検知された(ゾーン30)</name>
         <description>最高速度30キロ制限地域注意</description>
         <voice_guidence>この先、最高速度30キロ制限地域です。ご注意ください。</voice_guidence>
@@ -220,6 +238,7 @@
         <id>19</id>
         <priority>8</priority>
         <event_type>15</event_type>
+        <dialog_type>2</dialog_type>
         <name>一時停止標識無視(一時不停止)</name>
         <description>一時停止注意</description>
         <voice_guidence>一時停止していますか。ご注意ください</voice_guidence>
@@ -232,6 +251,7 @@
         <id>20</id>
         <priority>14</priority>
         <event_type>16</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート1(動物注意(鹿))</name>
         <description>動物注意</description>
         <voice_guidence>この地域で鹿との衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -244,6 +264,7 @@
         <id>21</id>
         <priority>14</priority>
         <event_type>17</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート2(動物注意(狸))</name>
         <description>動物注意</description>
         <voice_guidence>この地域で狸との衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -256,6 +277,7 @@
         <id>22</id>
         <priority>14</priority>
         <event_type>18</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート3(動物注意(アマミノクロウサギ))</name>
         <description>動物注意</description>
         <voice_guidence>この地域でアマミノクロウサギとの衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -268,6 +290,7 @@
         <id>23</id>
         <priority>14</priority>
         <event_type>19</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート4(動物注意(ヤンバルクイナ))</name>
         <description>動物注意</description>
         <voice_guidence>この地域でヤンバルクイナとの衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -280,6 +303,7 @@
         <id>24</id>
         <priority>14</priority>
         <event_type>20</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート5(動物注意(ヤマネコ))</name>
         <description>動物注意</description>
         <voice_guidence>この地域でヤマネコとの衝突事故が発生しています。ご注意ください</voice_guidence>
@@ -292,6 +316,7 @@
         <id>25</id>
         <priority>14</priority>
         <event_type>21</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート6(動物注意(汎用動物))</name>
         <description>動物注意</description>
         <voice_guidence>この地域で動物との衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -304,6 +329,7 @@
         <id>26</id>
         <priority>14</priority>
         <event_type>22</event_type>
+        <dialog_type>2</dialog_type>
         <name>動物注意アラート7(動物注意(希少動物))</name>
         <description>動物注意</description>
         <voice_guidence>この地域で希少動物との衝突事故が発生しています。ご注意ください。</voice_guidence>
@@ -316,6 +342,7 @@
         <id>27</id>
         <priority>12</priority>
         <event_type>26</event_type>
+        <dialog_type>2</dialog_type>
         <name>気象アラート1(気象(警報))</name>
         <description>気象警報注意</description>
         <voice_guidence>この地区に警報が発表されました。今後の情報に十分注意してください。</voice_guidence>
@@ -328,6 +355,7 @@
         <id>28</id>
         <priority>12</priority>
         <event_type>25</event_type>
+        <dialog_type>2</dialog_type>
         <name>気象アラート2(気象(特別警報))</name>
         <description>気象警報注意</description>
         <voice_guidence>この地区に特別警報が発表されました。少しでも運転に不安がある場合は運転を控えましょう。</voice_guidence>
@@ -340,6 +368,7 @@
         <id>29</id>
         <priority>12</priority>
         <event_type>24</event_type>
+        <dialog_type>2</dialog_type>
         <name>気象アラート3(気象(台風))</name>
         <description>気象警報注意</description>
         <voice_guidence>今後、この地区に台風が近づく可能性があります。今後の情報に十分注意してください。</voice_guidence>
@@ -352,6 +381,7 @@
         <id>30</id>
         <priority>12</priority>
         <event_type>23</event_type>
+        <dialog_type>2</dialog_type>
         <name>気象アラート4(気象(台風最接近))</name>
         <description>気象警報注意</description>
         <voice_guidence>この地区に台風が接近してきました。少しでも運転に不安がある場合は運転を控えましょう。</voice_guidence>
@@ -364,6 +394,7 @@
         <id>31</id>
         <priority>2</priority>
         <event_type>4</event_type>
+        <dialog_type>2</dialog_type>
         <name>前方衝突注意</name>
         <description>衝突注意</description>
         <voice_guidence>前方衝突の危険があります</voice_guidence>
@@ -376,6 +407,7 @@
         <id>32</id>
         <priority>2</priority>
         <event_type>5</event_type>
+        <dialog_type>2</dialog_type>
         <name>車線はみ出し注意_右</name>
         <description>右車線注意</description>
         <voice_guidence>右車線に注意してください</voice_guidence>
@@ -388,6 +420,7 @@
         <id>33</id>
         <priority>2</priority>
         <event_type>6</event_type>
+        <dialog_type>2</dialog_type>
         <name>車線はみ出し注意_左</name>
         <description>左車線注意</description>
         <voice_guidence>左車線に注意してください</voice_guidence>
@@ -400,6 +433,7 @@
         <id>34</id>
         <priority>3</priority>
         <event_type>7</event_type>
+        <dialog_type>2</dialog_type>
         <name>発進遅れ注意</name>
         <description>前方車発進</description>
         <voice_guidence>前方を確認してください</voice_guidence>
@@ -412,6 +446,7 @@
         <id>35</id>
         <priority>2</priority>
         <event_type></event_type>
+        <dialog_type>2</dialog_type>
         <name>歩行者衝突注意 (OTA対応)</name>
         <description>歩行者衝突注意</description>
         <voice_guidence>衝突の危険があります</voice_guidence>
@@ -424,6 +459,7 @@
         <id>36</id>
         <priority>15</priority>
         <event_type>108</event_type>
+        <dialog_type>4</dialog_type>
         <name>GPS測位</name>
         <description>GPSを測位しました</description>
         <voice_guidence>GPSを測位しました</voice_guidence>
@@ -436,6 +472,7 @@
         <id>37</id>
         <priority>15</priority>
         <event_type>109</event_type>
+        <dialog_type>4</dialog_type>
         <name>GPS測位エラー</name>
         <description>GPSが見つかりませんでした</description>
         <voice_guidence>GPSが見つかりませんでした</voice_guidence>
@@ -448,6 +485,7 @@
         <id>38</id>
         <priority>0</priority>
         <event_type>110</event_type>
+        <dialog_type>1</dialog_type>
         <name>SDカード未挿入</name>
         <description>SDカードがありません</description>
         <voice_guidence>SDカードがありません</voice_guidence>
@@ -460,6 +498,7 @@
         <id>39</id>
         <priority>0</priority>
         <event_type>111</event_type>
+        <dialog_type>1</dialog_type>
         <name>SDカード不正/未フォーマット</name>
         <description>SDカードの初期化が必要です</description>
         <voice_guidence>SDカードの初期化が必要です</voice_guidence>
@@ -472,6 +511,7 @@
         <id>40</id>
         <priority>0</priority>
         <event_type>112</event_type>
+        <dialog_type>1</dialog_type>
         <name>SDカード非対応</name>
         <description>非対応のSDカードです</description>
         <voice_guidence>非対応のSDカードです</voice_guidence>
@@ -484,6 +524,7 @@
         <id>41</id>
         <priority>0</priority>
         <event_type>113</event_type>
+        <dialog_type>1</dialog_type>
         <name>SDカード異常/認識不可</name>
         <description>SDカードエラーです</description>
         <voice_guidence>SDカードエラーです</voice_guidence>
@@ -496,6 +537,7 @@
         <id>42</id>
         <priority>0</priority>
         <event_type>114</event_type>
+        <dialog_type>3</dialog_type>
         <name>異常検出による録画停止</name>
         <description>録画を中止しました</description>
         <voice_guidence>録画を中止しました</voice_guidence>
@@ -508,6 +550,7 @@
         <id>43</id>
         <priority>0</priority>
         <event_type>115</event_type>
+        <dialog_type>3</dialog_type>
         <name>ファイル数オーバーによるイベント記録の失敗</name>
         <description>イベント記録失敗（ファイル上限</description>
         <voice_guidence></voice_guidence>
@@ -520,6 +563,7 @@
         <id>44</id>
         <priority>0</priority>
         <event_type>116</event_type>
+        <dialog_type>1</dialog_type>
         <name>ＳＤカードの空き容量不足</name>
         <description>SDカードの空きがありません</description>
         <voice_guidence></voice_guidence>
@@ -532,6 +576,7 @@
         <id>45</id>
         <priority>6</priority>
         <event_type>117</event_type>
+        <dialog_type>4</dialog_type>
         <name>高温閾値Lv1に達した場合</name>
         <description>高温のためモニター画面を消灯します</description>
         <voice_guidence></voice_guidence>
@@ -544,6 +589,7 @@
         <id>46</id>
         <priority>0</priority>
         <event_type>118</event_type>
+        <dialog_type>4</dialog_type>
         <name>高温閾値Lv2に達した場合</name>
         <description>高温のため録画を中止しました</description>
         <voice_guidence></voice_guidence>
@@ -556,6 +602,7 @@
         <id>47</id>
         <priority>0</priority>
         <event_type>119</event_type>
+        <dialog_type>4</dialog_type>
         <name>高温閾値Lv3に達した場合</name>
         <description>高温のため電源を切ります</description>
         <voice_guidence></voice_guidence>
@@ -568,6 +615,7 @@
         <id>48</id>
         <priority>0</priority>
         <event_type>120</event_type>
+        <dialog_type>2</dialog_type>
         <name>緊急通報_ユーザー</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -580,6 +628,7 @@
         <id>49</id>
         <priority>0</priority>
         <event_type>27</event_type>
+        <dialog_type>2</dialog_type>
         <name>緊急通報_サーバー </name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -592,6 +641,7 @@
         <id>50</id>
         <priority>20</priority>
         <event_type></event_type>
+        <dialog_type>4</dialog_type>
         <name>手動送信</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -604,6 +654,7 @@
         <id>51</id>
         <priority>20</priority>
         <event_type>100</event_type>
+        <dialog_type>3</dialog_type>
         <name>お知らせ</name>
         <description>お知らせ</description>
         <voice_guidence></voice_guidence>
@@ -616,6 +667,7 @@
         <id>52</id>
         <priority>20</priority>
         <event_type>101</event_type>
+        <dialog_type>3</dialog_type>
         <name>運転レポート</name>
         <description>運転レポート</description>
         <voice_guidence></voice_guidence>
@@ -628,6 +680,7 @@
         <id>53</id>
         <priority>20</priority>
         <event_type>102</event_type>
+        <dialog_type>3</dialog_type>
         <name>月間運転レポート</name>
         <description>月間運転レポート</description>
         <voice_guidence></voice_guidence>
@@ -640,6 +693,7 @@
         <id>54</id>
         <priority>20</priority>
         <event_type>103</event_type>
+        <dialog_type>3</dialog_type>
         <name>運転前アドバイス</name>
         <description>運転前アドバイス</description>
         <voice_guidence></voice_guidence>
@@ -652,6 +706,7 @@
         <id>55</id>
         <priority>1</priority>
         <event_type></event_type>
+        <dialog_type>3</dialog_type>
         <name>ユーザー切り替え_サーバー要求</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -664,6 +719,7 @@
         <id>56</id>
         <priority>20</priority>
         <event_type>121</event_type>
+        <dialog_type></dialog_type>
         <name>ユーザー切り替え_ユーザー操作</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -676,6 +732,7 @@
         <id>57</id>
         <priority></priority>
         <event_type></event_type>
+        <dialog_type></dialog_type>
         <name>設定変更_サーバー要求</name>
         <description></description>
         <voice_guidence></voice_guidence>
@@ -688,6 +745,7 @@
         <id>58</id>
         <priority></priority>
         <event_type>122</event_type>
+        <dialog_type></dialog_type>
         <name>設定変更_ユーザー操作</name>
         <description></description>
         <voice_guidence></voice_guidence>

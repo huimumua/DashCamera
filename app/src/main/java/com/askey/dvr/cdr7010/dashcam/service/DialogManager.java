@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
+import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 
 public class DialogManager{
     private static final String TAG = DialogManager.class.getSimpleName();
@@ -40,10 +41,12 @@ public class DialogManager{
             ((DialogActivity)mContext).showDialog(dialogType,bundle);
         }
     }
-    public void showDialog(int dialogType,int eventType){
-        int priority = EventManager.getInstance().getEventInfoByEventType(eventType).getPriority();
-        String message = EventManager.getInstance().getEventInfoByEventType(eventType).getEventDescription();
-        if(mContext != null && (mContext instanceof Activity)){
+    public void showDialog(int eventType){
+        EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+        int priority = eventInfo.getPriority();
+        int dialogType = eventInfo.getDialogType();
+        String message = eventInfo.getEventDescription();
+        if(mContext != null && (mContext instanceof Activity) && dialogType > 0){
             if(((DialogActivity)mContext).isDialogShowing()){
                 if(priority < lastPriority){
                     ((DialogActivity)mContext).dismissDialog();

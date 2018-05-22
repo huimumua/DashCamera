@@ -53,6 +53,13 @@ public class GetEventInfoHandler extends DefaultHandler{
                 eventInfo.setEventType(-1);
             }
         }
+        if(qName.equals("dialog_type")){
+            try {
+                eventInfo.setDialogType(Integer.parseInt(value));
+            }catch(Exception e){
+                eventInfo.setDialogType(-1);
+            }
+        }
         if(qName.equals("name")){
             eventInfo.setEventName(value);
         }
