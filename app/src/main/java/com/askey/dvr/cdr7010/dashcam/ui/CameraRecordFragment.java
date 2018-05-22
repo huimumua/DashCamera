@@ -162,7 +162,7 @@ public class CameraRecordFragment extends Fragment {
             LedMananger.getInstance().setLedRecStatus(false,false);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR));
-
+            EventManager.getInstance().handOutEventInfo(114);
         }
 
         @Override
@@ -171,8 +171,13 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT :
                          UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
-
-
+            if (on) { // event recording
+                EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
+                EventManager.getInstance().handOutEventInfo(123); // Event Recording start
+            } else { // Continuous recording
+                EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+                EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
+            }
         }
     };
 
@@ -453,8 +458,10 @@ public class CameraRecordFragment extends Fragment {
                     public void run() {
                         if (getMicphoneEnable()) {
                             mMainCam.demute();
+                            EventManager.getInstance().handOutEventInfo(106); //Audio recording ON
                         } else {
                             mMainCam.mute();
+                            EventManager.getInstance().handOutEventInfo(107); //Audio recording OFF
                         }
                     }
                 });
