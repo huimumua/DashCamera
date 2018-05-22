@@ -49,13 +49,10 @@ public class TTSManager{
             cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
         }
     }
-    public void ttsEventStart(String message,int eventType){
+    public void ttsEventStart(String message,int eventType,int priority){
         if(instance != null && cReaderSpeaker != null){
             cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
         }
-    }
-    public void ttsStart(int eventId){
-
     }
     public void ttsResume(){
         if(instance != null && cReaderSpeaker != null){
