@@ -19,12 +19,11 @@ import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
-import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
-import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.FOTAFileStatus.FOTA_FILE_EXIST;
@@ -141,7 +140,7 @@ public class OSDView extends View {
     }
 
     private void initViews(){
-        timeRectF = new RectF(0,214,84,240);
+        timeRectF = new RectF(11,214,95,240);
         timePaint = new Paint();
         timePaint.setTextSize(14);
         timePaint.setColor(Color.WHITE);
@@ -221,13 +220,22 @@ public class OSDView extends View {
     }
     private String updateClock() {
         //更新时间
+        int hour;
+        int minute;
         Calendar calendar = new GregorianCalendar();
         Date trialTime = new Date();
         calendar.setTime(trialTime);
-        int hour= calendar.get(Calendar.HOUR);
-        int minute= calendar.get(Calendar.MINUTE);
-        int am_pm = calendar.get(Calendar.AM_PM);
-        timeString=(hour < 10 ? "0" + hour : hour)+":"+(minute < 10 ? "0" + minute : minute)+ (am_pm == 0 ?" AM":" PM");
+        String language = Locale.getDefault().getLanguage();
+        if(language.equals("en") || language.equals("us")){
+            hour= calendar.get(Calendar.HOUR_OF_DAY);
+            minute= calendar.get(Calendar.MINUTE);
+            timeString=(hour < 10 ? "0" + hour : hour)+":"+(minute < 10 ? "0" + minute : minute);
+        }else if(language.equals("ja")){
+            hour= calendar.get(Calendar.HOUR);
+            minute= calendar.get(Calendar.MINUTE);
+            int am_pm = calendar.get(Calendar.AM_PM);
+            timeString=(hour < 10 ? "0" + hour : hour)+":"+(minute < 10 ? "0" + minute : minute)+ (am_pm == 0 ?" AM":" PM");
+        }
         return timeString;
     }
     private Handler handler = new Handler(){
@@ -291,7 +299,7 @@ public class OSDView extends View {
         timePaint.getTextBounds(timeText,0,timeText.length(),strRect);
         Paint.FontMetrics fontMetrics = timePaint.getFontMetrics();
         float baseline = (height - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
-        canvas.drawText(timeText,x + width / 2 - strRect.width() / 2, y + baseline, timePaint);
+        canvas.drawText(timeText,x , y + baseline, timePaint);
     }
     private void drawUserInfo(Canvas canvas,String userInfo) {
         RectF rcItem = null;
