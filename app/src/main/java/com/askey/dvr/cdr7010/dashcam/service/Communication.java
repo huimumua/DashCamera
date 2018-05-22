@@ -155,7 +155,40 @@ public class Communication {
         @Override
         public void reportRealTimeAlert(int alertID) throws RemoteException {
             Logg.d(LOG_TAG, "reportRealTimeAlert: alertID=" + alertID);
+            int eventType = -1;
+            long timeStamp = System.currentTimeMillis();
+            if(alertID == 1){
+                eventType = 11;
+            }else if(alertID == 2){
+                eventType = 14;
+            }else if(alertID == 3){
+                eventType = 15;
+            }else if(alertID == 4){
+                eventType = 12;
+            }else if(alertID == 5){
+                eventType = 13;
+            }else if(alertID == 20){
+                eventType = 16;
+            }else if(alertID == 21){
+                eventType = 17;
+            }else if(alertID == 22){
+                eventType = 18;
+            }else if(alertID == 23){
+                eventType = 19;
+            }else if(alertID == 24){
+                eventType = 20;
+            }else if(alertID == 25){
+                eventType = 21;
+            }else if(alertID == 26){
+                eventType = 22;
+            }
 
+            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+            if(eventInfo == null){
+                Logg.e(LOG_TAG, "reportDrivingAdvice: can't find EventInfo, eventType=" + eventType);
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
         }
 
         @Override

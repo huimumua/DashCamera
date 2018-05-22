@@ -106,6 +106,17 @@ public class EventManager {
         mTtsEventCallbackList.remove(callback);
     }
 
+    public void handOutEventInfo(int eventType){
+        Logg.d(LOG_TAG, "handOutEventInfo: eventType=" + eventType);
+        long timeStamp = System.currentTimeMillis();
+        EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+        if(eventInfo == null){
+            Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
+            return;
+        }
+        handOutEventInfo(eventInfo, timeStamp);
+    }
+
     public void handOutEventInfo(EventInfo eventInfo, long timeStamp){
         Logg.d(LOG_TAG, "handOutEventInfo: id=" + eventInfo.getId() + ", eventType=" + eventInfo.getEventType() + ", eventName=" + eventInfo.getEventName());
         if(eventInfo.isSupportPopUp()){
@@ -125,9 +136,33 @@ public class EventManager {
                 eventCallback.onEvent(eventInfo, timeStamp);
         }
     }
+//
+//    /**
+//     * id为51、52、53、54由handOutCommunicationInfo发出
+//     */
+//    public void handOutCommunicationInfo(EventInfo eventInfo, int oos, String response){
+//        Logg.d(LOG_TAG, "handOutCommunicationInfo: id=" + eventInfo.getId() + ", eventType=" + eventInfo.getEventType() + ", eventName=" + eventInfo.getEventName());
+//        if(eventInfo.isSupportPopUp()){
+//            for(EventCallback eventCallback : mPopUpEventCallbackList)
+//                eventCallback.onCommunication(eventInfo, oos, response);
+//        }
+//        if(eventInfo.isSupportIcon()){
+//            for(EventCallback eventCallback : mIconEventCallbackList)
+//                eventCallback.onCommunication(eventInfo, oos, response);
+//        }
+//        if(eventInfo.isSupportLed()){
+//            for(EventCallback eventCallback : mLedEventCallbackList)
+//                eventCallback.onCommunication(eventInfo, oos, response);
+//        }
+//        if(eventInfo.isSupportSpeech()){
+//            for(EventCallback eventCallback : mTtsEventCallbackList)
+//                eventCallback.onCommunication(eventInfo, oos, response);
+//        }
+//    }
 
     public interface EventCallback{
         void onEvent(EventInfo eventInfo, long timeStamp);
+//        void onCommunication(EventInfo eventInfo, int oos, String response);
     }
 
 }
