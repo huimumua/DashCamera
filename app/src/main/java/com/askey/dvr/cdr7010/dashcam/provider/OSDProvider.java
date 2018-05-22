@@ -64,6 +64,9 @@ public class OSDProvider{
     public UIElementStatusEnum.SimCardStatus getSimCardStatus(){
         return GlobalLogic.getInstance().getSimCardStatus();
     }
+    public String getUserInfo(){
+        return GlobalLogic.getInstance().getUserInfo();
+    }
 
 
 }

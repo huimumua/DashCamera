@@ -22,6 +22,7 @@ public class GlobalLogic{
     private static GlobalLogic globalLogic;
     private Context mContext;
     private boolean isInRecording;
+    private String userInfo;
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
@@ -99,6 +100,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.SimCardStatus getSimCardStatus(){
         return simCardStatus;
+    }
+    public void setUserInfo(String userInfo){
+        this.userInfo = userInfo;
+    }
+    public String getUserInfo(){
+        return userInfo;
     }
 
     public boolean putInt(String key, int value){

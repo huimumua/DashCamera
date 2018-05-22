@@ -9,8 +9,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -18,6 +20,7 @@ import android.view.View;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -77,9 +80,12 @@ public class OSDView extends View {
     private RectF  secondCameraRectF;
     private RectF  gpsRectF;
     private RectF  simCardRectF;
+    private RectF  userInfoRectF;
     private Paint  timePaint;
+    private Paint  drawPaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
+    private int scrollingSpeed;
     private Bitmap time_bg;
     private Bitmap continuous_recording ;
     private Bitmap event_recording;
@@ -107,6 +113,12 @@ public class OSDView extends View {
     private Bitmap gps_signal_strength_none;
     private Bitmap simcard_error;
     private OSDProvider osdProvider;
+    private int startDrawX=0;
+    private int textWidth,textHeight;
+    private boolean isOutSide;
+    private int spacing;
+    private boolean isJudge=true;
+    private int baseY=0;
 
     public OSDView(Context context){
         super(context);
@@ -190,6 +202,15 @@ public class OSDView extends View {
         gps_signal_strength_not_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength);
         gps_signal_strength_none = decodeResource(getResources(), R.drawable.icon_gps_strength_none);
         gps_signal_strength_fixes = decodeResource(getResources(), R.drawable.icon_gps_strength_max);
+
+        userInfoRectF = new RectF(85,8,192,25);
+        drawPaint = new Paint();
+        drawPaint.setTextSize(14);
+        drawPaint.setColor(Color.WHITE);
+        drawPaint.setAntiAlias(true);
+        startDrawX = (int)userInfoRectF.left;
+        spacing=30;
+        scrollingSpeed =500;
     }
     private Bitmap decodeResource(Resources resources, int id){
         TypedValue value = new TypedValue();
@@ -271,6 +292,45 @@ public class OSDView extends View {
         Paint.FontMetrics fontMetrics = timePaint.getFontMetrics();
         float baseline = (height - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
         canvas.drawText(timeText,x + width / 2 - strRect.width() / 2, y + baseline, timePaint);
+    }
+    private void drawUserInfo(Canvas canvas,String userInfo) {
+        RectF rcItem = null;
+        canvas.save();
+        canvas.clipRect(userInfoRectF);
+        canvas.drawColor(Color.GRAY);
+        Paint.FontMetrics fontMetrics = drawPaint.getFontMetrics();
+        int txtMaxHeight = (int)Math.ceil(fontMetrics.bottom -fontMetrics.top);
+        rcItem = new RectF(0,0,userInfoRectF.width(),userInfoRectF.height());
+
+        Rect rect = new Rect();
+        drawPaint.getTextBounds(userInfo, 0, userInfo.length(), rect);
+        textWidth = rect.width();
+        textHeight = rect.height();
+        int measureWidth = (int) rcItem.width();
+        if (textWidth >= measureWidth) {
+            isOutSide = true;
+        } else {
+            isOutSide = false;
+        }
+        if (isJudge) {
+            float baseline = (rcItem.height() - rect.height() - txtMaxHeight) * 1/2;
+            baseY = (int)(rcItem.bottom- fontMetrics.bottom - baseline) ;
+        }
+        if (isOutSide) {
+            if (startDrawX < -textWidth) {
+                startDrawX = spacing;
+            }
+            int outSide = startDrawX;
+            if (outSide < -(textWidth - rcItem.width())) {
+                canvas.drawText(userInfo, textWidth + outSide + spacing, baseY, drawPaint);
+            }
+            canvas.drawText(userInfo, startDrawX, baseY, drawPaint);
+            startDrawX -= 5;
+        } else {
+           canvas.drawText(userInfo,  (int)userInfoRectF.left, baseY, drawPaint);
+        }
+       // postInvalidateDelayed(scrollingSpeed);
+        canvas.restore();
     }
 
 
@@ -363,5 +423,9 @@ public class OSDView extends View {
         canvas.drawBitmap(volume_up,null, volumeUpRectF, null);
         canvas.drawBitmap(menu,null, menuRectF, null);
         canvas.drawBitmap(volume_down,null, volumeDownRectF, null);
+        String userInfo = osdProvider.getUserInfo();
+        if(!TextUtils.isEmpty(userInfo)) {
+            drawUserInfo(canvas, userInfo);
+        }
     }
 }
