@@ -8,6 +8,7 @@ public class TTSManager{
     private static final String TAG = TTSManager.class.getSimpleName();
     private volatile static TTSManager instance;
     private CReaderSpeaker cReaderSpeaker;
+    private int lastPriority = Integer.MAX_VALUE;
 
 
     private TTSManager(){
@@ -50,9 +51,21 @@ public class TTSManager{
         }
     }
     public void ttsEventStart(String message,int eventType,int priority){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
+        if(ttsIsSpeaking()){
+            if(priority <= lastPriority){
+                ttsCancel();
+                if(instance != null && cReaderSpeaker != null){
+                    cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
+                }
+                lastPriority = priority;
+            }
+        }else{
+            if(instance != null && cReaderSpeaker != null){
+                cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
+                lastPriority = priority;
+            }
         }
+
     }
     public void ttsResume(){
         if(instance != null && cReaderSpeaker != null){

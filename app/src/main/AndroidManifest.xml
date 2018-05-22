@@ -43,6 +43,13 @@
         <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity"
             android:exported="true">
         </activity>
+        <service
+            android:name=".service.TTSSevice"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="service.TTSSevice" />
+            </intent-filter>
+        </service>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
             <intent-filter android:priority="1000" >
                 <action android:name="com.askey.dvr.cdr7010.dashcam.limit"/>

@@ -18,6 +18,7 @@ import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
+import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
@@ -139,7 +140,8 @@ public class MainActivity extends DialogActivity {
     private EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback(){
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp){
-
+            TTSManager.getInstance().ttsEventStart(eventInfo.getVoiceGuidence(),eventInfo.getEventType(),
+                    eventInfo.getPriority());
         }
     };
 }

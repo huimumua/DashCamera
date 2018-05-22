@@ -142,6 +142,7 @@ public class CameraRecordFragment extends Fragment {
                     }
                 });
             }
+            LedMananger.getInstance().setLedRecStatus(true,true);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
         }
@@ -149,6 +150,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStoped() {
             Logg.d(TAG, "DashState: onStoped");
+            LedMananger.getInstance().setLedRecStatus(true,false);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
 
@@ -263,6 +265,7 @@ public class CameraRecordFragment extends Fragment {
         getActivity().unregisterReceiver(mShutdownReceiver);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
+        LedMananger.getInstance().setLedRecStatus(true,false);
         super.onPause();
     }
 
