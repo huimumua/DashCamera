@@ -49,7 +49,7 @@ public class DialogManager{
             String message = eventInfo.getEventDescription();
             if (mContext != null && (mContext instanceof Activity) && dialogType > 0) {
                 if (((DialogActivity) mContext).isDialogShowing()) {
-                    if (priority < lastPriority) {
+                    if (priority <= lastPriority) {
                         ((DialogActivity) mContext).dismissDialog();
                         Bundle bundle = new Bundle();
                         bundle.putString("Message", message);

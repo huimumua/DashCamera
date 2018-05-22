@@ -111,19 +111,19 @@ public class MainActivity extends DialogActivity {
             switch(eventInfo.getEventType()){
                 case Event.CONTINUOUS_RECORDING_START:
                 case Event.EVENT_RECORDING_START:
-                    LedMananger.getInstance().setLedRecStatus(true,true);
+                    LedMananger.getInstance().setLedRecStatus(true,true,eventInfo.getPriority());
                     break;
                 case Event.CONTINUOUS_RECORDING_END:
                 case Event.EVENT_RECORDING_END:
                 case Event.RECORDING_STOP:
                 case Event.HIGH_TEMPERATURE_THRESHOLD:
-                    LedMananger.getInstance().setLedRecStatus(true,false);
+                    LedMananger.getInstance().setLedRecStatus(true,false,eventInfo.getPriority());
                     break;
                 case Event.SDCARD_UNMOUNTED:
                 case Event.SDCARD_UNFORMATTED:
                 case Event.SDCARD_UNSUPPORTED:
                 case Event.SDCARD_ERROR:
-                    LedMananger.getInstance().setLedRecStatus(false,false);
+                    LedMananger.getInstance().setLedRecStatus(false,false,eventInfo.getPriority());
                     break;
                 case Event.AUDIO_RECORDING_ON:
                     LedMananger.getInstance().setLedMicStatus(true);

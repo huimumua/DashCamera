@@ -55,7 +55,6 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         if (getArguments() != null) {
             param = getArguments().getString("param");
         }
-        LedMananger.getInstance().setLedRecStatus(true,false);
         LedMananger.getInstance().setLedMicStatus(false);
         super.onCreate(savedInstanceState);
     }

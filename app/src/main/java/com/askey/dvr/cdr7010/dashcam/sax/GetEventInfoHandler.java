@@ -43,7 +43,7 @@ public class GetEventInfoHandler extends DefaultHandler{
             try {
                 eventInfo.setPriority(Integer.parseInt(value));
             }catch(Exception e){
-                eventInfo.setPriority(-1);
+                eventInfo.setPriority(Integer.MAX_VALUE);
             }
         }
         if(qName.equals("event_type")){

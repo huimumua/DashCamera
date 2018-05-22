@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class EventInfo implements Serializable{
     private static final long serialVersionUID = 1L;
     private int id = 0;
-    private int priority = -1;
+    private int priority = Integer.MAX_VALUE;
     private int eventType = -1;
     private int dialogType = -1;
     private String eventName;
