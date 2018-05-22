@@ -43,22 +43,24 @@ public class DialogManager{
     }
     public void showDialog(int eventType){
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        int priority = eventInfo.getPriority();
-        int dialogType = eventInfo.getDialogType();
-        String message = eventInfo.getEventDescription();
-        if(mContext != null && (mContext instanceof Activity) && dialogType > 0){
-            if(((DialogActivity)mContext).isDialogShowing()){
-                if(priority < lastPriority){
-                    ((DialogActivity)mContext).dismissDialog();
+        if(eventInfo !=null) {
+            int priority = eventInfo.getPriority();
+            int dialogType = eventInfo.getDialogType();
+            String message = eventInfo.getEventDescription();
+            if (mContext != null && (mContext instanceof Activity) && dialogType > 0) {
+                if (((DialogActivity) mContext).isDialogShowing()) {
+                    if (priority < lastPriority) {
+                        ((DialogActivity) mContext).dismissDialog();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Message", message);
+                        ((DialogActivity) mContext).showDialog(dialogType, bundle);
+                        lastPriority = priority;
+                    }
+                } else {
                     Bundle bundle = new Bundle();
-                    bundle.putString("Message",message);
-                    ((DialogActivity)mContext).showDialog(dialogType,bundle);
-                    lastPriority = priority;
+                    bundle.putString("Message", message);
+                    ((DialogActivity) mContext).showDialog(dialogType, bundle);
                 }
-            }else{
-                Bundle bundle = new Bundle();
-                bundle.putString("Message",message);
-                ((DialogActivity)mContext).showDialog(dialogType,bundle);
             }
         }
     }

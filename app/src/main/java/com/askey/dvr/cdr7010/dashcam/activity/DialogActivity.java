@@ -80,6 +80,7 @@ public class DialogActivity extends AppCompatActivity {
     protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
         super.onPrepareDialog(id, dialog, args);
         dialogType = id;
+        this.dialog = dialog;
         if (id == DIALOG_TYPE_SDCARD) {
             CommDialog sdCardDialog = (CommDialog) dialog;
             sdCardDialog.setMessage(args.getString("Message"));
