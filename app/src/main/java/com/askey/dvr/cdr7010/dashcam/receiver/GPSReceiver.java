@@ -6,16 +6,15 @@ import android.content.Intent;
 import android.location.LocationManager;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
-import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NOT_FIXES;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NOT_FIXES;
 
 public class GPSReceiver extends BroadcastReceiver{
     private static final String TAG = GPSReceiver.class.getSimpleName();
@@ -60,25 +59,12 @@ public class GPSReceiver extends BroadcastReceiver{
 
     private void handoutLocationMessage(){
         int eventType = 108; //defined to 108 in assets
-        long timeStamp = System.currentTimeMillis();
-        EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+         EventManager.getInstance().handOutEventInfo(eventType);
     }
 
     private void handoutLocationMessageError(){
         int eventType = 109; //defined to 109 in assets
-        long timeStamp = System.currentTimeMillis();
-        EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+        EventManager.getInstance().handOutEventInfo(eventType);
     }
-
-    private boolean checkEventInfo(EventInfo eventInfo, int eventType){
-        if(eventInfo == null){
-            Logg.e(TAG, "checkEventInfo: can't find EventInfo, eventType=" + eventType);
-            return false;
-        }
-        return true;
-    }
-
 
 }

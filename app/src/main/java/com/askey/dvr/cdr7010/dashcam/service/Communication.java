@@ -8,7 +8,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
-import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.ICommunication;
 import com.jvckenwood.communication.ICommunicationCallback;
@@ -89,13 +88,7 @@ public class Communication {
             //id 52, 運転レポート Driving report, eventType define 101
             Logg.d(LOG_TAG, "reportDrivingReport: ");
             int eventType = 101;
-            long timeStamp = System.currentTimeMillis();
-            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(eventInfo == null){
-                Logg.e(LOG_TAG, "reportDrivingReport: can't find EventInfo, eventType=" + eventType);
-                return;
-            }
-            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
@@ -103,13 +96,7 @@ public class Communication {
             //id 53, 月間運転レポート Monthly driving report, eventType define 102
             Logg.d(LOG_TAG, "reportManthlyDrivingReport: ");
             int eventType = 102;
-            long timeStamp = System.currentTimeMillis();
-            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(eventInfo == null){
-                Logg.e(LOG_TAG, "reportManthlyDrivingReport: can't find EventInfo, eventType=" + eventType);
-                return;
-            }
-            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
@@ -117,13 +104,7 @@ public class Communication {
             //id 51, お知らせ Notice, eventType define 100
             Logg.d(LOG_TAG, "reportServerNotifocation: ");
             int eventType = 100;
-            long timeStamp = System.currentTimeMillis();
-            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(eventInfo == null){
-                Logg.e(LOG_TAG, "reportServerNotifocation: can't find EventInfo, eventType=" + eventType);
-                return;
-            }
-            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
@@ -131,13 +112,7 @@ public class Communication {
             //id 54, 運転前アドバイス Advice before driving, eventType define 103
             Logg.d(LOG_TAG, "reportDrivingAdvice: ");
             int eventType = 103;
-            long timeStamp = System.currentTimeMillis();
-            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(eventInfo == null){
-                Logg.e(LOG_TAG, "reportDrivingAdvice: can't find EventInfo, eventType=" + eventType);
-                return;
-            }
-            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
@@ -156,7 +131,6 @@ public class Communication {
         public void reportRealTimeAlert(int alertID) throws RemoteException {
             Logg.d(LOG_TAG, "reportRealTimeAlert: alertID=" + alertID);
             int eventType = -1;
-            long timeStamp = System.currentTimeMillis();
             if(alertID == 1){
                 eventType = 11;
             }else if(alertID == 2){
@@ -183,12 +157,7 @@ public class Communication {
                 eventType = 22;
             }
 
-            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(eventInfo == null){
-                Logg.e(LOG_TAG, "reportDrivingAdvice: can't find EventInfo, eventType=" + eventType);
-                return;
-            }
-            EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override

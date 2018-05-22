@@ -5,12 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
-import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
-import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
@@ -83,16 +81,6 @@ public class RecordingFileReceiver extends BroadcastReceiver{
     }
 
     private void handOutEventInfo(int eventType){
-        long timeStamp = System.currentTimeMillis();
-        EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
-    }
-
-    private boolean checkEventInfo(EventInfo eventInfo, int eventType){
-        if(eventInfo == null){
-            Logg.e(TAG, "checkEventInfo: can't find EventInfo, eventType=" + eventType);
-            return false;
-        }
-        return true;
+        EventManager.getInstance().handOutEventInfo(eventType);
     }
 }
