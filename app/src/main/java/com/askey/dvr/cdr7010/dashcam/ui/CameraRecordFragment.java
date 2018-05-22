@@ -23,11 +23,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
@@ -325,7 +327,8 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_GPS){
             GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType)messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SDCARD){
-            GlobalLogic.getInstance().setSDCardInitStatus((UIElementStatusEnum.SDCardInitStatus)messageEvent.getData());
+            GlobalLogic.getInstance().setSDCardStatus((UIElementStatusEnum.SDcardStatusType)messageEvent.getData());
+            handleSdCardDialog((UIElementStatusEnum.SDcardStatusType)messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC){
             GlobalLogic.getInstance().setMicStatus(getMicphoneEnable() ? MIC_ON : MIC_OFF);
             LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
@@ -337,6 +340,14 @@ public class CameraRecordFragment extends Fragment {
         osdView.invalidateView();
     }
 
+    private void handleSdCardDialog(UIElementStatusEnum.SDcardStatusType sDcardStatus){
+        switch(sDcardStatus){
+            case SDCARD_MOUNTED:
+            case SDCARD_REMOVED:
+                DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_SDCARD);
+            default:
+        }
+    }
     private final PhoneStateListener mListener = new PhoneStateListener(){
         @Override
         public void onSignalStrengthsChanged(SignalStrength sStrength) {

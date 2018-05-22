@@ -14,7 +14,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_SUCCESS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
 
@@ -30,7 +30,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
-    private UIElementStatusEnum.SDCardInitStatus sdCardInitStatus = INIT_SUCCESS;
+    private UIElementStatusEnum.SDcardStatusType sdCardStatus = SDCARD_REMOVED;
     private UIElementStatusEnum.FOTAFileStatus fotaFileStatus = FOTA_FILE_NOT_EXIST;
     private UIElementStatusEnum.SimCardStatus simCardStatus = SIM_STATE_ABSENT;
     private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
@@ -83,11 +83,11 @@ public class GlobalLogic{
     public UIElementStatusEnum.GPSStatusType getGpsStatus(){
         return gpsStatus;
     }
-    public void setSDCardInitStatus(UIElementStatusEnum.SDCardInitStatus sdCardInitStatus){
-        this.sdCardInitStatus = sdCardInitStatus;
+    public void setSDCardStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus){
+        this.sdCardStatus = sdCardStatus;
     }
-    public UIElementStatusEnum.SDCardInitStatus getSDCardInitStatus(){
-        return sdCardInitStatus;
+    public UIElementStatusEnum.SDcardStatusType getSDCardStatus(){
+        return sdCardStatus;
     }
     public void setFOTAFileStatus(UIElementStatusEnum.FOTAFileStatus fotaFileStatus){
         this.fotaFileStatus = fotaFileStatus;

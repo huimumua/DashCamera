@@ -43,17 +43,11 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_STOP;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDCardInitStatus.INIT_FAIL;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_BAD_REMOVAL;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_CHECKING;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_MOUNTED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_MOUNTED_READ_ONLY;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_NOFS;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_REMOVED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_SHARED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNKNOWN;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTABLE;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.MEDIA_UNMOUNTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNRECOGNIZABLE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_NETWORK_LOCKED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PIN_REQUIRED;
@@ -384,27 +378,22 @@ public class OSDView extends View {
         if(osdProvider.getParkingRecordingLimitStatus() == PARKING_RECORDING_REACH_LIMIT_CONDITION){
             canvas.drawBitmap(parking_recording_limit,null, parkingRecordingLimitRectF, null);
         }
-        if(osdProvider.getSDCardInitStatus() == INIT_FAIL){
+        if(osdProvider.getSDCardStatus() == SDCARD_INIT_FAIL){
             canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
         } else if((osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS
                 || osdProvider.getRecordingStatus() == RECORDING_EVENT)
-                && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
+                && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS){
             canvas.drawBitmap(sdcard_recording,null,sdCardRectF,null);
-        }else if((osdProvider.getRecordingStatus() == RECORDING_STOP && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED)
-                || osdProvider.getSDcardStatusType() == MEDIA_CHECKING){
+        }else if((osdProvider.getRecordingStatus() == RECORDING_STOP && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS)){
             canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
-        }else if(osdProvider.getRecordingStatus() == RECORDING_UNKNOWN && osdProvider.getSDcardStatusType() == MEDIA_MOUNTED){
-            canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
-        }else if(osdProvider.getSDcardStatusType() == MEDIA_MOUNTED_READ_ONLY
-                ||osdProvider.getSDcardStatusType() == MEDIA_SHARED
-                ||osdProvider.getSDcardStatusType() == MEDIA_BAD_REMOVAL
-                ||osdProvider.getSDcardStatusType() == MEDIA_NOFS
-                ||osdProvider.getSDcardStatusType() == MEDIA_UNMOUNTABLE
-                ||osdProvider.getSDcardStatusType() == MEDIA_UNMOUNTED
-                ||osdProvider.getSDcardStatusType() == MEDIA_UNKNOWN
+        }else if(osdProvider.getRecordingStatus() == RECORDING_UNKNOWN && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS){
+            canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
+        }else if(osdProvider.getSDCardStatus() == SDCARD_INIT_FAIL
+                ||osdProvider.getSDCardStatus() == SDCARD_UNRECOGNIZABLE
+                ||osdProvider.getSDCardStatus() == SDCARD_UNSUPPORTED
                 ){
             canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
-        } else if(osdProvider.getSDcardStatusType() == MEDIA_REMOVED ){
+        } else if(osdProvider.getSDCardStatus() == SDCARD_REMOVED ){
             canvas.drawBitmap(sdcard_not_found,null,sdCardRectF,null);
         }
         if(osdProvider.getFotaFileStatus() == FOTA_FILE_EXIST) {

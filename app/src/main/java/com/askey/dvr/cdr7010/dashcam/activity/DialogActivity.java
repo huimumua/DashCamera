@@ -84,6 +84,18 @@ public class DialogActivity extends AppCompatActivity {
             CommDialog sdCardDialog = (CommDialog) dialog;
             sdCardDialog.setMessage(args.getString("Message"));
         }
+        if(id == DIALOG_TYPE_WARNING){
+            WarningDialog warningDialog = (WarningDialog)dialog;
+            warningDialog.setMessage(args.getString("Message"));
+        }
+        if(id == DIALOG_TYPE_COMM_TEXT){
+            CommDialog sdCardDialog = (CommDialog) dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
+        if(id == DIALOG_TYPE_COMM_CONFIRM){
+            CommDialog sdCardDialog = (CommDialog) dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
     }
 
     public boolean isDialogShowing() {
