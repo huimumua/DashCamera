@@ -9,6 +9,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
@@ -23,7 +24,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
 
 public class RecordingFileReceiver extends BroadcastReceiver{
-    private static final String TAG = RecordingFileReceiver.class.getSimpleName();
+    private static final String LOG_TAG = "RecordingFileReceiver";
+
     public static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
     public static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
 
@@ -50,6 +52,7 @@ public class RecordingFileReceiver extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, final Intent intent){
         String action = intent.getAction();
+        Logg.d(LOG_TAG, "action=" + action);
         if(action.equals(ACTION_SDCARD_LIMT)){
             String cmd_ex = intent.getStringExtra("cmd_ex");
             if(CMD_SHOW_REACH_EVENT_FILE_LIMIT.equals(cmd_ex)){

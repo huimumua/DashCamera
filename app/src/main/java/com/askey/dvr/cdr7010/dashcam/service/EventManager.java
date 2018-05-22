@@ -1,11 +1,16 @@
 package com.askey.dvr.cdr7010.dashcam.service;
 
+import android.content.ContentResolver;
 import android.content.res.AssetManager;
+import android.database.ContentObserver;
+import android.os.Handler;
+import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.parser.sax.GetEventInfoSAXParser;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.platform.AskeySettings;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,12 +29,44 @@ public class EventManager {
     private List<EventCallback> mLedEventCallbackList;
     private List<EventCallback> mTtsEventCallbackList;
 
+    private ContentObserver mMicPhoneSettingsObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (getMicPhoneEnable()) {
+                int eventType = 106;
+                EventManager.getInstance().handOutEventInfo(eventType);
+            } else {
+                int eventType = 107;
+                EventManager.getInstance().handOutEventInfo(eventType);
+            }
+            super.onChange(selfChange);
+        }
+    };
+
+    private boolean getMicPhoneEnable() {
+        ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
+        int on = 1;
+        try {
+            on = Settings.Global.getInt(contentResolver, AskeySettings.Global.RECSET_VOICE_RECORD);
+        } catch (Settings.SettingNotFoundException e) {
+            Logg.e(LOG_TAG, "SettingNotFoundException MIC");
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.RECSET_VOICE_RECORD, 1);
+        }
+        return (on != 0);
+    }
+
     private EventManager() {
         assets = DashCamApplication.getAppContext().getAssets();
         mPopUpEventCallbackList = Collections.synchronizedList(new ArrayList<EventCallback>());
         mIconEventCallbackList = Collections.synchronizedList(new ArrayList<EventCallback>());
         mLedEventCallbackList = Collections.synchronizedList(new ArrayList<EventCallback>());
         mTtsEventCallbackList = Collections.synchronizedList(new ArrayList<EventCallback>());
+
+        ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
+        contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
+                false,
+                mMicPhoneSettingsObserver);
     }
 
     public static EventManager getInstance() {
