@@ -459,7 +459,7 @@
         <id>36</id>
         <priority>15</priority>
         <event_type>108</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>GPS測位</name>
         <description>GPSを測位しました</description>
         <voice_guidence>GPSを測位しました</voice_guidence>
@@ -472,7 +472,7 @@
         <id>37</id>
         <priority>15</priority>
         <event_type>109</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>GPS測位エラー</name>
         <description>GPSが見つかりませんでした</description>
         <voice_guidence>GPSが見つかりませんでした</voice_guidence>

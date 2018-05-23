@@ -1,5 +1,9 @@
 package com.askey.dvr.cdr7010.dashcam.domain;
 public final class Event{
+   public static final int NOTICE_START = 100;
+   public static final int DRIVING_REPORT =101;
+   public static final int MONTHLY_DRIVING_REPORT =102;
+   public static final int AdDVICE_BEFORE_DRIVING =103;
    public static final int CONTINUOUS_RECORDING_START = 104;
    public static final int CONTINUOUS_RECORDING_END =105;
    public static final int AUDIO_RECORDING_ON = 106;
@@ -10,9 +14,13 @@ public final class Event{
    public static final int SDCARD_ERROR = 113;
    public static final int RECORDING_STOP = 114;
    public static final int RECORDING_FAILED =115;
-    public static final int HIGH_TEMPERATURE_THRESHOLD = 118;
+   public static final int HIGH_TEMPERATURE_THRESHOLD_LV1 = 117;
+   public static final int HIGH_TEMPERATURE_THRESHOLD_LV2 = 118;
+   public static final int HIGH_TEMPERATURE_THRESHOLD_LV3 = 118;
    public static final int EVENT_RECORDING_START = 123;
    public static final int EVENT_RECORDING_END =124;
+   public static final int GPS_LOCATION_INFORMATION = 108;
+   public static final int GPS_LOCATION_INFORMATION_ERROR = 109;
 
 
    public static final class EventCode {

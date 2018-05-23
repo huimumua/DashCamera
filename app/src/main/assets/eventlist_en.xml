@@ -459,7 +459,7 @@
         <id>36</id>
         <priority>15</priority>
         <event_type>108</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>location information</name>
         <description>GPS detecting</description>
         <voice_guidence></voice_guidence>
@@ -472,7 +472,7 @@
         <id>37</id>
         <priority>15</priority>
         <event_type>109</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>location information error</name>
         <description>GPS detecting error</description>
         <voice_guidence></voice_guidence>

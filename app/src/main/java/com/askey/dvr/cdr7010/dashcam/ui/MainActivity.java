@@ -117,7 +117,7 @@ public class MainActivity extends DialogActivity {
                 case Event.CONTINUOUS_RECORDING_END:
                 case Event.EVENT_RECORDING_END:
                 case Event.RECORDING_STOP:
-                case Event.HIGH_TEMPERATURE_THRESHOLD:
+                case Event.HIGH_TEMPERATURE_THRESHOLD_LV2:
                     LedMananger.getInstance().setLedRecStatus(true,false,eventInfo.getPriority());
                     break;
                 case Event.SDCARD_UNMOUNTED:

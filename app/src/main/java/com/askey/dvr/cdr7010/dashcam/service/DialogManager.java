@@ -92,8 +92,15 @@ public class DialogManager{
     }
     private void delayCancelDialogDisplay(int eventType,int dialogType){
         switch(eventType){
-            case Event.EVENT_RECORDING_START:
+            case Event.NOTICE_START:
+            case Event.DRIVING_REPORT:
+            case Event.MONTHLY_DRIVING_REPORT:
+            case Event.AdDVICE_BEFORE_DRIVING:
+            case Event.GPS_LOCATION_INFORMATION:
+            case Event.GPS_LOCATION_INFORMATION_ERROR:
             case Event.RECORDING_FAILED:
+            case Event.HIGH_TEMPERATURE_THRESHOLD_LV1:
+            case Event.EVENT_RECORDING_START:
                 delayHideDialogDisplay(DELAY_TIME,dialogType);
                 break;
             default:
