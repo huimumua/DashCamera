@@ -1,5 +1,5 @@
 // ITTSAidlInterface.aidl
-package com.askey.dvr.cdr7010.dashcam.server;
+package com.askey.dvr.cdr7010.dashcam;
 
 interface ITTSAidlInterface {
 

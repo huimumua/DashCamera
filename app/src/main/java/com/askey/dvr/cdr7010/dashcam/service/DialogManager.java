@@ -60,6 +60,7 @@ public class DialogManager{
                     Bundle bundle = new Bundle();
                     bundle.putString("Message", message);
                     ((DialogActivity) mContext).showDialog(dialogType, bundle);
+                    lastPriority = priority;
                 }
             }
         }

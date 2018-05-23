@@ -6,7 +6,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 
-import com.askey.dvr.cdr7010.dashcam.server.ITTSAidlInterface;
+import com.askey.dvr.cdr7010.dashcam.ITTSAidlInterface;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class TTSSevice extends Service {
