@@ -537,7 +537,7 @@
         <id>42</id>
         <priority>0</priority>
         <event_type>114</event_type>
-        <dialog_type>3</dialog_type>
+        <dialog_type>5</dialog_type>
         <name>Stop recording by detecting abnormality</name>
         <description>Stop recording</description>
         <voice_guidence></voice_guidence>
@@ -576,7 +576,7 @@
         <id>45</id>
         <priority>6</priority>
         <event_type>117</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>High temperature threshold Lv 1</name>
         <description>Monitor will be off for overheat</description>
         <voice_guidence></voice_guidence>
@@ -589,7 +589,7 @@
         <id>46</id>
         <priority>0</priority>
         <event_type>118</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>5</dialog_type>
         <name>High temperature threshold Lv 2</name>
         <description>Stop recording for overheat</description>
         <voice_guidence></voice_guidence>
@@ -602,7 +602,7 @@
         <id>47</id>
         <priority>0</priority>
         <event_type>119</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>High temperature threshold Lv 3</name>
         <description>Poweroff for overheat</description>
         <voice_guidence></voice_guidence>

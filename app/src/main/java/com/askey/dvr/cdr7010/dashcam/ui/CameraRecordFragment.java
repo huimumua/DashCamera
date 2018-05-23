@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -65,6 +66,7 @@ public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
     private DashCam mMainCam;
     private OSDView osdView;
+    private Handler mHandler;
     private TelephonyManager mTelephonyManager;
     private UIElementStatusEnum.LTEStatusType lteLevel;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
@@ -146,7 +148,13 @@ public class CameraRecordFragment extends Fragment {
             }
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
-            EventManager.getInstance().handOutEventInfo(104);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    EventManager.getInstance().handOutEventInfo(104);
+                }
+            });
+
         }
 
         @Override
@@ -162,22 +170,34 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onError");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR));
-            EventManager.getInstance().handOutEventInfo(114);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    EventManager.getInstance().handOutEventInfo(114);
+                    }
+            });
+
         }
 
         @Override
-        public void onEventStateChanged(boolean on) {
+        public void onEventStateChanged(final boolean on) {
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT :
                          UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
-            if (on) { // event recording
-                EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
-                EventManager.getInstance().handOutEventInfo(123); // Event Recording start
-            } else { // Continuous recording
-                EventManager.getInstance().handOutEventInfo(124); // Event Recording end
-                EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (on) { // event recording
+                        EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
+                        EventManager.getInstance().handOutEventInfo(123); // Event Recording start
+                    } else { // Continuous recording
+                        EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+                        EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
+                    }
+                }
+            });
+
         }
     };
 
@@ -190,6 +210,7 @@ public class CameraRecordFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Logg.d(TAG,"onCreate");
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        mHandler = new Handler(Looper.getMainLooper());
         EventUtil.register(this);
         EventManager.getInstance().loadXML("zh");
     }
@@ -349,6 +370,10 @@ public class CameraRecordFragment extends Fragment {
             case SDCARD_MOUNTED:
             case SDCARD_REMOVED:
                 DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_SDCARD);
+                break;
+            case SDCARD_INIT_SUCCESS:
+                DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_ERROR);
+                break;
             default:
         }
     }

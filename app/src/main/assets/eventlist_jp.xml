@@ -537,7 +537,7 @@
         <id>42</id>
         <priority>0</priority>
         <event_type>114</event_type>
-        <dialog_type>3</dialog_type>
+        <dialog_type>5</dialog_type>
         <name>異常検出による録画停止</name>
         <description>録画を中止しました</description>
         <voice_guidence>録画を中止しました</voice_guidence>
@@ -576,7 +576,7 @@
         <id>45</id>
         <priority>6</priority>
         <event_type>117</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>高温閾値Lv1に達した場合</name>
         <description>高温のためモニター画面を消灯します</description>
         <voice_guidence></voice_guidence>
@@ -589,7 +589,7 @@
         <id>46</id>
         <priority>0</priority>
         <event_type>118</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>5</dialog_type>
         <name>高温閾値Lv2に達した場合</name>
         <description>高温のため録画を中止しました</description>
         <voice_guidence></voice_guidence>
@@ -602,7 +602,7 @@
         <id>47</id>
         <priority>0</priority>
         <event_type>119</event_type>
-        <dialog_type>4</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>高温閾値Lv3に達した場合</name>
         <description>高温のため電源を切ります</description>
         <voice_guidence></voice_guidence>

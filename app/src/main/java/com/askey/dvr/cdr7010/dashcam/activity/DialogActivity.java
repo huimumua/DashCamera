@@ -19,6 +19,7 @@ public class DialogActivity extends AppCompatActivity {
     public static final int DIALOG_TYPE_WARNING = 2;
     public static final int DIALOG_TYPE_COMM_TEXT = 3;
     public static final int DIALOG_TYPE_COMM_CONFIRM = 4;
+    public static final int DIALOG_TYPE_ERROR =5;
     private Dialog dialog = null;
     private int dialogType = 0;
 
@@ -71,6 +72,15 @@ public class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
                 break;
+            case DIALOG_TYPE_ERROR:
+                dialog = new CommDialog(this, R.style.dialogNoTitle);
+                ((CommDialog) dialog).setMessage(args.getString("Message"));
+                ((CommDialog) dialog).setDialogHeight(args.getInt("Height",0));
+                ((CommDialog) dialog).setDialogWidth(args.getInt("Width",0));
+                ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
+                ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
+                ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                break;
             default:
         }
         return dialog;
@@ -94,6 +104,10 @@ public class DialogActivity extends AppCompatActivity {
             sdCardDialog.setMessage(args.getString("Message"));
         }
         if(id == DIALOG_TYPE_COMM_CONFIRM){
+            CommDialog sdCardDialog = (CommDialog) dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
+        if(id == DIALOG_TYPE_ERROR){
             CommDialog sdCardDialog = (CommDialog) dialog;
             sdCardDialog.setMessage(args.getString("Message"));
         }
@@ -127,6 +141,8 @@ public class DialogActivity extends AppCompatActivity {
                     break;
                 case DIALOG_TYPE_WARNING:
                     break;
+                case DIALOG_TYPE_ERROR:
+                    break;
             }
         }
         if (event == 1) {
@@ -138,6 +154,8 @@ public class DialogActivity extends AppCompatActivity {
                 case DIALOG_TYPE_COMM_CONFIRM:
                     break;
                 case DIALOG_TYPE_WARNING:
+                    break;
+                case DIALOG_TYPE_ERROR:
                     break;
             }
         }
