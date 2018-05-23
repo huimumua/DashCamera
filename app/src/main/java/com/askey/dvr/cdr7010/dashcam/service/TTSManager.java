@@ -53,8 +53,8 @@ public class TTSManager{
     public void ttsEventStart(String message,int eventType,int priority){
         if(ttsIsSpeaking()){
             if(priority <= lastPriority){
-                ttsCancel();
                 if(instance != null && cReaderSpeaker != null){
+                    cReaderSpeaker.onStop();
                     cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
                 }
                 lastPriority = priority;
