@@ -9,6 +9,7 @@ public final class Event{
    public static final int SDCARD_UNSUPPORTED = 112;
    public static final int SDCARD_ERROR = 113;
    public static final int RECORDING_STOP = 114;
+   public static final int RECORDING_FAILED =115;
     public static final int HIGH_TEMPERATURE_THRESHOLD = 118;
    public static final int EVENT_RECORDING_START = 123;
    public static final int EVENT_RECORDING_END =124;

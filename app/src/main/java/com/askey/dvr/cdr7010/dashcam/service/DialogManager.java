@@ -3,17 +3,27 @@ package com.askey.dvr.cdr7010.dashcam.service;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.ui.utils.CancelableRunnable;
 
 public class DialogManager{
     private static final String TAG = DialogManager.class.getSimpleName();
     private static DialogManager intance;
+    private static final int DELAY_TIME =5000;
     private Context mContext;
+    private Handler handler;
+    private CancelableRunnable mCancelableRunnable;
     private int lastPriority = Integer.MAX_VALUE;
 
 
+    private DialogManager(){
+        handler = new Handler(Looper.getMainLooper());
+    }
     public static DialogManager getIntance(){
         if (intance == null) {
             synchronized (DialogManager.class) {
@@ -62,6 +72,7 @@ public class DialogManager{
                     ((DialogActivity) mContext).showDialog(dialogType, bundle);
                     lastPriority = priority;
                 }
+                delayCancelDialogDisplay(eventType,dialogType);
             }
         }
     }
@@ -78,5 +89,27 @@ public class DialogManager{
                 ((DialogActivity) mContext).dismissDialog();
             }
         }
+    }
+    private void delayCancelDialogDisplay(int eventType,int dialogType){
+        switch(eventType){
+            case Event.EVENT_RECORDING_START:
+            case Event.RECORDING_FAILED:
+                delayHideDialogDisplay(DELAY_TIME,dialogType);
+                break;
+            default:
+        }
+    }
+    private void delayHideDialogDisplay(long waitTime,final int dialogType){
+        CancelableRunnable cancelableRunnable = mCancelableRunnable;
+        if(cancelableRunnable != null){
+            cancelableRunnable._cancel();
+        }
+        mCancelableRunnable = new CancelableRunnable() {
+            @Override
+            protected void doRun() {
+                dismissDialog(dialogType);
+            }
+        };
+        handler.postDelayed(mCancelableRunnable,waitTime);
     }
 }
