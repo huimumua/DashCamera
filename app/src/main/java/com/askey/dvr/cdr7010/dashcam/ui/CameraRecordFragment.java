@@ -57,6 +57,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 
 
 public class CameraRecordFragment extends Fragment {
@@ -86,8 +88,8 @@ public class CameraRecordFragment extends Fragment {
     private BroadcastReceiver mSdAvailableListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("com.askey.dvr.cdr7010.dashcam.limit")) {
-                final String ex = intent.getStringExtra("cmd_ex");
+            if (intent.getAction().equals("action_sdcard_status")) {
+                final String ex = intent.getStringExtra("data");
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {
@@ -144,6 +146,7 @@ public class CameraRecordFragment extends Fragment {
             }
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+            EventManager.getInstance().handOutEventInfo(104);
         }
 
         @Override
@@ -416,8 +419,10 @@ public class CameraRecordFragment extends Fragment {
         return (on != 0);
     }
 
-    private void startVideoRecord() throws Exception {
+    private void  startVideoRecord() throws Exception {
         boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
+        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_SDCARD,
+                sdcardAvailable? SDCARD_INIT_SUCCESS:SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
             throw new RuntimeException("sd card unavailable");
         }

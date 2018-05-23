@@ -45,7 +45,9 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_SUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNRECOGNIZABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
@@ -384,9 +386,9 @@ public class OSDView extends View {
                 || osdProvider.getRecordingStatus() == RECORDING_EVENT)
                 && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS){
             canvas.drawBitmap(sdcard_recording,null,sdCardRectF,null);
-        }else if((osdProvider.getRecordingStatus() == RECORDING_STOP && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS)){
-            canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
-        }else if(osdProvider.getRecordingStatus() == RECORDING_UNKNOWN && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS){
+        }else if((osdProvider.getRecordingStatus() == RECORDING_STOP || osdProvider.getRecordingStatus() == RECORDING_UNKNOWN )
+                && (osdProvider.getSDCardStatus() == SDCARD_MOUNTED || osdProvider.getSDCardStatus() == SDCARD_SUPPORTED
+                ||osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS)){
             canvas.drawBitmap(sdcard_testing,null,sdCardRectF,null);
         }else if(osdProvider.getSDCardStatus() == SDCARD_INIT_FAIL
                 ||osdProvider.getSDCardStatus() == SDCARD_UNRECOGNIZABLE

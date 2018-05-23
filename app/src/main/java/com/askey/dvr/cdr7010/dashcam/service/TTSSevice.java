@@ -66,6 +66,4 @@ public class TTSSevice extends Service {
         super.onDestroy();
         Logg.i(LOG_TAG, "onDestroy:");
     }
-
-
 }
