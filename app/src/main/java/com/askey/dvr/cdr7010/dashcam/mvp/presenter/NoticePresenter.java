@@ -8,7 +8,7 @@ import com.askey.dvr.cdr7010.dashcam.mvp.model.NoticeModel;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
 
 public class NoticePresenter extends BasePresenter<NoticeContract.View> implements NoticeContract .InteractionListener<NoticeItem>,NoticeContract .Presenter{
-    private static final String DESCRIPTION ="本网站在美国维护受美国法律保护这样的提示你是不是经常看到，"+"\r\n"+"不光是看到，可能很多小伙伴还搜索过！因为根据本站监测，该关键词的搜索有上升趋势！";
+    private static final String DESCRIPTION ="本製品の操作は、必ず安全場所に停車してからおこなってください。"+"\r\n"+"運転中のに操作をおこなうと、思わめ事故の原因になります。";
     private NoticeContract .View mView;
     private NoticeContract .Model mModel;
     private String param;
