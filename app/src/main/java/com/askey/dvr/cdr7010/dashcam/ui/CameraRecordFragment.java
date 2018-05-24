@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -235,6 +236,7 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        checkSdCardExist();
         IntentFilter simCardFilter = new IntentFilter();
         simCardFilter.addAction("android.intent.action.PHONE_STATE");
         simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
@@ -375,6 +377,14 @@ public class CameraRecordFragment extends Fragment {
                 DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_ERROR);
                 break;
             default:
+        }
+    }
+    private void checkSdCardExist(){
+        String status = Environment.getExternalStorageState();
+        if (status.equalsIgnoreCase(Environment.MEDIA_REMOVED)
+                || status.equalsIgnoreCase(Environment.MEDIA_BAD_REMOVAL)
+                || status.equalsIgnoreCase(Environment.MEDIA_UNMOUNTED)){
+            EventManager.getInstance().handOutEventInfo(110);
         }
     }
     private final PhoneStateListener mListener = new PhoneStateListener(){
