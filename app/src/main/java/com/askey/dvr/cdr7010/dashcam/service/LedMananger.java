@@ -21,13 +21,13 @@ public class LedMananger{
         if ((priority <= lastPriority && !isLedOff) || isLedOff) {
             if(isInRecording && isNormal){
                 isLedOff = false;
-                this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_UPPER, AskeyLedManager.COLOR_GREEN);
+                this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_REC, AskeyLedManager.COLOR_GREEN);
             }else if(!isInRecording && isNormal){
                 isLedOff = true;
-                this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_UPPER);
+                this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_REC);
             }else if(!isNormal){
                 isLedOff = false;
-                this.askeyLedManager.setFlashing(AskeyLedManager.LIGHT_ID_UPPER, AskeyLedManager.COLOR_RED, 1000, 1000);
+                this.askeyLedManager.setFlashing(AskeyLedManager.LIGHT_ID_REC, AskeyLedManager.COLOR_RED, 1000, 1000);
             }
             lastPriority = priority;
         }
@@ -35,9 +35,9 @@ public class LedMananger{
 
     public void setLedMicStatus(boolean on) {
         if(on){
-            this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_BOTTOM, AskeyLedManager.COLOR_GREEN);
+            this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_MIC, AskeyLedManager.COLOR_GREEN);
         }else {
-            this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_BOTTOM);
+            this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_MIC);
         }
     }
 }
