@@ -158,7 +158,6 @@ public class MediaMuxerWrapper {
         Logg.d(LOG_TAG, "terminateRecordeing");
         mReasonInterruption = true;
         mMediaBuffer.stop();
-        mHandlerThread.quit();
         mMuxerHandler.terminate();
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
@@ -254,7 +253,6 @@ public class MediaMuxerWrapper {
             mMediaBuffer.stop();
             mMuxerHandler.stop();
             mMuxerThread.quitSafely();
-            mHandlerThread.quitSafely();
             mMuxerHandler.eventMuxer.stop();
 
             unregisterReceiver();
