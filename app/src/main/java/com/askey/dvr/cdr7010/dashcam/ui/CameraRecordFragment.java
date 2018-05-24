@@ -257,7 +257,7 @@ public class CameraRecordFragment extends Fragment {
         getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
         IntentFilter filter2 = new IntentFilter();
-        filter2.addAction("com.askey.dvr.cdr7010.dashcam.limit");
+        filter2.addAction("action_sdcard_status");
         getActivity().registerReceiver(mSdAvailableListener, filter2);
 
         getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
