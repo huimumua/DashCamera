@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -55,7 +56,7 @@ public class WarningDialog extends Dialog {
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
        // ((ViewGroup.MarginLayoutParams)messageText.getLayoutParams()).topMargin = 8;
-        messageText.setTextColor(0xff000000);
+        messageText.setTextColor(Color.BLACK);
         messageText.setGravity(Gravity.CENTER);
         messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,22);
     }

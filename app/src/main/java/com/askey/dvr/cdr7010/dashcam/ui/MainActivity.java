@@ -62,14 +62,14 @@ public class MainActivity extends DialogActivity {
                     currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)+1;
                     if(currentVolume<=maxVolume){
                         audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION,currentVolume,
-                                AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                                0);
                     }
                     return true;
                 case KeyAdapter.KEY_VOLUME_DOWN:
                     currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)-1;
                     if(currentVolume>=0){
                         audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION,currentVolume,
-                                AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+                                0);
                     }
                     return true;
             }

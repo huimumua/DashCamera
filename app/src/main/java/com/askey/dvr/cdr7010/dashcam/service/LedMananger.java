@@ -21,7 +21,7 @@ public class LedMananger{
         if ((priority <= lastPriority && !isLedOff) || isLedOff) {
             if(isInRecording && isNormal){
                 isLedOff = false;
-                this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_REC, AskeyLedManager.COLOR_GREEN);
+                this.askeyLedManager.setLedOn(AskeyLedManager.LIGHT_ID_REC, AskeyLedManager.COLOR_BLUE);
             }else if(!isInRecording && isNormal){
                 isLedOff = true;
                 this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_REC);

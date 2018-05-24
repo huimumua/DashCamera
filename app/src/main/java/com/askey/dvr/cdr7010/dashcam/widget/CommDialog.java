@@ -60,7 +60,7 @@ public class CommDialog extends Dialog{
 
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
-        messageText.setTextColor(0xccffffff);
+        messageText.setTextColor(Color.BLACK);
         messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,22);
         messageText.setGravity(Gravity.CENTER);
         messageText.setLineSpacing(1.0f,1.2f);
