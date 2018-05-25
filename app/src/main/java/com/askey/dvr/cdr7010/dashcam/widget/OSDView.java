@@ -48,6 +48,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_SUPPORTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNRECOGNIZABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
@@ -395,7 +396,8 @@ public class OSDView extends View {
                 ||osdProvider.getSDCardStatus() == SDCARD_UNSUPPORTED
                 ){
             canvas.drawBitmap(sdcard_error,null,sdCardRectF,null);
-        } else if(osdProvider.getSDCardStatus() == SDCARD_REMOVED ){
+        } else if(osdProvider.getSDCardStatus() == SDCARD_REMOVED ||
+                osdProvider.getSDCardStatus() == SDCARD_UNMOUNTED){
             canvas.drawBitmap(sdcard_not_found,null,sdCardRectF,null);
         }
         if(osdProvider.getFotaFileStatus() == FOTA_FILE_EXIST) {

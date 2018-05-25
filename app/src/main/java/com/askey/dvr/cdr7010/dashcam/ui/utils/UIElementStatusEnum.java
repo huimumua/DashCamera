@@ -77,7 +77,8 @@ public class UIElementStatusEnum{
         SDCARD_REMOVED(3),
         SDCARD_UNSUPPORTED(4),
         SDCARD_INIT_FAIL(5),
-        SDCARD_UNRECOGNIZABLE(6);
+        SDCARD_UNRECOGNIZABLE(6),
+        SDCARD_UNMOUNTED(7);
 
         public final int value;
         SDcardStatusType(int value){

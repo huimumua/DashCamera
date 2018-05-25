@@ -62,6 +62,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
 
 
 public class CameraRecordFragment extends Fragment {
@@ -459,7 +460,7 @@ public class CameraRecordFragment extends Fragment {
         boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
         onMessageEvent(new MessageEvent(Event.EventCode.EVENT_SDCARD,
                 sdcardAvailable? SDCARD_INIT_SUCCESS:Environment.getExternalStorageState().
-                        equalsIgnoreCase(Environment.MEDIA_REMOVED)?SDCARD_REMOVED:SDCARD_INIT_FAIL));
+                        equalsIgnoreCase(Environment.MEDIA_REMOVED)?SDCARD_UNMOUNTED:SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
             throw new RuntimeException("sd card unavailable");
         }
