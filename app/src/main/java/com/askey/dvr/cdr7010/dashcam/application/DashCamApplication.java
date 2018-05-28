@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
-import com.askey.dvr.cdr7010.dashcam.service.Communication;
+import com.askey.dvr.cdr7010.dashcam.jvckenwood.EventDetection;
+import com.askey.dvr.cdr7010.dashcam.jvckenwood.EventSending;
+import com.askey.dvr.cdr7010.dashcam.jvckenwood.MainApp;
+import com.askey.dvr.cdr7010.dashcam.jvckenwood.VersionUp;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 
@@ -29,7 +32,10 @@ public class DashCamApplication extends Application {
         setAppContext(this);
         FileManager.getInstance(this); // bindService
         TTSManager.getInstance().initTTS();
-        Communication.getInstance().bindJvcCommunicationService();
+        EventDetection.getInstance().bindJvcEventDetectionService();
+        EventSending.getInstance().bindJvcEventSendingService();
+        MainApp.getInstance().bindJvcMainAppService();
+        VersionUp.getInstance().bindJvcVersionUpService();
     }
 
     @Override

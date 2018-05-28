@@ -1,4 +1,4 @@
-package com.askey.dvr.cdr7010.dashcam.receiver;
+package com.askey.dvr.cdr7010.dashcam.jvckenwood;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
