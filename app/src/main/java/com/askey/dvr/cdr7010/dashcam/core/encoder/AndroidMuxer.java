@@ -100,6 +100,10 @@ public class AndroidMuxer {
                     return;
                 }
             }
+            long diff = bufferInfo.presentationTimeUs - mLastVideoPTSUs;
+            if ((mLastVideoPTSUs != 0) && (diff > 500 * 1000)) {
+                Logg.e(LOG_TAG, "frame interval(" + diff + ") > 500ms, maybe lose frames");
+            }
             mDurationUs = bufferInfo.presentationTimeUs - mStartPtsUs;
             mLastVideoPTSUs = bufferInfo.presentationTimeUs;
             mFrameCount++;

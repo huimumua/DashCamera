@@ -97,6 +97,7 @@ static char *file_name;
 static jbyte *head_ptr = NULL;
 static jbyte *tail_ptr = NULL;
 static jbyte *buffer_fence = NULL;
+static uint32_t slice_count;
 
 static pthread_mutex_t mutex;
 static pthread_cond_t  data_available;
@@ -157,6 +158,7 @@ static unsigned long current_time_ms() {
 static void *thread_func(void *arg) {
     unsigned long start_time_ms = 0;
     int fd = -1;
+    slice_count = 0;
     while (!thread_exit) {
         pthread_mutex_lock(&mutex);
         pthread_cond_wait(&data_available, &mutex);
@@ -191,6 +193,9 @@ static void *thread_func(void *arg) {
                 }
                 fchmod(fd, 0644);
                 start_time_ms = current_time_ms();
+                slice_count++;
+                uint32_t count = SWAP32(slice_count);
+                write(fd, &count, sizeof(count));
             }
 
             pthread_mutex_lock(&lock);

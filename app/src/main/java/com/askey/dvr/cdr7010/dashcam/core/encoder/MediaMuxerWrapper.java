@@ -332,6 +332,7 @@ public class MediaMuxerWrapper {
         private WeakReference<MediaMuxerWrapper> weakParent;
         private boolean flagTerm = false;
         private EventMuxer eventMuxer;
+        private int slice_index = 0;
 
         MuxerHandler(Looper looper, MediaMuxerWrapper parent) {
             super(looper);
@@ -427,6 +428,11 @@ public class MediaMuxerWrapper {
             long eventTime = 0;
             try {
                 fin = new RandomAccessFile(file, "r");
+                int index = fin.readInt();
+                if (index - slice_index != 1) {
+                    Logg.e(LOG_TAG, "slice index error: prev=" + slice_index + "  current=" + index);
+                }
+                slice_index = index;
                 byte[] array = null;
                 while (true) {
                     if (flagTerm) break;

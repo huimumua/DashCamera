@@ -39,6 +39,7 @@ public class EventMuxer implements Runnable{
     private Context mContext;
     private final SegmentCallback mCallback;
     private final Handler mHandler;
+    private int slice_index = 0;
 
     @Override
     public void run() {
@@ -47,6 +48,7 @@ public class EventMuxer implements Runnable{
         int eventId = Event.ID_NONE;
         long eventTime = 0;
         LinkedList<Slice> eventSlices = new LinkedList<>();
+        boolean isNewFile = false;
 
         mInputQueue.clear();
 
@@ -97,6 +99,7 @@ public class EventMuxer implements Runnable{
                         try {
                             String path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
                             mMuxer = createMuxer(path, eventId, eventTime);
+                            isNewFile = true;
                         } catch (RemoteException e) {
                             Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
                                     + e.getMessage());
@@ -109,7 +112,8 @@ public class EventMuxer implements Runnable{
 
                     if (mMuxer != null) {
                         if (s.file != null) {
-                            writeSampleDataFromSlice(s.file);
+                            writeSampleDataFromSlice(s.file, isNewFile);
+                            isNewFile = false;
                         }
 
                         if (sliceCount >= 15 || mFlagStop) {
@@ -209,11 +213,16 @@ public class EventMuxer implements Runnable{
         return muxer;
     }
 
-    private void writeSampleDataFromSlice(String slice) {
+    private void writeSampleDataFromSlice(String slice, boolean isFirst) {
         File file = new File(slice);
         RandomAccessFile fin = null;
         try {
             fin = new RandomAccessFile(file, "r");
+            int index = fin.readInt();
+            if (isFirst && (index - slice_index != 1)) {
+                Logg.e(LOG_TAG, "slice index error: prev=" + slice_index + "  current=" + index);
+            }
+            slice_index = index;
             byte[] array = null;
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             while (true) {
