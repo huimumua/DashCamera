@@ -1,9 +1,10 @@
-package com.askey.dvr.cdr7010.dashcam.jvckenwood;
+package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
@@ -48,6 +49,7 @@ public class Communication {
      * @param endTime2:     撮影終了日時 YYYYMMDDHHMMSS
      */
     public void manualUpload(int camType, String filePath1, String startTime1, String endTime1, String filePath2, String startTime2, String endTime2){
+        Logg.d(LOG_TAG, "manualUpload: filePath1=" + filePath1 + ", filePath2=" + filePath2);
         Intent intent = new Intent(ACTION_MANUAL_UPLOAD_REQUEST);
         intent.putExtra("camType", camType);
         intent.putExtra("filePath1", filePath1);

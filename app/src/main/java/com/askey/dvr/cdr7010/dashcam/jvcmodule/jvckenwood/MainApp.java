@@ -1,4 +1,4 @@
-package com.askey.dvr.cdr7010.dashcam.jvckenwood;
+package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,6 +9,7 @@ import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
@@ -56,7 +57,7 @@ public class MainApp {
         }
     };
 
-    private IMainAppCallback mMainAppCallbackCallback = new IMainAppCallback() {
+    private IMainAppCallback.Stub mMainAppCallbackCallback = new IMainAppCallback.Stub() {
         @Override
         public void reportInsuranceTerm(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
@@ -65,52 +66,56 @@ public class MainApp {
 
         @Override
         public void reportUserList(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
 
         }
 
         @Override
         public void reportSystemSettings(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportSystemSettings: oos=" + oos + ", response=" + response);
 
         }
 
         @Override
         public void reportUserSettings(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
 
         }
 
         @Override
         public void reportSettingsUpdate(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
 
         }
 
         @Override
         public void reportDrivingReport(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportDrivingReport: oos=" + oos + ", response=" + response);
             //id 52, 運転レポート Driving report, eventType define 101
-            Logg.d(LOG_TAG, "reportDrivingReport: ");
             int eventType = 101;
             EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
         public void reportManthlyDrivingReport(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportManthlyDrivingReport: oos=" + oos + ", response=" + response);
             //id 53, 月間運転レポート Monthly driving report, eventType define 102
-            Logg.d(LOG_TAG, "reportManthlyDrivingReport: ");
             int eventType = 102;
             EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
         public void reportServerNotifocation(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportServerNotifocation: oos=" + oos + ", response=" + response);
             //id 51, お知らせ Notice, eventType define 100
-            Logg.d(LOG_TAG, "reportServerNotifocation: ");
             int eventType = 100;
             EventManager.getInstance().handOutEventInfo(eventType);
         }
 
         @Override
         public void reportDrivingAdvice(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportDrivingAdvice: oos=" + oos + ", response=" + response);
             //id 54, 運転前アドバイス Advice before driving, eventType define 103
-            Logg.d(LOG_TAG, "reportDrivingAdvice: ");
             int eventType = 103;
             EventManager.getInstance().handOutEventInfo(eventType);
         }
@@ -123,22 +128,20 @@ public class MainApp {
 
         @Override
         public void reportTxManualProgress(int progress1, int total1, int progress2, int total2) throws RemoteException {
-
+            Logg.d(LOG_TAG, "reportTxManualProgress: progress1=" + progress1 + ", total1=" + total1 + ", progress2=" + progress2 + ", total2=" + total2);
+            ManualUploadService.reportTxManualProgress(progress1 ,total1, progress2, total2);
         }
 
         @Override
         public void voipInfomationResponse(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "voipInfomationResponse: oos=" + oos + ", response=" + response);
 
         }
 
         @Override
         public void onFWUpdateRequest(int result) throws RemoteException {
+            Logg.d(LOG_TAG, "onFWUpdateRequest: result=" + result);
 
-        }
-
-        @Override
-        public IBinder asBinder() {
-            return null;
         }
     };
 
@@ -154,8 +157,74 @@ public class MainApp {
         mAppContext.unbindService(mMainAppConn);
     }
 
+    public void startInitialSetup(){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.startInitialSetup();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void endInitialSetup(){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.endInitialSetup();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void settingsUpdateRequest(String setings){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.settingsUpdateRequest(setings);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void manualUploadCancel(int cancel){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.manualUploadCancel(cancel);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void voipInfomationRequest(int userId,int isUserCall){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.voipInfomationRequest(userId, isUserCall);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void FWUpdateRequest(){
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.FWUpdateRequest();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void registerCallback(IMainAppCallback callback){
-        if(mMainAppInterface == null)
+        if(!checkConnection())
             return;
 
         try {
@@ -166,7 +235,7 @@ public class MainApp {
     }
 
     public void unregisterCallback(IMainAppCallback callback){
-        if(mMainAppInterface == null)
+        if(!checkConnection())
             return;
 
         try {
@@ -174,6 +243,15 @@ public class MainApp {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean checkConnection(){
+        if(mMainAppInterface == null){
+            Logg.e(LOG_TAG, "checkConnection: service not connected.");
+            return false;
+        }
+
+        return true;
     }
 
 }

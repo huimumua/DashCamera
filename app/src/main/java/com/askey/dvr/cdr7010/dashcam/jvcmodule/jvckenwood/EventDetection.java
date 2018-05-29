@@ -1,4 +1,4 @@
-package com.askey.dvr.cdr7010.dashcam.jvckenwood;
+package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -56,7 +56,7 @@ public class EventDetection {
         }
     };
 
-    private IEventDetectionCallback mEventDetectionCallback = new IEventDetectionCallback() {
+    private IEventDetectionCallback.Stub mEventDetectionCallback = new IEventDetectionCallback.Stub() {
         @Override
         public void reportRealTimeAlert(int alertID) throws RemoteException {
             Logg.d(LOG_TAG, "reportRealTimeAlert: alertID=" + alertID);
@@ -93,11 +93,6 @@ public class EventDetection {
         @Override
         public void requestLocationData(int oos, String response) throws RemoteException {
 
-        }
-
-        @Override
-        public IBinder asBinder() {
-            return null;
         }
     };
 

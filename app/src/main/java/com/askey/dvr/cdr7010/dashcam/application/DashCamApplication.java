@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
-import com.askey.dvr.cdr7010.dashcam.jvckenwood.EventDetection;
-import com.askey.dvr.cdr7010.dashcam.jvckenwood.EventSending;
-import com.askey.dvr.cdr7010.dashcam.jvckenwood.MainApp;
-import com.askey.dvr.cdr7010.dashcam.jvckenwood.VersionUp;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventDetection;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventSending;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.VersionUp;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 

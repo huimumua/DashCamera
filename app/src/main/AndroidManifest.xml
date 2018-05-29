@@ -72,13 +72,13 @@
                 <action android:name="action_fota_status"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="com.askey.dvr.cdr7010.dashcam.jvckenwood.JvcEventReceiver">
+        <receiver android:name=".jvcmodule.jvckenwood.JvcEventReceiver">
             <intent-filter>
                 <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT"/>
                 <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="com.askey.dvr.cdr7010.dashcam.jvckenwood.CommunicationReceiver">
+        <receiver android:name=".jvcmodule.jvckenwood.CommunicationReceiver">
             <intent-filter>
                 <action android:name="com.jvckenwood.communication.VOIP_CALL"/>
                 <action android:name="com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE"/>
@@ -88,6 +88,15 @@
                 <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE"/>
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".jvcmodule.local.ManualUploadService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="jvcmodule.local.ManualUploadService" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

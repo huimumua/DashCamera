@@ -1,4 +1,4 @@
-package com.askey.dvr.cdr7010.dashcam.jvckenwood;
+package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -55,16 +55,12 @@ public class VersionUp {
         }
     };
 
-    private IVersionUpCallback mVersionUpCallback = new IVersionUpCallback() {
+    private IVersionUpCallback.Stub mVersionUpCallback = new IVersionUpCallback.Stub() {
         @Override
         public void reportVersionUpInformation(int oos, int fileType, String response) throws RemoteException {
 
         }
 
-        @Override
-        public IBinder asBinder() {
-            return null;
-        }
     };
 
     public boolean bindJvcVersionUpService() {

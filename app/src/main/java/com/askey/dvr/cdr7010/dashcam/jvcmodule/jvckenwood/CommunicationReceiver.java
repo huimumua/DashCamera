@@ -1,10 +1,11 @@
-package com.askey.dvr.cdr7010.dashcam.jvckenwood;
+package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class CommunicationReceiver extends BroadcastReceiver{
@@ -25,7 +26,7 @@ public class CommunicationReceiver extends BroadcastReceiver{
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
             int userCancel = intent.getIntExtra("userCancel", -1);
             String response = intent.getStringExtra("response");
-
+            ManualUploadService.manualUploadComplete(userCancel, response);
         } else if (action.equals(ACTION_TRIPID_UPDATE_NOTIFICATION)) {
             //通过用户变更等取得TripID的时候通知事件检测
 
