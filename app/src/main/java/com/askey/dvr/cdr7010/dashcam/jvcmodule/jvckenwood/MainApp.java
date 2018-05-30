@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -135,7 +136,7 @@ public class MainApp {
         @Override
         public void voipInfomationResponse(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "voipInfomationResponse: oos=" + oos + ", response=" + response);
-
+            EcallUtils.startVoipActivity(oos, response);
         }
 
         @Override
@@ -201,6 +202,10 @@ public class MainApp {
         }
     }
 
+    /**
+     * @param userId
+     * @param isUserCall;  1.ユーザからの要求発信 / 2.コールセンターからの要求発信(リアルタイム)
+     */
     public void voipInfomationRequest(int userId,int isUserCall){
         if(!checkConnection())
             return;

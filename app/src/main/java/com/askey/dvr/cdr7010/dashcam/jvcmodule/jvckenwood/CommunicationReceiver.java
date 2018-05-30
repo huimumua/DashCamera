@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -23,12 +22,14 @@ public class CommunicationReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_VOIP_CALL)) {
-            EcallUtils.startVoipActivity(false);
+            int xxx_userID = 1000;
+            MainApp.getInstance().voipInfomationRequest(xxx_userID, 2);
 
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
             int userCancel = intent.getIntExtra("userCancel", -1);
             String response = intent.getStringExtra("response");
             ManualUploadService.manualUploadComplete(userCancel, response);
+
         } else if (action.equals(ACTION_TRIPID_UPDATE_NOTIFICATION)) {
             //通过用户变更等取得TripID的时候通知事件检测
 
