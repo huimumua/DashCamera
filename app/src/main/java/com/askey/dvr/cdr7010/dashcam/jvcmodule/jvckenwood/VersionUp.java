@@ -98,7 +98,27 @@ public class VersionUp {
         }
     }
 
+    public void getVersionUpInformation(int fileType, String currentVersion){
+        if(mVersionUpInterface == null)
+            return;
 
+        try {
+            mVersionUpInterface.getVersionUpInformation(fileType, currentVersion);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getVersionUpData(int fileType, String version, int range){
+        if(mVersionUpInterface == null)
+            return;
+
+        try {
+            mVersionUpInterface.getVersionUpData(fileType, version, range);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 

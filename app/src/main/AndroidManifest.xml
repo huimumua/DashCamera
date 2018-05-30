@@ -97,6 +97,12 @@
             </intent-filter>
         </service>
 
+        <receiver android:name=".jvcmodule.local.EcallButtonReceiver">
+            <intent-filter>
+                <action android:name="action_ecall_button"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

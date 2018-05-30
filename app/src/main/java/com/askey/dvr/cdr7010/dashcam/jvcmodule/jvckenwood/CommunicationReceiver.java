@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -22,6 +23,7 @@ public class CommunicationReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_VOIP_CALL)) {
+            EcallUtils.startVoipActivity(false);
 
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
             int userCancel = intent.getIntExtra("userCancel", -1);

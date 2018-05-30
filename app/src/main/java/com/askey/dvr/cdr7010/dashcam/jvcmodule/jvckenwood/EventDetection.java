@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -92,6 +93,7 @@ public class EventDetection {
 
         @Override
         public void requestLocationData(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "requestLocationData: oos=" + oos + ", response=" + response);
 
         }
     };
@@ -127,6 +129,41 @@ public class EventDetection {
 
         try {
             mEventDetectionInterface.unregisterCallback(callback);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ParcelFileDescriptor get1HzDataPipe(){
+        if(mEventDetectionInterface == null)
+            return null;
+
+        try {
+            return mEventDetectionInterface.get1HzDataPipe();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public void sendTripData(String filePath){
+        if(mEventDetectionInterface == null)
+            return;
+
+        try {
+            mEventDetectionInterface.sendTripData(filePath);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendImpactLocation(double lat,double lon,double gpsAcc,float detectVal,long occurDate){
+        if(mEventDetectionInterface == null)
+            return;
+
+        try {
+            mEventDetectionInterface.sendImpactLocation(lat, lon, gpsAcc, detectVal, occurDate);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
