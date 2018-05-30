@@ -62,18 +62,21 @@ public class Communication {
     }
 
     public void changeUserID(int userId){
+        Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
         Intent intent = new Intent(ACTION_CHANGE_USERID);
         intent.putExtra("userId", userId);
         sendOutBroadcast(intent);
     }
 
     public void alertComplite(int eventType){
+        Logg.d(LOG_TAG, "alertComplite: eventType=" + eventType);
         Intent intent = new Intent(ACTION_ALERT_COMPLETE);
         intent.putExtra("eventType", eventType);
         sendOutBroadcast(intent);
     }
 
     public void cancelEmergencyCall(){
+        Logg.d(LOG_TAG, "cancelEmergencyCall: ");
         Intent intent = new Intent(ACTION_CANCEL_EMERGENCY_CALL);
         sendOutBroadcast(intent);
     }
@@ -87,6 +90,7 @@ public class Communication {
      *          3:キャンセル
      */
     public void discEmergencyCall(int status){
+        Logg.d(LOG_TAG, "discEmergencyCall: status=" + status);
         Intent intent = new Intent(ACTION_DISC_EMERGENCY_CALL);
         intent.putExtra("status", status);
         sendOutBroadcast(intent);
@@ -96,6 +100,7 @@ public class Communication {
      * 从主APP向通信通知气象警报的获取每5分钟实施一次
      */
     public void weatherAlertRequest(){
+        Logg.d(LOG_TAG, "weatherAlertRequest: ");
         Intent intent = new Intent(ACTION_WEATHER_ALERT_REQUEST);
         sendOutBroadcast(intent);
     }

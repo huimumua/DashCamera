@@ -107,6 +107,15 @@
                 <action android:name="com.jvckenwood.tts.VOICE_END_RESPONSE"/>
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".jvcmodule.local.EcallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="jvcmodule.local.EcallService" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>
