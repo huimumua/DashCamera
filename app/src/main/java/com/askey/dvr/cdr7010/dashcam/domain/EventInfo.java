@@ -14,7 +14,7 @@ public class EventInfo implements Serializable{
     private boolean isSupportLed;
     private boolean isSupportSpeech;
     private String eventDescription;
-    private String voiceGuidence;
+    private int voiceGuidence = -1;
 
     /**
      * @return the id
@@ -91,13 +91,13 @@ public class EventInfo implements Serializable{
     /**
      * @return the voiceGuidence
      */
-    public String getVoiceGuidence() {
+    public int getVoiceGuidence() {
         return voiceGuidence;
     }
     /**
      * @param voiceGuidence the voiceGuidence to set
      */
-    public void setVoiceGuidence(String voiceGuidence) {
+    public void setVoiceGuidence(int voiceGuidence) {
         this.voiceGuidence = voiceGuidence;
     }
     /**

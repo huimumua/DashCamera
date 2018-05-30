@@ -1,11 +1,8 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
@@ -14,6 +11,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.TTS;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -23,8 +21,6 @@ import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.widget.CommDialog;
-import com.askey.dvr.cdr7010.dashcam.widget.WarningDialog;
 import com.askey.platform.AskeySettings;
 
 
@@ -140,7 +136,7 @@ public class MainActivity extends DialogActivity {
     private EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback(){
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp){
-            TTSManager.getInstance().ttsEventStart(eventInfo.getVoiceGuidence(),eventInfo.getEventType(),
+            TTSManager.getInstance().ttsEventStart(eventInfo.getVoiceGuidence()+"",eventInfo.getEventType(),
                     eventInfo.getPriority());
         }
     };

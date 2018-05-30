@@ -88,7 +88,6 @@
                 <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE"/>
             </intent-filter>
         </receiver>
-
         <service
             android:name=".jvcmodule.local.ManualUploadService"
             android:exported="true">
@@ -102,7 +101,12 @@
                 <action android:name="action_ecall_button"/>
             </intent-filter>
         </receiver>
-
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.TTSReceiver">
+            <intent-filter>
+                <action android:name="com.jvckenwood.tts.VOICE_CANCEL_RESPONSE"/>
+                <action android:name="com.jvckenwood.tts.VOICE_END_RESPONSE"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -67,7 +67,12 @@ public class GetEventInfoHandler extends DefaultHandler{
             eventInfo.setEventDescription(value);
         }
         if(qName.equals("voice_guidence")){
-            eventInfo.setVoiceGuidence(value);
+            try {
+                eventInfo.setVoiceGuidence(Integer.parseInt(value));
+            }catch(Exception e){
+                eventInfo.setVoiceGuidence(-1);
+            }
+
         }
         if(qName.equals("popup")){
             if("yes".equalsIgnoreCase(value)){

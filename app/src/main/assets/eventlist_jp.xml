@@ -72,7 +72,7 @@
         <dialog_type></dialog_type>
         <name>再生異常停止</name>
         <description></description>
-        <voice_guidence>再生を中止しました</voice_guidence>
+        <voice_guidence></voice_guidence>//再生を中止しました
         <popup>yes</popup>
         <icon>no</icon>
         <led>no</led>
@@ -111,7 +111,7 @@
         <dialog_type>2</dialog_type>
         <name>衝撃検知</name>
         <description></description>
-        <voice_guidence>衝撃を検知しました</voice_guidence>
+        <voice_guidence>0106</voice_guidence> //0106衝撃を検知しました
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -124,7 +124,7 @@
         <dialog_type>2</dialog_type>
         <name>走行時間が2時間を超えたことが 検知された</name>
         <description></description>
-        <voice_guidence>走行時間が２時間を超えました。休憩されてはいかがでしょうか。</voice_guidence>
+        <voice_guidence>0602</voice_guidence> //0602走行時間が２時間を超えました。休憩されてはいかがでしょうか。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -137,7 +137,7 @@
         <dialog_type>2</dialog_type>
         <name>急加速が5回検知された</name>
         <description></description>
-        <voice_guidence>急加速が増えています。ご注意ください。</voice_guidence>
+        <voice_guidence>0603</voice_guidence> //0603急加速が増えています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -150,7 +150,7 @@
         <dialog_type>2</dialog_type>
         <name>急減速が5回検知された</name>
         <description></description>
-        <voice_guidence>急減速が増えています。ご注意ください。</voice_guidence>
+        <voice_guidence>0604</voice_guidence> //0604急減速が増えています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -163,7 +163,7 @@
         <dialog_type>2</dialog_type>
         <name>急ハンドルが検知された</name>
         <description></description>
-        <voice_guidence>急ハンドルが増えています。ご注意ください。</voice_guidence>
+        <voice_guidence>0605</voice_guidence> //0605急ハンドルが増えています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -176,7 +176,7 @@
         <dialog_type>2</dialog_type>
         <name>ハンドルのふらつきが検知された</name>
         <description></description>
-        <voice_guidence>ふらつきが多いようです。ご注意ください。</voice_guidence>
+        <voice_guidence>0606</voice_guidence> //0606ふらつきが多いようです。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -189,7 +189,7 @@
         <dialog_type>2</dialog_type>
         <name>逆走していることが検知された(逆走検知)</name>
         <description></description>
-        <voice_guidence>逆走していませんか。進行方向を確認してください。</voice_guidence>
+        <voice_guidence>0607</voice_guidence> //0607逆走していませんか。進行方向を確認してください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -202,7 +202,7 @@
         <dialog_type>2</dialog_type>
         <name>設定した指定区域を逸脱した(圏外検知)</name>
         <description></description>
-        <voice_guidence>指定区域外に出ました。</voice_guidence>
+        <voice_guidence>0608</voice_guidence> //0608指定区域外に出ました。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -215,7 +215,7 @@
         <dialog_type>2</dialog_type>
         <name>事故多発地点を走行することが検知された(事故多発)</name>
         <description>事故多発地点注意</description>
-        <voice_guidence>この先、事故多発地点です。ご注意ください。</voice_guidence>
+        <voice_guidence>0609</voice_guidence> //0609この先、事故多発地点です。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -228,7 +228,7 @@
         <dialog_type>2</dialog_type>
         <name>制限速度30kmの地域を走行することが検知された(ゾーン30)</name>
         <description>最高速度30キロ制限地域注意</description>
-        <voice_guidence>この先、最高速度30キロ制限地域です。ご注意ください。</voice_guidence>
+        <voice_guidence>060A</voice_guidence> //060Aこの先、最高速度30キロ制限地域です。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -241,7 +241,7 @@
         <dialog_type>2</dialog_type>
         <name>一時停止標識無視(一時不停止)</name>
         <description>一時停止注意</description>
-        <voice_guidence>一時停止していますか。ご注意ください</voice_guidence>
+        <voice_guidence>060B</voice_guidence> //060B一時停止していますか。ご注意ください
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -254,7 +254,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート1(動物注意(鹿))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域で鹿との衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0701</voice_guidence> //0701この地域で鹿との衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -267,7 +267,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート2(動物注意(狸))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域で狸との衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0702</voice_guidence> //0702この地域で狸との衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -280,7 +280,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート3(動物注意(アマミノクロウサギ))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域でアマミノクロウサギとの衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0703</voice_guidence> //0703この地域でアマミノクロウサギとの衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -293,7 +293,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート4(動物注意(ヤンバルクイナ))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域でヤンバルクイナとの衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0704</voice_guidence> //0704この地域でヤンバルクイナとの衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -306,7 +306,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート5(動物注意(ヤマネコ))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域でヤマネコとの衝突事故が発生しています。ご注意ください</voice_guidence>
+        <voice_guidence>0705</voice_guidence> //0705この地域でヤマネコとの衝突事故が発生しています。ご注意ください
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -319,7 +319,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート6(動物注意(汎用動物))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域で動物との衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0706</voice_guidence> //0706この地域で動物との衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -332,7 +332,7 @@
         <dialog_type>2</dialog_type>
         <name>動物注意アラート7(動物注意(希少動物))</name>
         <description>動物注意</description>
-        <voice_guidence>この地域で希少動物との衝突事故が発生しています。ご注意ください。</voice_guidence>
+        <voice_guidence>0707</voice_guidence> //0707この地域で希少動物との衝突事故が発生しています。ご注意ください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -345,7 +345,7 @@
         <dialog_type>2</dialog_type>
         <name>気象アラート1(気象(警報))</name>
         <description>気象警報注意</description>
-        <voice_guidence>この地区に警報が発表されました。今後の情報に十分注意してください。</voice_guidence>
+        <voice_guidence>0804</voice_guidence> //0804この地区に警報が発表されました。今後の情報に十分注意してください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -358,7 +358,7 @@
         <dialog_type>2</dialog_type>
         <name>気象アラート2(気象(特別警報))</name>
         <description>気象警報注意</description>
-        <voice_guidence>この地区に特別警報が発表されました。少しでも運転に不安がある場合は運転を控えましょう。</voice_guidence>
+        <voice_guidence>0803</voice_guidence> //0803この地区に特別警報が発表されました。少しでも運転に不安がある場合は運転を控えましょう。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -371,7 +371,7 @@
         <dialog_type>2</dialog_type>
         <name>気象アラート3(気象(台風))</name>
         <description>気象警報注意</description>
-        <voice_guidence>今後、この地区に台風が近づく可能性があります。今後の情報に十分注意してください。</voice_guidence>
+        <voice_guidence>0802</voice_guidence> //0802今後、この地区に台風が近づく可能性があります。今後の情報に十分注意してください。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -384,7 +384,7 @@
         <dialog_type>2</dialog_type>
         <name>気象アラート4(気象(台風最接近))</name>
         <description>気象警報注意</description>
-        <voice_guidence>この地区に台風が接近してきました。少しでも運転に不安がある場合は運転を控えましょう。</voice_guidence>
+        <voice_guidence>0801</voice_guidence> //0801この地区に台風が接近してきました。少しでも運転に不安がある場合は運転を控えましょう。
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -397,7 +397,7 @@
         <dialog_type>2</dialog_type>
         <name>前方衝突注意</name>
         <description>衝突注意</description>
-        <voice_guidence>前方衝突の危険があります</voice_guidence>
+        <voice_guidence>0902</voice_guidence> //0902前方衝突の危険があります
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -410,7 +410,7 @@
         <dialog_type>2</dialog_type>
         <name>車線はみ出し注意_右</name>
         <description>右車線注意</description>
-        <voice_guidence>右車線に注意してください</voice_guidence>
+        <voice_guidence>0904</voice_guidence> //0904右車線に注意してください
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -423,7 +423,7 @@
         <dialog_type>2</dialog_type>
         <name>車線はみ出し注意_左</name>
         <description>左車線注意</description>
-        <voice_guidence>左車線に注意してください</voice_guidence>
+        <voice_guidence>0903</voice_guidence> //0903左車線に注意してください
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -436,7 +436,7 @@
         <dialog_type>2</dialog_type>
         <name>発進遅れ注意</name>
         <description>前方車発進</description>
-        <voice_guidence>前方を確認してください</voice_guidence>
+        <voice_guidence>0905</voice_guidence> //0905前方を確認してください
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -449,7 +449,7 @@
         <dialog_type>2</dialog_type>
         <name>歩行者衝突注意 (OTA対応)</name>
         <description>歩行者衝突注意</description>
-        <voice_guidence>衝突の危険があります</voice_guidence>
+        <voice_guidence>0906</voice_guidence> //0906衝突の危険があります
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -462,7 +462,7 @@
         <dialog_type>3</dialog_type>
         <name>GPS測位</name>
         <description>GPSを測位しました</description>
-        <voice_guidence>GPSを測位しました</voice_guidence>
+        <voice_guidence>0108</voice_guidence> //0108GPSを測位しました
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -475,7 +475,7 @@
         <dialog_type>3</dialog_type>
         <name>GPS測位エラー</name>
         <description>GPSが見つかりませんでした</description>
-        <voice_guidence>GPSが見つかりませんでした</voice_guidence>
+        <voice_guidence>0109</voice_guidence> //0109GPSが見つかりませんでした
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -488,7 +488,7 @@
         <dialog_type>1</dialog_type>
         <name>SDカード未挿入</name>
         <description>SDカードがありません</description>
-        <voice_guidence>SDカードがありません</voice_guidence>
+        <voice_guidence>0101</voice_guidence> //0101SDカードがありません
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -501,7 +501,7 @@
         <dialog_type>1</dialog_type>
         <name>SDカード不正/未フォーマット</name>
         <description>SDカードの初期化が必要です</description>
-        <voice_guidence>SDカードの初期化が必要です</voice_guidence>
+        <voice_guidence>0104</voice_guidence> //0104SDカードの初期化が必要です
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -514,7 +514,7 @@
         <dialog_type>1</dialog_type>
         <name>SDカード非対応</name>
         <description>非対応のSDカードです</description>
-        <voice_guidence>非対応のSDカードです</voice_guidence>
+        <voice_guidence>0103</voice_guidence> //0103非対応のSDカードです
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -527,7 +527,7 @@
         <dialog_type>1</dialog_type>
         <name>SDカード異常/認識不可</name>
         <description>SDカードエラーです</description>
-        <voice_guidence>SDカードエラーです</voice_guidence>
+        <voice_guidence>0102</voice_guidence> //0102SDカードエラーです
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -540,7 +540,7 @@
         <dialog_type>5</dialog_type>
         <name>異常検出による録画停止</name>
         <description>録画を中止しました</description>
-        <voice_guidence>録画を中止しました</voice_guidence>
+        <voice_guidence>0105</voice_guidence> //0105録画を中止しました
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
