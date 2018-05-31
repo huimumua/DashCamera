@@ -2,6 +2,7 @@ package com.askey.dvr.cdr7010.dashcam.activity;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -48,5 +49,9 @@ public class UpdateCompleteActivity extends DialogActivity{
             timer.cancel();
         }
         super.onDestroy();
+    }
+    @Override
+    protected  boolean handleKeyEvent(KeyEvent event){
+        return false;
     }
 }

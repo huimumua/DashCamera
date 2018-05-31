@@ -19,7 +19,7 @@ import java.util.List;
 
 public class EventManager {
     private static final String LOG_TAG = "EventManager";
-    private static EventManager instance;
+    private volatile static EventManager instance;
     private AssetManager assets;
     private GetEventInfoSAXParser eventInfoSAXParser;
     private InputStream inputStream;
@@ -71,7 +71,7 @@ public class EventManager {
 
     public static EventManager getInstance() {
         if (instance == null) {
-            synchronized (TTSManager.class) {
+            synchronized (EventManager.class) {
                 if (instance == null) {
                     instance = new EventManager();
                 }

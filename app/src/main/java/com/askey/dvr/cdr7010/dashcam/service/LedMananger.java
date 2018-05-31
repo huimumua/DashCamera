@@ -4,7 +4,7 @@ import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.platform.AskeyLedManager;
 
 public class LedMananger{
-    private static LedMananger instance;
+    private volatile static LedMananger instance;
     private AskeyLedManager askeyLedManager;
     private int lastPriority = Integer.MAX_VALUE;
     private boolean isLedOff = true;
@@ -14,7 +14,12 @@ public class LedMananger{
     }
     public static LedMananger getInstance() {
         if(instance == null)
-            instance = new LedMananger();
+            synchronized (LedMananger.class){
+            if(instance == null){
+                instance = new LedMananger();
+            }
+        }
+
         return instance;
     }
     public void setLedRecStatus(boolean isNormal , boolean isInRecording ,int priority){

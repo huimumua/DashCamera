@@ -7,8 +7,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,6 +23,7 @@ public class WarningDialog extends Dialog {
     private TextView messageText;
     private String msg;
     private Context mContext;
+    private OnKeyListener mOnKeyListener;
     public WarningDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
         super(context,cancelable,cancelListener);
         mContext =context;
@@ -71,6 +74,17 @@ public class WarningDialog extends Dialog {
         if(messageText != null){
             messageText.setText(msg);
         }
+    }
+    public void setOnkeyListener(OnKeyListener onkeyListener){
+        mOnKeyListener = onkeyListener;
+    }
+    @Override
+    public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
+        if(mOnKeyListener != null){
+            mOnKeyListener.onKey(this,event.getKeyCode(),event);
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
 }

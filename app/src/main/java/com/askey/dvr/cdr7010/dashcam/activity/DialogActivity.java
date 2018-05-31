@@ -1,19 +1,25 @@
 package com.askey.dvr.cdr7010.dashcam.activity;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.ui.MainActivity;
+import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.CommDialog;
 import com.askey.dvr.cdr7010.dashcam.widget.WarningDialog;
 
 
-public class DialogActivity extends AppCompatActivity {
+public abstract class DialogActivity extends AppCompatActivity {
     private static final String TAG = DialogActivity.class.getSimpleName();
     public static final int DIALOG_TYPE_SDCARD = 1;
     public static final int DIALOG_TYPE_WARNING = 2;
@@ -22,11 +28,22 @@ public class DialogActivity extends AppCompatActivity {
     public static final int DIALOG_TYPE_ERROR =5;
     private Dialog dialog = null;
     private int dialogType = 0;
+    private AudioManager audioManager;
+    private int maxVolume,currentVolume;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         DialogManager.getIntance().registerContext(this);
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+    }
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if(handleKeyEvent(event)){
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -44,6 +61,12 @@ public class DialogActivity extends AppCompatActivity {
                 }
             }
         };
+        DialogInterface.OnKeyListener onKeyListener = new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                return handleKeyEvent(event);
+            }
+        };
         switch (id) {
             case DIALOG_TYPE_SDCARD:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -51,10 +74,12 @@ public class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_WARNING:
                 dialog = new WarningDialog(this, R.style.dialogNoTitle);
                 ((WarningDialog) dialog).setMessage(args.getString("Message"));
+                ((WarningDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_COMM_TEXT:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -64,6 +89,7 @@ public class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_COMM_CONFIRM:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -71,6 +97,7 @@ public class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_OK);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_ERROR:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -80,6 +107,7 @@ public class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             default:
         }
@@ -167,4 +195,5 @@ public class DialogActivity extends AppCompatActivity {
         DialogManager.getIntance().unregisterContext();
         super.onDestroy();
     }
+    protected  abstract  boolean handleKeyEvent(KeyEvent event);
 }

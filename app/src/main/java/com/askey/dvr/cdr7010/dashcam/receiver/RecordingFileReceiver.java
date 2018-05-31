@@ -69,6 +69,7 @@ public class RecordingFileReceiver extends BroadcastReceiver{
             }
         }else if(action.equals(ACTION_SDCARD_STATUS)){
             String data = intent.getStringExtra("data");
+            Logg.d(LOG_TAG, "action=" + action+",data="+data);
             if(data.equals(CMD_SHOW_SDCARD_NOT_SUPPORTED)){
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_UNSUPPORTED));
                 handOutEventInfo(112); // defined to 112 in assets
@@ -86,8 +87,9 @@ public class RecordingFileReceiver extends BroadcastReceiver{
         }else if(action.equals("android.intent.action.MEDIA_MOUNTED")){
             EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
         }else if(action.equals("android.intent.action.MEDIA_EJECT")){
+            handOutEventInfo(110);
             EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
-            handOutEventInfo(110); // defined to 110 in assets
+             // defined to 110 in assets
         }
     }
 

@@ -30,6 +30,7 @@ import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.logic.DialogLogic;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -59,6 +60,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
@@ -151,7 +153,7 @@ public class CameraRecordFragment extends Fragment {
                 });
             }
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
-                    UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+                    RECORDING_CONTINUOUS));
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -187,8 +189,7 @@ public class CameraRecordFragment extends Fragment {
         public void onEventStateChanged(final boolean on) {
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
-                    on ? RECORDING_EVENT :
-                            UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+                    on ? RECORDING_EVENT : RECORDING_CONTINUOUS));
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -363,6 +364,9 @@ public class CameraRecordFragment extends Fragment {
             if (messageEvent.getData() == RECORDING_EVENT) {
                 osdView.startRecordingCountDown();
             }
+            if(messageEvent.getData() ==  RECORDING_CONTINUOUS){
+                DialogManager.getIntance().setStartRecording(true);
+            }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT) {
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType) messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT) {
@@ -385,11 +389,13 @@ public class CameraRecordFragment extends Fragment {
     private void handleSdCardDialog(UIElementStatusEnum.SDcardStatusType sDcardStatus) {
         switch (sDcardStatus) {
             case SDCARD_MOUNTED:
+                DialogManager.getIntance().setSdcardInserted(true);
+                break;
             case SDCARD_REMOVED:
-                DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_SDCARD);
+                DialogManager.getIntance().setSdcardPulledOut(true);
                 break;
             case SDCARD_INIT_SUCCESS:
-                DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_ERROR);
+                DialogManager.getIntance().setSdcardInitSuccess(true);
                 break;
             default:
         }

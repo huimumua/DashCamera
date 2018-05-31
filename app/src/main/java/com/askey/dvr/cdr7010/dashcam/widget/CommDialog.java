@@ -5,8 +5,10 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -28,6 +30,7 @@ public class CommDialog extends Dialog{
     private  String BUTTON_CANCEL_MSG = Const.STR_BUTTON_CANCEL;
     private OnClickListener mPositiveButtonListener;
     private OnClickListener mNegativeButtonListener;
+    private OnKeyListener mOnKeyListener;
     private int width = 0;
     private int height = 0;
 
@@ -141,6 +144,19 @@ public class CommDialog extends Dialog{
     }
     public void setNegativeButtonListener(final OnClickListener onClickListener){
         this.mNegativeButtonListener = onClickListener;
+    }
+    public void setOnkeyListener(OnKeyListener onkeyListener){
+        mOnKeyListener = onkeyListener;
+    }
+    @Override
+    public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
+        if(type == TYPE_BUTTON_HIDE){
+            if(mOnKeyListener != null){
+                mOnKeyListener.onKey(this,event.getKeyCode(),event);
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
     private View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
