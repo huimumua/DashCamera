@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +25,7 @@ import android.view.ViewGroup;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
+import com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
@@ -38,15 +38,16 @@ import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import com.askey.platform.AskeySettings;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,7 +62,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
 
 
@@ -73,6 +73,7 @@ public class CameraRecordFragment extends Fragment {
     private TelephonyManager mTelephonyManager;
     private UIElementStatusEnum.LTEStatusType lteLevel;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private boolean isStartRecord;
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
@@ -86,7 +87,7 @@ public class CameraRecordFragment extends Fragment {
             Manifest.permission.ACCESS_COARSE_LOCATION,
 
     };
-    private static final String[] SIM_PERMISSIONS ={
+    private static final String[] SIM_PERMISSIONS = {
             Manifest.permission.READ_PHONE_STATE,
     };
 
@@ -120,7 +121,7 @@ public class CameraRecordFragment extends Fragment {
     private BroadcastReceiver simCardReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Logg.d(TAG, "onReceive intent="+intent);
+            Logg.d(TAG, "onReceive intent=" + intent);
             EventUtil.sendEvent(new MessageEvent(Event.EventCode.EVENT_SIMCARD));
         }
     };
@@ -177,7 +178,7 @@ public class CameraRecordFragment extends Fragment {
                 @Override
                 public void run() {
                     EventManager.getInstance().handOutEventInfo(114);
-                    }
+                }
             });
 
         }
@@ -187,7 +188,7 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT :
-                         UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
+                            UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS));
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -211,102 +212,112 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Logg.d(TAG,"onCreate");
+        Logg.d(TAG, "onCreate");
+        isStartRecord= (boolean) SPUtils.get(getActivity(), Const.IS_START_RECORD,true);
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
-        EventUtil.register(this);
         EventManager.getInstance().loadXML("zh");
+        EventUtil.register(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_camera_record, container, false);
     }
 
     @Override
-    public void onViewCreated(final View view, Bundle savedInstanceState){
-        requestVideoPermissions();
-        requestGPSPermissions();
-        requestSIMCardPermissions();
-        GPSStatusManager.getInstance().recordLocation(true);
+    public void onViewCreated(final View view, Bundle savedInstanceState) {
         osdView = (OSDView) view.findViewById(R.id.osd_view);
-        osdView.init(1000);
-
+        if (isStartRecord) {
+            requestVideoPermissions();
+            requestGPSPermissions();
+            requestSIMCardPermissions();
+            GPSStatusManager.getInstance().recordLocation(true);
+            osdView.init(1000);
+        }
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        checkSdCardExist();
-        IntentFilter simCardFilter = new IntentFilter();
-        simCardFilter.addAction("android.intent.action.PHONE_STATE");
-        simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
-        getActivity().registerReceiver(simCardReceiver, simCardFilter);
+        if (isStartRecord) {
+            checkSdCardExist();
+            IntentFilter simCardFilter = new IntentFilter();
+            simCardFilter.addAction("android.intent.action.PHONE_STATE");
+            simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
+            getActivity().registerReceiver(simCardReceiver, simCardFilter);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Logg.d(TAG,"onResume");
-        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
-        LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
-        mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        Logg.d(TAG, "onResume");
+        if (isStartRecord) {
+            onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
+            LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
+            mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
-        filter.addDataScheme("file");
-        getActivity().registerReceiver(mSdBadRemovalListener, filter);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
+            filter.addDataScheme("file");
+            getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
-        IntentFilter filter2 = new IntentFilter();
-        filter2.addAction("action_sdcard_status");
-        getActivity().registerReceiver(mSdAvailableListener, filter2);
+            IntentFilter filter2 = new IntentFilter();
+            filter2.addAction("action_sdcard_status");
+            getActivity().registerReceiver(mSdAvailableListener, filter2);
 
-        getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
+            getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
 
-        final boolean stamp = getRecordStamp();
-        final boolean audio = getMicphoneEnable();
-        RecordConfig mainConfig = RecordConfig.builder()
-                .cameraId(0)
-                .videoWidth(1920)
-                .videoHeight(1080)
-                .videoStampEnable(stamp)
-                .audioRecordEnable(audio)
-                .build();
-        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
+            final boolean stamp = getRecordStamp();
+            final boolean audio = getMicphoneEnable();
+            RecordConfig mainConfig = RecordConfig.builder()
+                    .cameraId(0)
+                    .videoWidth(1920)
+                    .videoHeight(1080)
+                    .videoStampEnable(stamp)
+                    .audioRecordEnable(audio)
+                    .build();
+            mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
 
-        try {
-            startVideoRecord();
-        } catch (Exception e) {
-            Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
+            try {
+                startVideoRecord();
+            } catch (Exception e) {
+                Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public void onPause() {
-        Logg.d(TAG,"onPause");
-        stopVideoRecord();
-        getActivity().unregisterReceiver(mSdAvailableListener);
-        getActivity().unregisterReceiver(mSdBadRemovalListener);
-        getActivity().unregisterReceiver(mShutdownReceiver);
-        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
-        LedMananger.getInstance().setLedMicStatus(false);
+        Logg.d(TAG, "onPause");
+        if (isStartRecord) {
+            stopVideoRecord();
+            getActivity().unregisterReceiver(mSdAvailableListener);
+            getActivity().unregisterReceiver(mSdBadRemovalListener);
+            getActivity().unregisterReceiver(mShutdownReceiver);
+            mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+            LedMananger.getInstance().setLedMicStatus(false);
+        }
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
-        Logg.d(TAG,"onDestroy");
-        osdView.unInit();
+        Logg.d(TAG, "onDestroy");
         EventUtil.unregister(this);
-        GPSStatusManager.getInstance().recordLocation(false);
-        getActivity().unregisterReceiver(simCardReceiver);
+        if (isStartRecord) {
+            osdView.unInit();
+            GPSStatusManager.getInstance().recordLocation(false);
+            getActivity().unregisterReceiver(simCardReceiver);
+        }
         super.onDestroy();
     }
 
     @Override
-    public void onStop(){
-        Logg.d(TAG,"onStop");
+    public void onStop() {
+        Logg.d(TAG, "onStop");
         super.onStop();
     }
 
@@ -315,14 +326,16 @@ public class CameraRecordFragment extends Fragment {
             requestPermissions(VIDEO_PERMISSIONS, REQUEST_VIDEO_PERMISSIONS);
         }
     }
-    private void requestGPSPermissions(){
-        if(!hasPermissionsGranted(GPS_PERMISSIONS)){
-            requestPermissions(GPS_PERMISSIONS,REQUEST_GPS_PERMISSIONS);
+
+    private void requestGPSPermissions() {
+        if (!hasPermissionsGranted(GPS_PERMISSIONS)) {
+            requestPermissions(GPS_PERMISSIONS, REQUEST_GPS_PERMISSIONS);
         }
     }
-    private void requestSIMCardPermissions(){
-        if(!hasPermissionsGranted(SIM_PERMISSIONS)){
-            requestPermissions(SIM_PERMISSIONS,REQUEST_SIMCARD_PERMISSIONS);
+
+    private void requestSIMCardPermissions() {
+        if (!hasPermissionsGranted(SIM_PERMISSIONS)) {
+            requestPermissions(SIM_PERMISSIONS, REQUEST_SIMCARD_PERMISSIONS);
         }
     }
 
@@ -337,40 +350,40 @@ public class CameraRecordFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(MessageEvent messageEvent){
-        Logg.d(TAG,"onMessageEvent messageEvent="+messageEvent.getData());
-        if (messageEvent != null){
+    public void onMessageEvent(MessageEvent messageEvent) {
+        Logg.d(TAG, "onMessageEvent messageEvent=" + messageEvent.getData());
+        if (messageEvent != null) {
             handleMessageEvent(messageEvent);
         }
     }
 
-    private void handleMessageEvent(MessageEvent messageEvent){
+    private void handleMessageEvent(MessageEvent messageEvent) {
         if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING) {
-            GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType)messageEvent.getData());
-            if(messageEvent.getData() == RECORDING_EVENT){
+            GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType) messageEvent.getData());
+            if (messageEvent.getData() == RECORDING_EVENT) {
                 osdView.startRecordingCountDown();
             }
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT){
-            GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType)messageEvent.getData());
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT){
-            GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType)messageEvent.getData());
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_GPS){
-            GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType)messageEvent.getData());
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SDCARD){
-            GlobalLogic.getInstance().setSDCardStatus((UIElementStatusEnum.SDcardStatusType)messageEvent.getData());
-            handleSdCardDialog((UIElementStatusEnum.SDcardStatusType)messageEvent.getData());
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC){
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT) {
+            GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT) {
+            GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_GPS) {
+            GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SDCARD) {
+            GlobalLogic.getInstance().setSDCardStatus((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
+            handleSdCardDialog((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC) {
             GlobalLogic.getInstance().setMicStatus(getMicphoneEnable() ? MIC_ON : MIC_OFF);
-        } else if(messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE){
-            GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus)messageEvent.getData());
-        } else if(messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD){
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE) {
+            GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
             SimCardManager.getInstant().setSimState(SimCardManager.getInstant().getSimState());
         }
         osdView.invalidateView();
     }
 
-    private void handleSdCardDialog(UIElementStatusEnum.SDcardStatusType sDcardStatus){
-        switch(sDcardStatus){
+    private void handleSdCardDialog(UIElementStatusEnum.SDcardStatusType sDcardStatus) {
+        switch (sDcardStatus) {
             case SDCARD_MOUNTED:
             case SDCARD_REMOVED:
                 DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_SDCARD);
@@ -381,15 +394,17 @@ public class CameraRecordFragment extends Fragment {
             default:
         }
     }
-    private void checkSdCardExist(){
+
+    private void checkSdCardExist() {
         String status = Environment.getExternalStorageState();
         if (status.equalsIgnoreCase(Environment.MEDIA_REMOVED)
                 || status.equalsIgnoreCase(Environment.MEDIA_BAD_REMOVAL)
-                || status.equalsIgnoreCase(Environment.MEDIA_UNMOUNTED)){
+                || status.equalsIgnoreCase(Environment.MEDIA_UNMOUNTED)) {
             EventManager.getInstance().handOutEventInfo(110);
         }
     }
-    private final PhoneStateListener mListener = new PhoneStateListener(){
+
+    private final PhoneStateListener mListener = new PhoneStateListener() {
         @Override
         public void onSignalStrengthsChanged(SignalStrength sStrength) {
             super.onSignalStrengthsChanged(sStrength);
@@ -399,17 +414,16 @@ public class CameraRecordFragment extends Fragment {
                 int networkType = mTelephonyManager.getNetworkType();
                 // if networkType is LTE, using custom dbm to distinguish signal strength level
                 lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-                if(networkType == TelephonyManager.NETWORK_TYPE_LTE )
-                {
+                if (networkType == TelephonyManager.NETWORK_TYPE_LTE) {
                     method = sStrength.getClass().getDeclaredMethod("getLteDbm");
                     int lteRsrp = (int) method.invoke(sStrength);
                     if (lteRsrp > -44) {
                         lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-                    } else if (lteRsrp >= -97){
-                        lteLevel =  LTE_SIGNAL_STRENGTH_GREAT;
-                    } else if (lteRsrp >= -105){
+                    } else if (lteRsrp >= -97) {
+                        lteLevel = LTE_SIGNAL_STRENGTH_GREAT;
+                    } else if (lteRsrp >= -105) {
                         lteLevel = LTE_SIGNAL_STRENGTH_GOOD;
-                    } else if (lteRsrp >= -113){
+                    } else if (lteRsrp >= -113) {
                         lteLevel = LTE_SIGNAL_STRENGTH_MODERATE;
                     } else if (lteRsrp >= -120) {
                         lteLevel = LTE_SIGNAL_STRENGTH_POOR;
@@ -419,10 +433,8 @@ public class CameraRecordFragment extends Fragment {
                     GlobalLogic.getInstance().setLTEStatus(lteLevel);
                     osdView.invalidateView();
                 }
-                Logg.i(TAG, "SignalStrengthLevel: " + Integer.toString(strength)+",lteStatusType="+lteLevel);
-            }
-            catch (Exception ignored)
-            {
+                Logg.i(TAG, "SignalStrengthLevel: " + Integer.toString(strength) + ",lteStatusType=" + lteLevel);
+            } catch (Exception ignored) {
                 Logg.e(TAG, "Exception: " + ignored.toString());
             }
         }
@@ -456,11 +468,11 @@ public class CameraRecordFragment extends Fragment {
         return (on != 0);
     }
 
-    private void  startVideoRecord() throws Exception {
+    private void startVideoRecord() throws Exception {
         boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
         onMessageEvent(new MessageEvent(Event.EventCode.EVENT_SDCARD,
-                sdcardAvailable? SDCARD_INIT_SUCCESS:Environment.getExternalStorageState().
-                        equalsIgnoreCase(Environment.MEDIA_REMOVED)?SDCARD_UNMOUNTED:SDCARD_INIT_FAIL));
+                sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
+                        equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
             throw new RuntimeException("sd card unavailable");
         }

@@ -1,11 +1,8 @@
 package com.askey.dvr.cdr7010.dashcam.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -18,7 +15,8 @@ import java.io.File;
 
 
 public class NoticeActivity extends AppCompatActivity implements NoticeFragment.NoticeListener {
-    private static final String UPDATE_SUC_FILE_NAME ="update_suc.txt";
+    private static final String UPDATE_SUC_FILE_NAME = "update_suc.txt";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,11 +25,13 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                 noticeFragment, R.id.contentFrame);
     }
+
     @Override
-    public void noticeJump(){
-        if(checkUpdateResult()){
-            ActivityUtils.startActivity(this, this.getPackageName(),"com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity",true);
-        }else {
+    public void noticeJump(boolean isStartRecord) {
+        SPUtils.put(this, Const.IS_START_RECORD, isStartRecord);
+        if (checkUpdateResult()) {
+            ActivityUtils.startActivity(this, this.getPackageName(), "com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity", true);
+        } else {
             if (SPUtils.contains(DashCamApplication.getAppContext(), Const.IS_FIRST_BOOT)) {
                 if ((Boolean) SPUtils.get(DashCamApplication.getAppContext(), Const.IS_FIRST_BOOT, false)) {
                     SPUtils.put(DashCamApplication.getAppContext(), Const.IS_FIRST_BOOT, true);
@@ -43,6 +43,7 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
             }
         }
     }
+
     @Override
     public void onBackPressed() {
         return;

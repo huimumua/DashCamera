@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
+    <uses-permission android:name="android.permission.SHUTDOWN"/>
+
     <uses-feature android:name="android.hardware.camera2" android:required="true"/>
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     
