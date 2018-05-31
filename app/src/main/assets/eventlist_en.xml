@@ -34,10 +34,10 @@
         <name>Event Recording start</name>
         <description></description>
         <voice_guidence></voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>yes</led>
-        <speech>yes</speech>
+        <speech>no</speech>
     </event>
     <event>
         <id>4</id>
@@ -552,7 +552,7 @@
         <event_type>115</event_type>
         <dialog_type>3</dialog_type>
         <name>When the number of event recording files has reached the limit</name>
-        <description>Event recordng fail.(Count over)</description>
+        <description>Event recording fail.(Count over)</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>

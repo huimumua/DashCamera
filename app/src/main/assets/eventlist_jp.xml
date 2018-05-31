@@ -34,10 +34,10 @@
         <name>イベント記録開始</name>
         <description></description>
         <voice_guidence></voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>yes</led>
-        <speech>yes</speech>
+        <speech>no</speech>
     </event>
     <event>
         <id>4</id>
