@@ -158,6 +158,7 @@ public class MediaMuxerWrapper {
         Logg.d(LOG_TAG, "terminateRecordeing");
         mReasonInterruption = true;
         mMediaBuffer.stop();
+        mMuxerHandler.removeMessages(0);
         mMuxerHandler.terminate();
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
@@ -251,6 +252,7 @@ public class MediaMuxerWrapper {
         if ((mEncoderCount > 0) && (mStatredCount <= 0)) {
             mIsStarted = false;
             mMediaBuffer.stop();
+            mMuxerHandler.removeMessages(0);
             mMuxerHandler.stop();
             mMuxerThread.quitSafely();
             mMuxerHandler.eventMuxer.stop();
@@ -333,6 +335,7 @@ public class MediaMuxerWrapper {
         private boolean flagTerm = false;
         private EventMuxer eventMuxer;
         private int slice_index = 0;
+        private final Object syncObj = new Object();
 
         MuxerHandler(Looper looper, MediaMuxerWrapper parent) {
             super(looper);
@@ -342,28 +345,34 @@ public class MediaMuxerWrapper {
 
         void terminate() {
             flagTerm = true;
-            if (muxer != null) {
-                muxer.stop();
-                muxer = null;
+            synchronized (syncObj) {
+                if (muxer != null) {
+                    muxer.stop();
+                    muxer = null;
+                }
             }
         }
 
         void stop() {
             flagTerm = true;
-            if (muxer != null) {
-                MediaMuxerWrapper parent = weakParent.get();
-                if (parent != null) {
-                    parent.closeMuxer(muxer);
+            synchronized (syncObj) {
+                if (muxer != null) {
+                    MediaMuxerWrapper parent = weakParent.get();
+                    if (parent != null) {
+                        parent.closeMuxer(muxer);
+                    }
+                    muxer = null;
                 }
-                muxer = null;
             }
         }
 
-        void pauseContinuesRecording() {
+        private void pauseContinuesRecording() {
             MediaMuxerWrapper parent = weakParent.get();
-            if (parent != null && muxer != null) {
-                parent.closeMuxer(muxer);
-                muxer = null;
+            synchronized (syncObj) {
+                if (parent != null && muxer != null) {
+                    parent.closeMuxer(muxer);
+                    muxer = null;
+                }
             }
         }
 
@@ -377,44 +386,48 @@ public class MediaMuxerWrapper {
                     return;
                 }
 
-                if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
-                    parent.closeMuxer(muxer);
-                    muxer = null;
-                }
+                synchronized (syncObj) {
+                    if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
+                        parent.closeMuxer(muxer);
+                        muxer = null;
+                    }
 
-                if (muxer == null) {
-                    try {
-                        String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
-                        muxer = new AndroidMuxer(path);
-                        if (parent.mSegmentCallback != null) {
-                            parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
-                        }
-                        muxer.addTrack(SAMPLE_TYPE_VIDEO, parent.mVideoFormat);
-                        muxer.addTrack(SAMPLE_TYPE_AUDIO, parent.mAudioFormat);
-                        muxer.setMaxDuration(parent.mSegmentDurationLimitedUs);
-                        muxer.start(time);
-                        final long startTimeMs = muxer.startTimeMs();
-                        parent.mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (parent.mSegmentCallback != null) {
-                                    parent.mSegmentCallback.segmentStartAsync(Event.ID_NONE, startTimeMs);
-                                }
+                    if (muxer == null) {
+                        try {
+                            String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
+                            muxer = new AndroidMuxer(path);
+                            if (parent.mSegmentCallback != null) {
+                                parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
                             }
-                        });
-                    } catch (RemoteException e) {
-                        Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
-                                + e.getMessage());
-                        return;
-                    } catch (IOException e) {
-                        Logg.e(LOG_TAG, "Fail to create mp4 muxer with exception: " + e.getMessage());
-                        return;
+                            muxer.addTrack(SAMPLE_TYPE_VIDEO, parent.mVideoFormat);
+                            muxer.addTrack(SAMPLE_TYPE_AUDIO, parent.mAudioFormat);
+                            muxer.setMaxDuration(parent.mSegmentDurationLimitedUs);
+                            muxer.start(time);
+                            final long startTimeMs = muxer.startTimeMs();
+                            parent.mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (parent.mSegmentCallback != null) {
+                                        parent.mSegmentCallback.segmentStartAsync(Event.ID_NONE, startTimeMs);
+                                    }
+                                }
+                            });
+                        } catch (RemoteException e) {
+                            Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
+                                    + e.getMessage());
+                            return;
+                        } catch (IOException e) {
+                            Logg.e(LOG_TAG, "Fail to create mp4 muxer with exception: " + e.getMessage());
+                            return;
+                        }
                     }
                 }
             }
 
-            if (muxer != null) {
-                muxer.writeSampleData(type, byteBuf, bufferInfo);
+            synchronized (syncObj) {
+                if (muxer != null) {
+                    muxer.writeSampleData(type, byteBuf, bufferInfo);
+                }
             }
         }
 
