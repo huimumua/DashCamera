@@ -99,7 +99,7 @@ public class CameraRecordFragment extends Fragment {
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {
-                        startVideoRecord();
+                        startVideoRecord("SD become available");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
@@ -113,7 +113,7 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_MEDIA_BAD_REMOVAL)) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
-                stopVideoRecord();
+                stopVideoRecord("SD MEDIA_BAD_REMOVAL");
             }
         }
     };
@@ -131,7 +131,7 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
                 Logg.d(TAG, "BroadcastReceiver: Intent.ACTION_SHUTDOWN");
-                stopVideoRecord();
+                stopVideoRecord("Intent.ACTION_SHUTDOWN");
             }
         }
     };
@@ -282,7 +282,7 @@ public class CameraRecordFragment extends Fragment {
             mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
 
             try {
-                startVideoRecord();
+                startVideoRecord("Fragment onResume");
             } catch (Exception e) {
                 Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
             }
@@ -293,7 +293,7 @@ public class CameraRecordFragment extends Fragment {
     public void onPause() {
         Logg.d(TAG, "onPause");
         if (isStartRecord) {
-            stopVideoRecord();
+            stopVideoRecord("Fragment onPause");
             getActivity().unregisterReceiver(mSdAvailableListener);
             getActivity().unregisterReceiver(mSdBadRemovalListener);
             getActivity().unregisterReceiver(mShutdownReceiver);
@@ -468,7 +468,7 @@ public class CameraRecordFragment extends Fragment {
         return (on != 0);
     }
 
-    private void startVideoRecord() throws Exception {
+    private void startVideoRecord(String reason) throws Exception {
         boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
         onMessageEvent(new MessageEvent(Event.EventCode.EVENT_SDCARD,
                 sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
@@ -480,7 +480,7 @@ public class CameraRecordFragment extends Fragment {
             throw new RuntimeException("camera unavailable");
         }
 
-        mMainCam.startVideoRecord();
+        mMainCam.startVideoRecord(reason);
         if (!getMicphoneEnable()) {
             mMainCam.mute();
         }
@@ -492,9 +492,9 @@ public class CameraRecordFragment extends Fragment {
                 mMicphoneSettingsObserver);
     }
 
-    private void stopVideoRecord() {
+    private void stopVideoRecord(String reason) {
         if (mMainCam != null) {
-            mMainCam.stopVideoRecord();
+            mMainCam.stopVideoRecord(reason);
         }
         ContentResolver contentResolver = getActivity().getContentResolver();
         contentResolver.unregisterContentObserver(mMicphoneSettingsObserver);
