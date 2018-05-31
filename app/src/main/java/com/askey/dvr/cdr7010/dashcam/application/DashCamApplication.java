@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.Communication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventDetection;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
@@ -13,6 +14,9 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 
 import org.greenrobot.eventbus.EventBus;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by lly on 18-4-9.
@@ -36,6 +40,12 @@ public class DashCamApplication extends Application {
         EventSending.getInstance().bindJvcEventSendingService();
         MainApp.getInstance().bindJvcMainAppService();
         VersionUp.getInstance().bindJvcVersionUpService();
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Communication.getInstance().weatherAlertRequest();
+            }
+        }, 10 * 1000,  5 * 60 * 1000);
     }
 
     @Override

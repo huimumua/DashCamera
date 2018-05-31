@@ -113,6 +113,7 @@ public class EventDetection {
     }
 
     public void registerCallback(IEventDetectionCallback callback){
+        Logg.d(LOG_TAG, "registerCallback: ");
         if(mEventDetectionInterface == null)
             return;
 
@@ -124,6 +125,7 @@ public class EventDetection {
     }
 
     public void unregisterCallback(IEventDetectionCallback callback){
+        Logg.d(LOG_TAG, "unregisterCallback: ");
         if(mEventDetectionInterface == null)
             return;
 
@@ -135,6 +137,7 @@ public class EventDetection {
     }
 
     public ParcelFileDescriptor get1HzDataPipe(){
+        Logg.d(LOG_TAG, "get1HzDataPipe: ");
         if(mEventDetectionInterface == null)
             return null;
 
@@ -148,6 +151,7 @@ public class EventDetection {
     }
 
     public void sendTripData(String filePath){
+        Logg.d(LOG_TAG, "sendTripData: ");
         if(mEventDetectionInterface == null)
             return;
 
@@ -159,6 +163,8 @@ public class EventDetection {
     }
 
     public void sendImpactLocation(double lat,double lon,double gpsAcc,float detectVal,long occurDate){
+        Logg.d(LOG_TAG, "sendImpactLocation: lat=" + lat + ", lon=" + lon + ", gpsAcc=" + gpsAcc +
+                ", detectVal=" + detectVal + ", occurDate=" + occurDate);
         if(mEventDetectionInterface == null)
             return;
 

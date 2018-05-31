@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -32,19 +33,22 @@ public class CommunicationReceiver extends BroadcastReceiver{
 
         } else if (action.equals(ACTION_TRIPID_UPDATE_NOTIFICATION)) {
             //通过用户变更等取得TripID的时候通知事件检测
+            CommunicationService.tripIdUpdateNotification();
 
         } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");
+            CommunicationService.weatherAlertResponse(response);
 
         } else if (action.equals(ACTION_TRIPID_VERSIONUP_RESPONSE)) {
             //通知VersionUp中取得TripID时的固件更新信息通知
             int fairmware = intent.getIntExtra("fairmware", -1);
             int voice = intent.getIntExtra("voice", -1);
+            CommunicationService.tripIdVersionUpResponse(fairmware, voice);
 
         } else if (action.equals(ACTION_TRIPID_LOG_UPLOAD_RESPONSE)) {
             int logupload = intent.getIntExtra("logupload", -1);
-
+            CommunicationService.tripIdLogUploadUpResponse(logupload);
 
         }
 

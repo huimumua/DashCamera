@@ -67,6 +67,7 @@ public class EventSending {
     }
 
     public void setEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath){
+        Logg.d(LOG_TAG, "setEventData: eventNo=" + eventNo + ", timeStamp=" + timeStamp);
         if(mEventSendingInterface == null)
             return;
 

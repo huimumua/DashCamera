@@ -6,6 +6,9 @@ import android.content.Intent;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
  * Copyright ©2014-2018 Chengdu Skysoft Info&Tech Co., Ltd.
@@ -22,6 +25,7 @@ public class Communication {
     public static final String ACTION_CANCEL_EMERGENCY_CALL = "com.jvckenwood.communication.CANCEL_EMERGENCY_CALL";
     public static final String ACTION_DISC_EMERGENCY_CALL = "com.jvckenwood.communication.DISC_EMERGENCY_CALL";
     public static final String ACTION_WEATHER_ALERT_REQUEST = "com.jvckenwood.communication.WEATHER_ALERT_REQUEST";
+    public static final String ACTION_SET_EVENT_DATA = "com.jvckenwood.communication.SET_EVENT_DATA";
 
     private static final String LOG_TAG = "Communication";
     private static Communication mCommunication;
@@ -102,6 +106,16 @@ public class Communication {
     public void weatherAlertRequest(){
         Logg.d(LOG_TAG, "weatherAlertRequest: ");
         Intent intent = new Intent(ACTION_WEATHER_ALERT_REQUEST);
+        sendOutBroadcast(intent);
+    }
+
+    public void setEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath){
+        Logg.d(LOG_TAG, "setEventData: ");
+        Intent intent = new Intent(ACTION_SET_EVENT_DATA);
+        intent.putExtra("eventNo", eventNo);
+        intent.putExtra("timeStamp", timeStamp);
+        intent.putStringArrayListExtra("picturePath", (ArrayList<String>) picturePath);
+        intent.putStringArrayListExtra("moviePath", (ArrayList<String>) moviePath);
         sendOutBroadcast(intent);
     }
 

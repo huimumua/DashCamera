@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IVersionUp;
 import com.jvckenwood.communication.IVersionUpCallback;
@@ -58,6 +59,8 @@ public class VersionUp {
     private IVersionUpCallback.Stub mVersionUpCallback = new IVersionUpCallback.Stub() {
         @Override
         public void reportVersionUpInformation(int oos, int fileType, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportVersionUpInformation: fileType=" + fileType + ", response=" + response);
+            CommunicationService.reportVersionUpInformation(oos, fileType, response);
 
         }
 
@@ -77,6 +80,7 @@ public class VersionUp {
     }
 
     public void registerCallback(IVersionUpCallback callback){
+        Logg.d(LOG_TAG, "registerCallback: ");
         if(mVersionUpInterface == null)
             return;
 
@@ -88,6 +92,7 @@ public class VersionUp {
     }
 
     public void unregisterCallback(IVersionUpCallback callback){
+        Logg.d(LOG_TAG, "unregisterCallback: ");
         if(mVersionUpInterface == null)
             return;
 
@@ -99,6 +104,7 @@ public class VersionUp {
     }
 
     public void getVersionUpInformation(int fileType, String currentVersion){
+        Logg.d(LOG_TAG, "getVersionUpInformation: fileType=" + fileType + ", currentVersion=" + currentVersion);
         if(mVersionUpInterface == null)
             return;
 
@@ -110,6 +116,7 @@ public class VersionUp {
     }
 
     public void getVersionUpData(int fileType, String version, int range){
+        Logg.d(LOG_TAG, "getVersionUpData: fileType=" + fileType + ", version=" + version + ", range=" + range);
         if(mVersionUpInterface == null)
             return;
 

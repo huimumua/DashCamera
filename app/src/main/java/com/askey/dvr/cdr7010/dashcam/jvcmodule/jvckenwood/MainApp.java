@@ -8,9 +8,10 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
-import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
@@ -62,31 +63,31 @@ public class MainApp {
         @Override
         public void reportInsuranceTerm(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
-
+            CommunicationService.reportInsuranceTerm(oos, response);
         }
 
         @Override
         public void reportUserList(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
-
+            CommunicationService.reportUserList(oos, response);
         }
 
         @Override
         public void reportSystemSettings(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportSystemSettings: oos=" + oos + ", response=" + response);
-
+            CommunicationService.reportSystemSettings(oos, response);
         }
 
         @Override
         public void reportUserSettings(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
-
+            CommunicationService.reportUserSettings(oos, response);
         }
 
         @Override
         public void reportSettingsUpdate(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
-
+            CommunicationService.reportSettingsUpdate(oos, response);
         }
 
         @Override
@@ -124,7 +125,7 @@ public class MainApp {
         @Override
         public void reportTxEventProgress(int eventNo, int progress, int total) throws RemoteException {
             Logg.d(LOG_TAG, "reportTxEventProgress: progress=" + progress + ", total=" + total);
-
+            CommunicationService.reportTxEventProgress(eventNo, progress, total);
         }
 
         @Override
@@ -142,7 +143,7 @@ public class MainApp {
         @Override
         public void onFWUpdateRequest(int result) throws RemoteException {
             Logg.d(LOG_TAG, "onFWUpdateRequest: result=" + result);
-
+            CommunicationService.onFWUpdateRequest(result);
         }
     };
 
@@ -159,6 +160,7 @@ public class MainApp {
     }
 
     public void startInitialSetup(){
+        Logg.d(LOG_TAG, "startInitialSetup: ");
         if(!checkConnection())
             return;
 
@@ -170,6 +172,7 @@ public class MainApp {
     }
 
     public void endInitialSetup(){
+        Logg.d(LOG_TAG, "endInitialSetup: ");
         if(!checkConnection())
             return;
 
@@ -181,6 +184,7 @@ public class MainApp {
     }
 
     public void settingsUpdateRequest(String setings){
+        Logg.d(LOG_TAG, "settingsUpdateRequest: setings=" + setings);
         if(!checkConnection())
             return;
 
@@ -192,6 +196,7 @@ public class MainApp {
     }
 
     public void manualUploadCancel(int cancel){
+        Logg.d(LOG_TAG, "manualUploadCancel: cancel=" + cancel);
         if(!checkConnection())
             return;
 
@@ -207,6 +212,7 @@ public class MainApp {
      * @param isUserCall;  1.ユーザからの要求発信 / 2.コールセンターからの要求発信(リアルタイム)
      */
     public void voipInfomationRequest(int userId,int isUserCall){
+        Logg.d(LOG_TAG, "voipInfomationRequest: userId=" + userId + ", isUserCall=" + isUserCall);
         if(!checkConnection())
             return;
 
@@ -218,6 +224,7 @@ public class MainApp {
     }
 
     public void FWUpdateRequest(){
+        Logg.d(LOG_TAG, "FWUpdateRequest: ");
         if(!checkConnection())
             return;
 
@@ -229,6 +236,7 @@ public class MainApp {
     }
 
     public void registerCallback(IMainAppCallback callback){
+        Logg.d(LOG_TAG, "registerCallback: ");
         if(!checkConnection())
             return;
 
@@ -240,6 +248,7 @@ public class MainApp {
     }
 
     public void unregisterCallback(IMainAppCallback callback){
+        Logg.d(LOG_TAG, "unregisterCallback: ");
         if(!checkConnection())
             return;
 

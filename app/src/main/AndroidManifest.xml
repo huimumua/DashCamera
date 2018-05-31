@@ -116,6 +116,14 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".jvcmodule.local.CommunicationService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="jvcmodule.local.CommuicationService" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>
