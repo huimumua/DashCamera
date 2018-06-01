@@ -57,6 +57,9 @@ public class ManualUploadService extends Service {
     }
 
     public static void reportTxManualProgress(int progress1, int total1, int progress2, int total2){
+        if(mManualUploadCallbackList == null)
+            return;
+
         int num = mManualUploadCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -69,6 +72,9 @@ public class ManualUploadService extends Service {
     }
 
     public static void manualUploadComplete(int userCancel, String response){
+        if(mManualUploadCallbackList == null)
+            return;
+
         int num = mManualUploadCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {

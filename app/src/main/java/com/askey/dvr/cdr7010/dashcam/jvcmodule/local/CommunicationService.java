@@ -119,6 +119,9 @@ public class CommunicationService extends Service {
     }
 
     public static void tripIdUpdateNotification(){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -132,6 +135,9 @@ public class CommunicationService extends Service {
     }
 
     public static void weatherAlertResponse(String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -144,6 +150,9 @@ public class CommunicationService extends Service {
     }
 
     public static void tripIdVersionUpResponse(int fairmware, int voice){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -156,6 +165,9 @@ public class CommunicationService extends Service {
     }
 
     public static void tripIdLogUploadUpResponse(int logupload){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -168,6 +180,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportInsuranceTerm(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -180,6 +195,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportUserList(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -192,6 +210,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportSystemSettings(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -204,6 +225,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportUserSettings(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -216,6 +240,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportSettingsUpdate(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -228,6 +255,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportTxEventProgress(int eventNo,int progress,int total){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -240,6 +270,9 @@ public class CommunicationService extends Service {
     }
 
     public static void onFWUpdateRequest(int result){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
@@ -252,6 +285,9 @@ public class CommunicationService extends Service {
     }
 
     public static void reportVersionUpInformation(int oos,int fileType,String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
