@@ -10,11 +10,15 @@ import android.os.RemoteException;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
+
+import java.util.EnumMap;
 
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
@@ -64,6 +68,11 @@ public class MainApp {
         public void reportInsuranceTerm(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
             CommunicationService.reportInsuranceTerm(oos, response);
+
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            LocalJvcStatusManager.setInsuranceTerm(enumMap);
         }
 
         @Override
