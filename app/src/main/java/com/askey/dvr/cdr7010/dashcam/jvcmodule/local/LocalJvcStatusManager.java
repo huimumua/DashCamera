@@ -26,10 +26,10 @@ public class LocalJvcStatusManager {
     public static EnumMap<JvcStatusParam, Object> getInsuranceTerm(LocalJvcStatusCallback callback){
         Context appContext = DashCamApplication.getAppContext();
         EnumMap<JvcStatusParam, Object> object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
-        if(object != null && callback != null){
+        if(object == null && callback != null)
             mCallbacks.add(callback);
+        if(object != null)
             callback.onDataArriving(object);
-        }
 
         return object;
     }
@@ -38,8 +38,10 @@ public class LocalJvcStatusManager {
         Context appContext = DashCamApplication.getAppContext();
         ObjectPreference.setObjectToShare(appContext, enumMap, JvcStatus.INSURANCE_TERM.getName());
 
-        for(LocalJvcStatusCallback callback : mCallbacks){
-            callback.onDataArriving(enumMap);
+        if(enumMap != null){
+            for(LocalJvcStatusCallback callback : mCallbacks){
+                callback.onDataArriving(enumMap);
+            }
         }
     }
 
