@@ -15,6 +15,8 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Recorder implements IFrameListener {
@@ -35,6 +37,7 @@ public class Recorder implements IFrameListener {
         void onStoped();
         void onInterrupted();
         void onEventStateChanged(boolean on);
+        void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
     }
 
     public Recorder(@NonNull Context context,
@@ -142,6 +145,10 @@ public class Recorder implements IFrameListener {
                     for (String pic : pictures) {
                         Logg.d(TAG, pic);
                     }
+                }
+
+                if (mStateCallback != null) {
+                    mStateCallback.onEventCompleted(event, startTimeMs, pictures, path);
                 }
             }
         }

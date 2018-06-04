@@ -30,6 +30,7 @@ import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -47,6 +48,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -220,7 +224,16 @@ public class CameraRecordFragment extends Fragment {
                     }
                 }
             });
+        }
 
+        @Override
+        public void onEventCompleted(int eventId, long timestamp, List<String> pictures, String video) {
+            Logg.d(TAG, "DashState: onEventCompleted ");
+            ArrayList<Integer> results = new ArrayList<>(Arrays.asList(1, 0, 1, 1, 1, 0, 0, 0));
+            ArrayList<String> files = new ArrayList<>();
+            files.add(video);
+            files.addAll(pictures);
+            JvcEventSending.recordResponse(eventId, results, files);
         }
     };
 

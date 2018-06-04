@@ -1,6 +1,5 @@
 package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
-import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -23,21 +22,8 @@ public class JvcEventSending {
     public static final String ACTION_EVENT_RECORD_RESPONSE = "com.jvckenwood.eventsending.EVENT_RECORD_RESPONSE";
 
     private static final String LOG_TAG = "JvcEventSending";
-    private static JvcEventSending JvcEventSending;
-    private final Context mAppContext;
 
-    private JvcEventSending() {
-        mAppContext = DashCamApplication.getAppContext();
-    }
-
-    public static JvcEventSending getInstance(){
-        if(JvcEventSending == null)
-            JvcEventSending = new JvcEventSending();
-
-        return JvcEventSending;
-    }
-
-    public void notifyAdas(int eventType, long timeStamp){
+    public static void notifyAdas(int eventType, long timeStamp){
         Logg.d(LOG_TAG, "notifyAdas: eventType=" + eventType + ", timeStamp=" + timeStamp);
         Intent intent = new Intent(ACTION_EVENT_NOTIFY_ADAS);
         intent.putExtra("eventType", eventType);
@@ -45,7 +31,7 @@ public class JvcEventSending {
         sendOutBroadcast(intent);
     }
 
-    public void notivyEventDetect(int eventType, long timeStamp){
+    public static void notivyEventDetect(int eventType, long timeStamp){
         Logg.d(LOG_TAG, "notivyEventDetect: eventType=" + eventType + ", timeStamp=" + timeStamp);
         Intent intent = new Intent(ACTION_EVENT_NOTIFY_EVENT_DETECT);
         intent.putExtra("eventType", eventType);
@@ -53,7 +39,7 @@ public class JvcEventSending {
         sendOutBroadcast(intent);
     }
 
-    public void recordResponse(int eventNo, ArrayList<Integer> result, ArrayList<String> recordPath){
+    public static void recordResponse(int eventNo, ArrayList<Integer> result, ArrayList<String> recordPath){
         Logg.d(LOG_TAG, "recordResponse: eventNo=" + eventNo);
         Intent intent = new Intent(ACTION_EVENT_RECORD_RESPONSE);
         intent.putExtra("eventNo", eventNo);
@@ -62,9 +48,7 @@ public class JvcEventSending {
         sendOutBroadcast(intent);
     }
 
-    private void sendOutBroadcast(Intent intent){
-        mAppContext.sendBroadcast(intent);
+    private static void sendOutBroadcast(Intent intent){
+        DashCamApplication.getAppContext().sendBroadcast(intent);
     }
-
-
 }

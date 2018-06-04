@@ -15,6 +15,7 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDCardUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +39,7 @@ public class DashCam implements DashCamControl{
         void onStoped();
         void onError();
         void onEventStateChanged(boolean on);
+        void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
     }
 
     private Recorder.StateCallback mRecorderCallback = new Recorder.StateCallback() {
@@ -79,6 +81,14 @@ public class DashCam implements DashCamControl{
             Logg.d(TAG, "RecorderStateCallback: onEventStateChanged " + on);
             if (mStateCallback != null) {
                 mStateCallback.onEventStateChanged(on);
+            }
+        }
+
+        @Override
+        public void onEventCompleted(int eventId, long timestamp, List<String> pictures, String video) {
+            Logg.d(TAG, "RecorderStateCallback: onEventCompleted ");
+            if (mStateCallback != null) {
+                mStateCallback.onEventCompleted(eventId, timestamp, pictures, video);
             }
         }
     };
