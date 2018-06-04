@@ -80,7 +80,7 @@ public class OSDView extends View {
     private Paint  timePaint;
     private Paint  drawPaint;
     private boolean threadExitFlag = false;
-    private int timerInterval = 3000;
+    private int timerInterval = 1000;
     private int scrollingSpeed;
     private Bitmap time_bg;
     private Bitmap continuous_recording ;
@@ -235,15 +235,10 @@ public class OSDView extends View {
         }
         return timeString;
     }
-    int cc =3;
     private Handler handler = new Handler(){
         public void handleMessage(Message msg){
             switch(msg.what){
                 case REFRESH_PREVIEW_TIME_TIMER:
-                    cc--;
-                    if(cc == 0){
-                     //   EventManager.getInstance().handOutEventInfo(115);
-                    }
                     invalidateView();
                     break;
                 default:
