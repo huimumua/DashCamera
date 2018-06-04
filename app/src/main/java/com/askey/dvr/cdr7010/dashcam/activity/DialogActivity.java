@@ -38,6 +38,7 @@ public abstract class DialogActivity extends AppCompatActivity {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
     }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if(handleKeyEvent(event)){
@@ -192,7 +193,7 @@ public abstract class DialogActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        DialogManager.getIntance().unregisterContext();
+        DialogManager.getIntance().unregisterContext(this);
         super.onDestroy();
     }
     protected  abstract  boolean handleKeyEvent(KeyEvent event);

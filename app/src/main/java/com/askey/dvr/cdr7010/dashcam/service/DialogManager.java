@@ -50,8 +50,10 @@ public class DialogManager{
         dialogLogic.setContext(mContext);
         dialogLogic.setDialogCallBack(dialogCallBack);
     }
-    public void unregisterContext(){
-        mContext = null;
+    public void unregisterContext(Context context){
+        if(mContext == context) {
+            mContext = null;
+        }
     }
     public void showDialog(int dialogType,String message,boolean resize){
         if(mContext != null && (mContext instanceof Activity)){
@@ -71,9 +73,7 @@ public class DialogManager{
             int dialogType = eventInfo.getDialogType();
             String message = eventInfo.getEventDescription();
             if (mContext != null && (mContext instanceof Activity) && dialogType > 0) {
-                if(lastDisplay && priority <= lastPriority){
-                    dialogLogic.onFilter(dialogType,eventType,priority,showTime,message);
-                }else {
+                if((lastDisplay && priority <= lastPriority)||!lastDisplay){
                     dialogLogic.onFilter(dialogType,eventType,priority,showTime,message);
                 }
             }
@@ -193,8 +193,6 @@ public class DialogManager{
             lastDialogType = dialogType;
             lastDisplay = display;
 
-
-
         }
         @Override
         public void onDismiss(int priority,int eventType,int dialogType,boolean display){
@@ -218,10 +216,12 @@ public class DialogManager{
                 eventItem = eventList.getNextEventItem();
             }
             dialogLogic.resetLastEvent();
-            lastPriority = priority;
-            lastEventType = eventType;
-            lastDialogType = dialogType;
-            lastDisplay = display;
+            if(lastEventType == eventType) {
+                lastPriority = priority;
+                lastEventType = eventType;
+                lastDialogType = dialogType;
+                lastDisplay = display;
+            }
             if(eventItem != null){
                 DialogManager.getIntance().showDialog(eventItem.eventType,eventItem.beginTime);
             }
