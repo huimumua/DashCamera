@@ -524,7 +524,12 @@ public class CameraRecordFragment extends Fragment {
      */
     public void beforeContractDayStart() {
         tvContent.setVisibility(View.VISIBLE);
+        osdView.setVisibility(View.GONE);
         tvContent.setText(getString(R.string.before_contract_day_start));
+        releaseAll();
+    }
+
+    private void releaseAll() {
         stopVideoRecord("Fragment onPause");
         GPSStatusManager.getInstance().recordLocation(false);
         getActivity().unregisterReceiver(mSdAvailableListener);
@@ -540,6 +545,8 @@ public class CameraRecordFragment extends Fragment {
 
     public void afterContractDayEnd() {
         tvContent.setVisibility(View.VISIBLE);
+        osdView.setVisibility(View.GONE);
         tvContent.setText(getString(R.string.after_contract_day_stop));
+        releaseAll();
     }
 }

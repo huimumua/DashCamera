@@ -20,6 +20,6 @@
         android:paddingRight="10dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:textColor="#FFFFFF"
-        android:textSize="30sp"
+        android:textSize="28sp"
         android:visibility="visible" />
 </FrameLayout>

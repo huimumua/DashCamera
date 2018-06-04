@@ -42,7 +42,7 @@ public class MainActivity extends DialogActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         if (savedInstanceState == null) {
-            fragment = new CameraRecordFragment();
+            fragment = CameraRecordFragment.newInstance();
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
