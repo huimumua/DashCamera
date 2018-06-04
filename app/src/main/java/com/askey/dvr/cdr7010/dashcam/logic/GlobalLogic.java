@@ -121,6 +121,15 @@ public class GlobalLogic{
         }
         return value;
     }
+    public int getInt(String key,int def){
+        int value = def;
+        try{
+            value =  Settings.Global.getInt(contentResolver, key,def);
+        }catch(Exception e){
+            value = def;
+        }
+        return value;
+    }
     public void setIsInRecording(boolean isInRecording){
         this.isInRecording = isInRecording;
     }

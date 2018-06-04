@@ -9,4 +9,5 @@ public class Const {
 
     public static final String IS_START_RECORD = "is_start_record";
     public static final String EXTRA_INFO = "extra_info";
+    public static final int FIRST_INIT_SUCCESS =0;
 }
