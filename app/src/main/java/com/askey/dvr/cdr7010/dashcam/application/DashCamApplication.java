@@ -6,10 +6,7 @@ import android.content.res.Configuration;
 
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.Communication;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventDetection;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.VersionUp;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 
@@ -36,10 +33,7 @@ public class DashCamApplication extends Application {
         setAppContext(this);
         FileManager.getInstance(this); // bindService
         TTSManager.getInstance().initTTS();
-        EventDetection.getInstance().bindJvcEventDetectionService();
-        EventSending.getInstance().bindJvcEventSendingService();
         MainApp.getInstance().bindJvcMainAppService();
-        VersionUp.getInstance().bindJvcVersionUpService();
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {

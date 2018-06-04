@@ -72,13 +72,18 @@ public class MainApp {
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            LocalJvcStatusManager.setInsuranceTerm(enumMap);
+            LocalJvcStatusManager.setInsuranceTerm(enumMap, true);
         }
 
         @Override
         public void reportUserList(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
             CommunicationService.reportUserList(oos, response);
+
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            LocalJvcStatusManager.setUserList(enumMap);
         }
 
         @Override

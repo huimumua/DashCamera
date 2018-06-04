@@ -17,6 +17,9 @@ interface ICommunicationCallback {
     void onFWUpdateRequest(int result);
 
     //IVersionUpCallback
-	void reportVersionUpInformation(int oos,int fileType,String response);
+
+
+	//local
+	void onGetUserList(int oos, String response, boolean received);
 
 }

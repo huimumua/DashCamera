@@ -74,10 +74,10 @@ public class ObjectPreference {
         return editor.commit();
     }
 
-//    protected static boolean removeObjectFromShare(Context context, String key) {
-//        SharedPreferences share = PreferenceManager.getDefaultSharedPreferences(context);
-//        SharedPreferences.Editor editor = share.edit().remove(key);
-//        return editor.commit();
-//    }
+    protected static boolean removeObjectFromShare(Context context, String key) {
+        SharedPreferences share = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = share.edit().remove(key);
+        return editor.commit();
+    }
 
 }

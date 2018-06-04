@@ -15,16 +15,11 @@ interface ICommunication {
 	void settingsUpdateRequest(String setings);
 	void FWUpdateRequest();
 
-	//IEventDetection
-    ParcelFileDescriptor get1HzDataPipe();
-	void sendTripData(String filePath);
-
-	//IEventSending
-	void EventSending_SetEventData(int eventNo,long timeStamp,out List<String> picturePath,out List<String> moviePath);
-
 	//IVersionUp
-    void getVersionUpInformation(int fileType,String currentVersion);
-	void getVersionUpData(int fileType,String version,int range);
+
+	//local
+	void getUserList();
+
 
 	void registerCallback(ICommunicationCallback callback);
 	void unregisterCallback(ICommunicationCallback callback);

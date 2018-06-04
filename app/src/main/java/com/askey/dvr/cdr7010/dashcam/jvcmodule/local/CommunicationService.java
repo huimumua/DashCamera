@@ -3,7 +3,6 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.local;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
@@ -11,12 +10,10 @@ import android.support.annotation.Nullable;
 import com.askey.dvr.cdr7010.dashcam.ICommunication;
 import com.askey.dvr.cdr7010.dashcam.ICommunicationCallback;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.Communication;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventDetection;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.EventSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.VersionUp;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
+import java.util.EnumMap;
 import java.util.List;
 
 public class CommunicationService extends Service {
@@ -70,33 +67,8 @@ public class CommunicationService extends Service {
         }
 
         @Override
-        public ParcelFileDescriptor get1HzDataPipe() {
-            return EventDetection.getInstance().get1HzDataPipe();
-        }
-
-        @Override
-        public void sendTripData(String filePath) {
-            EventDetection.getInstance().sendTripData(filePath);
-        }
-
-        @Override
-        public void EventSending_SetEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath) {
-            EventSending.getInstance().setEventData(eventNo, timeStamp, picturePath, moviePath);
-        }
-
-        @Override
         public void setEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath) {
             Communication.getInstance().setEventData(eventNo, timeStamp, picturePath, moviePath);
-        }
-
-        @Override
-        public void getVersionUpInformation(int fileType, String currentVersion) {
-            VersionUp.getInstance().getVersionUpInformation(fileType, currentVersion);
-        }
-
-        @Override
-        public void getVersionUpData(int fileType, String version, int range) {
-            VersionUp.getInstance().getVersionUpData(fileType, version, range);
         }
 
         @Override
@@ -114,6 +86,22 @@ public class CommunicationService extends Service {
                 mCommunicationCallbackList.unregister(callback);
             }else {
                 Logg.w(LOG_TAG, "unregisterCallback: null callback.");
+            }
+        }
+
+
+        /********************************************************
+         * ***********************local**********************************************
+         ***********************************************/
+        @Override
+        public void getUserList() {
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> userMap = LocalJvcStatusManager.getUserList();
+            if(userMap == null){
+                onGetUserList(1, null, false);
+            }else {
+                int oos = (int) userMap.get(JvcStatusParams.JvcStatusParam.OOS);
+                String response = (String) userMap.get(JvcStatusParams.JvcStatusParam.RESPONSE);
+                onGetUserList(oos, response, true);
             }
         }
     }
@@ -284,25 +272,29 @@ public class CommunicationService extends Service {
         mCommunicationCallbackList.finishBroadcast();
     }
 
-    public static void reportVersionUpInformation(int oos,int fileType,String response){
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Logg.i(LOG_TAG, "onDestroy: ");
+    }
+
+
+    /********************************************************
+     * ***********************local**********************************************
+     ***********************************************/
+    public static void onGetUserList(int oos, String response, boolean received){
         if(mCommunicationCallbackList == null)
             return;
 
         int num = mCommunicationCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
-                mCommunicationCallbackList.getBroadcastItem(i).reportVersionUpInformation(oos, fileType, response);
+                mCommunicationCallbackList.getBroadcastItem(i).onGetUserList(oos, response, received);
             }
         } catch (RemoteException e) {
-            Logg.e(LOG_TAG, "reportVersionUpInformation: " + e.getMessage());
+            Logg.e(LOG_TAG, "onGetUserList: " + e.getMessage());
         }
         mCommunicationCallbackList.finishBroadcast();
     }
 
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Logg.i(LOG_TAG, "onDestroy: ");
-    }
 }

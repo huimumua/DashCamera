@@ -12,7 +12,7 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.local;
 public class JvcStatusParams {
 
     public enum JvcStatus {
-        INSURANCE_TERM("insuranceTerm");
+        INSURANCE_TERM("insuranceTerm"), USER_LIST("userList");
 
         private String name;
 
