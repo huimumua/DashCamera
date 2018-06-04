@@ -1,6 +1,5 @@
 package com.askey.dvr.cdr7010.dashcam.notice;
 
-
 public interface NoticeContract {
 
     interface Model {
@@ -13,31 +12,6 @@ public interface NoticeContract {
         void showTitle(String title);
 
         void showDescription(String description);
-
-        /**
-         * 合约日期开始之前
-         * <p>
-         * add by Navas.li on 2018.5.29
-         *
-         * @param content string to show
-         */
-        void beforeContractDayStart(String content);
-
-        /**
-         * 合约日期结束之后
-         * <p>
-         * add by Navas.li on 2018.5.29
-         *
-         * @param content string to show
-         */
-        void afterContractDayEnd(String content);
-
-        /**
-         * 在合约期内
-         * <p>
-         * add by Navas.li on 2018.5.29
-         */
-        void inContractDay();
 
         boolean isActive();
     }

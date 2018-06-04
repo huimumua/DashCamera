@@ -23,31 +23,31 @@ import java.util.List;
 public class LocalJvcStatusManager {
     private static List<LocalJvcStatusCallback> mCallbacks = Collections.synchronizedList(new ArrayList<LocalJvcStatusCallback>());
 
-    public static EnumMap<JvcStatusParam, Object> getInsuranceTerm(LocalJvcStatusCallback callback){
+    public static void getInsuranceTerm(LocalJvcStatusCallback callback) {
         Context appContext = DashCamApplication.getAppContext();
         EnumMap<JvcStatusParam, Object> object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
-        if(object == null && callback != null)
-            mCallbacks.add(callback);
-        if(object != null)
-            callback.onDataArriving(object);
-
-        return object;
+        if (callback != null) {
+            if (object == null) {
+                mCallbacks.add(callback);
+            } else {
+                callback.onDataArriving(object);
+            }
+        }
     }
 
-    public static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap){
+    public static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap) {
         Context appContext = DashCamApplication.getAppContext();
         ObjectPreference.setObjectToShare(appContext, enumMap, JvcStatus.INSURANCE_TERM.getName());
 
-        if(enumMap != null){
-            for(LocalJvcStatusCallback callback : mCallbacks){
+        if (enumMap != null) {
+            for (LocalJvcStatusCallback callback : mCallbacks) {
                 callback.onDataArriving(enumMap);
             }
         }
     }
 
 
-
-    public interface LocalJvcStatusCallback{
+    public interface LocalJvcStatusCallback {
         void onDataArriving(EnumMap<JvcStatusParam, Object> enumMap);
     }
 

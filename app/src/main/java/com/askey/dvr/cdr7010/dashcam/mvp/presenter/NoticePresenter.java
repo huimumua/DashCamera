@@ -2,8 +2,6 @@ package com.askey.dvr.cdr7010.dashcam.mvp.presenter;
 
 import android.text.TextUtils;
 
-import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.basemvp.BasePresenter;
 import com.askey.dvr.cdr7010.dashcam.domain.NoticeItem;
 import com.askey.dvr.cdr7010.dashcam.mvp.model.NoticeModel;
@@ -53,24 +51,6 @@ public class NoticePresenter extends BasePresenter<NoticeContract.View> implemen
             mView.showDescription(DESCRIPTION);
         } else {
             mView.showDescription(description);
-        }
-    }
-
-    /**
-     * 判断契约日
-     */
-    public void checkContractDay() {//暂时是写在这个方法里，有接口了之后移到接口里处理
-//        int result = ((int) (Math.random() * 3)) - 2;
-        int result = 1;
-        String content;
-        if (result < 0) {
-            content = DashCamApplication.getAppContext().getString(R.string.after_contract_day_stop);
-            mView.afterContractDayEnd(content);
-        } else if (result == 0) {
-            content = DashCamApplication.getAppContext().getString(R.string.before_contract_day_start);
-            mView.beforeContractDayStart(content);
-        } else {
-            mView.inContractDay();
         }
     }
 

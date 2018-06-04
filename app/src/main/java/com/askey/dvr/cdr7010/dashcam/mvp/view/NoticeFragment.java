@@ -10,12 +10,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.mvp.presenter.NoticePresenter;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
-import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePresenter> implements NoticeContract.View {
@@ -25,20 +23,10 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
     private TextView mTitle;
     private TextView mDescription;
 
-    private LinearLayout llTaskDetail;
-    private TextView tvNoticeContent;
-
     private NoticeListener noticeListener;
 
     public interface NoticeListener {
-        /**
-         * jump to anotherPage.
-         * <p>
-         * Modified by Navas.li on 2018.5.31.add param
-         *
-         * @param isStartRecord whether to start record.false for do not start record otherwise for will start record
-         */
-        void noticeJump(boolean isStartRecord);
+        void noticeJump();
     }
 
     public static NoticeFragment newInstance(String param) {
@@ -60,7 +48,6 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
             throw new ClassCastException(context.toString() + " must implement notice");
         }
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,8 +83,6 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
     }
 
     private void initView(View v) {
-        llTaskDetail = (LinearLayout) v.findViewById(R.id.ll_task_detail);
-        tvNoticeContent = (TextView) v.findViewById(R.id.tv_notice_content);
     }
 
     private void initData() {
@@ -120,27 +105,6 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         mDescription.setText(description);
     }
 
-    @Override
-    public void beforeContractDayStart(String content) {
-        tvNoticeContent.setText(content);
-        llTaskDetail.setVisibility(View.GONE);
-        tvNoticeContent.setVisibility(View.VISIBLE);
-        timerBefore.start();
-    }
-
-    @Override
-    public void afterContractDayEnd(String content) {
-        tvNoticeContent.setText(content);
-        llTaskDetail.setVisibility(View.GONE);
-        tvNoticeContent.setVisibility(View.VISIBLE);
-        timeFinishApp.start();//1分钟后关闭电源
-    }
-
-    @Override
-    public void inContractDay() {
-        noticeListener.noticeJump(true);
-    }
-
     private CountDownTimer timerNotice = new CountDownTimer(4000, 1000) {
 
         @Override
@@ -149,33 +113,7 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
 
         @Override
         public void onFinish() {
-            mPresenter.checkContractDay();//倒计时结束，检查合约日期
-        }
-    };
-
-    private CountDownTimer timeFinishApp = new CountDownTimer(60000, 1000) {
-
-        @Override
-        public void onTick(long millisUntilFinished) {
-        }
-
-        @Override
-        public void onFinish() {
-            Logg.d(TAG, "关闭电源");
-            ActivityUtils.shutDown(DashCamApplication.getAppContext());
-        }
-    };
-
-    private CountDownTimer timerBefore = new CountDownTimer(60000, 1000) {
-
-        @Override
-        public void onTick(long millisUntilFinished) {
-        }
-
-        @Override
-        public void onFinish() {
-            //进入到主页面，但不开启录制
-            noticeListener.noticeJump(false);
+            noticeListener.noticeJump();
         }
     };
 
@@ -184,14 +122,6 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         if (timerNotice != null) {
             timerNotice.cancel();
             timerNotice = null;
-        }
-        if (timeFinishApp != null) {
-            timeFinishApp.cancel();
-            timeFinishApp = null;
-        }
-        if (timerBefore != null) {
-            timerBefore.cancel();
-            timerBefore = null;
         }
         super.onDestroy();
     }

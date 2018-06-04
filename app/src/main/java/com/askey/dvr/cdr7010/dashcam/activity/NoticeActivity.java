@@ -27,8 +27,7 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
     }
 
     @Override
-    public void noticeJump(boolean isStartRecord) {
-        SPUtils.put(this, Const.IS_START_RECORD, isStartRecord);
+    public void noticeJump() {
         if (checkUpdateResult()) {
             ActivityUtils.startActivity(this, this.getPackageName(), "com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity", true);
         } else {
@@ -46,16 +45,11 @@ public class NoticeActivity extends AppCompatActivity implements NoticeFragment.
 
     @Override
     public void onBackPressed() {
-        return;
     }
 
     public boolean checkUpdateResult() {
         final String SDCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
         File file = new File(SDCardRoot + UPDATE_SUC_FILE_NAME);
-        if (file.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return file.exists();
     }
 }

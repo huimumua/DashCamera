@@ -22,15 +22,13 @@ import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
-import com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
-import com.askey.dvr.cdr7010.dashcam.logic.DialogLogic;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -39,10 +37,8 @@ import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
-import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import com.askey.platform.AskeySettings;
 
@@ -71,11 +67,13 @@ public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
     private DashCam mMainCam;
     private OSDView osdView;
+    private TextView tvContent;
     private Handler mHandler;
     private TelephonyManager mTelephonyManager;
     private UIElementStatusEnum.LTEStatusType lteLevel;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
-    private boolean isStartRecord;
+
+    private boolean hasStopped;
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
@@ -214,7 +212,6 @@ public class CameraRecordFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logg.d(TAG, "onCreate");
-        isStartRecord= (boolean) SPUtils.get(getActivity(), Const.IS_START_RECORD,true);
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
         EventManager.getInstance().loadXML("zh");
@@ -230,70 +227,65 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         osdView = (OSDView) view.findViewById(R.id.osd_view);
-        if (isStartRecord) {
-            requestVideoPermissions();
-            requestGPSPermissions();
-            requestSIMCardPermissions();
-            GPSStatusManager.getInstance().recordLocation(true);
-            osdView.init(1000);
-        }
+        tvContent = (TextView) view.findViewById(R.id.tv_notice_content);
+        requestVideoPermissions();
+        requestGPSPermissions();
+        requestSIMCardPermissions();
+        GPSStatusManager.getInstance().recordLocation(true);
+        osdView.init(1000);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (isStartRecord) {
-            checkSdCardExist();
-            IntentFilter simCardFilter = new IntentFilter();
-            simCardFilter.addAction("android.intent.action.PHONE_STATE");
-            simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
-            getActivity().registerReceiver(simCardReceiver, simCardFilter);
-        }
+        checkSdCardExist();
+        IntentFilter simCardFilter = new IntentFilter();
+        simCardFilter.addAction("android.intent.action.PHONE_STATE");
+        simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
+        getActivity().registerReceiver(simCardReceiver, simCardFilter);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         Logg.d(TAG, "onResume");
-        if (isStartRecord) {
-            onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
-            LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
-            mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
+        LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
+        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
-            filter.addDataScheme("file");
-            getActivity().registerReceiver(mSdBadRemovalListener, filter);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
+        filter.addDataScheme("file");
+        getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
-            IntentFilter filter2 = new IntentFilter();
-            filter2.addAction("action_sdcard_status");
-            getActivity().registerReceiver(mSdAvailableListener, filter2);
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction("action_sdcard_status");
+        getActivity().registerReceiver(mSdAvailableListener, filter2);
 
-            getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
+        getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
 
-            final boolean stamp = getRecordStamp();
-            final boolean audio = getMicphoneEnable();
-            RecordConfig mainConfig = RecordConfig.builder()
-                    .cameraId(0)
-                    .videoWidth(1920)
-                    .videoHeight(1080)
-                    .videoStampEnable(stamp)
-                    .audioRecordEnable(audio)
-                    .build();
-            mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
+        final boolean stamp = getRecordStamp();
+        final boolean audio = getMicphoneEnable();
+        RecordConfig mainConfig = RecordConfig.builder()
+                .cameraId(0)
+                .videoWidth(1920)
+                .videoHeight(1080)
+                .videoStampEnable(stamp)
+                .audioRecordEnable(audio)
+                .build();
+        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
 
-            try {
-                startVideoRecord("Fragment onResume");
-            } catch (Exception e) {
-                Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
-            }
+        try {
+            startVideoRecord("Fragment onResume");
+        } catch (Exception e) {
+            Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
         }
     }
 
     @Override
     public void onPause() {
         Logg.d(TAG, "onPause");
-        if (isStartRecord) {
+        if (!hasStopped) {
             stopVideoRecord("Fragment onPause");
             getActivity().unregisterReceiver(mSdAvailableListener);
             getActivity().unregisterReceiver(mSdBadRemovalListener);
@@ -307,8 +299,8 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onDestroy() {
         Logg.d(TAG, "onDestroy");
-        EventUtil.unregister(this);
-        if (isStartRecord) {
+        if (!hasStopped) {
+            EventUtil.unregister(this);
             osdView.unInit();
             GPSStatusManager.getInstance().recordLocation(false);
             getActivity().unregisterReceiver(simCardReceiver);
@@ -364,7 +356,7 @@ public class CameraRecordFragment extends Fragment {
             if (messageEvent.getData() == RECORDING_EVENT) {
                 osdView.startRecordingCountDown();
             }
-            if(messageEvent.getData() ==  RECORDING_CONTINUOUS){
+            if (messageEvent.getData() == RECORDING_CONTINUOUS) {
                 DialogManager.getIntance().setStartRecording(true);
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT) {
@@ -526,4 +518,28 @@ public class CameraRecordFragment extends Fragment {
             super.onChange(selfChange);
         }
     };
+
+    /**
+     * 合约开始日之前，停止界面更新，停止录像
+     */
+    public void beforeContractDayStart() {
+        tvContent.setVisibility(View.VISIBLE);
+        tvContent.setText(getString(R.string.before_contract_day_start));
+        stopVideoRecord("Fragment onPause");
+        GPSStatusManager.getInstance().recordLocation(false);
+        getActivity().unregisterReceiver(mSdAvailableListener);
+        getActivity().unregisterReceiver(mSdBadRemovalListener);
+        getActivity().unregisterReceiver(mShutdownReceiver);
+        getActivity().unregisterReceiver(simCardReceiver);
+        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+        LedMananger.getInstance().setLedMicStatus(false);
+        EventUtil.unregister(this);
+        osdView.unInit();
+        hasStopped = true;
+    }
+
+    public void afterContractDayEnd() {
+        tvContent.setVisibility(View.VISIBLE);
+        tvContent.setText(getString(R.string.after_contract_day_stop));
+    }
 }
