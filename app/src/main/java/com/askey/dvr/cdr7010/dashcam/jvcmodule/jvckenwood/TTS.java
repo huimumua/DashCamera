@@ -10,37 +10,36 @@ public class TTS {
     private static final String TAG = "TTS";
     public static final String ACTION_VOICE_NOTIFICATION = "com.jvckenwood.tts.VOICE_NOTIFICATION";
     public static final String ACTION_SPEECH_STOP = "com.jvckenwood.tts.SPEECH_STOP";
-    private static TTS mTTS;
     private final Context mAppContext;
+    public static boolean isSpeaking = false;
+    public static int speakingId = -1;
 
-    private TTS() {
+    public TTS() {
         mAppContext = DashCamApplication.getAppContext();
     }
 
-    public static TTS getInstance() {
-        if (mTTS == null)
-            mTTS = new TTS();
-        return mTTS;
-    }
-
     public void voiceNotification(int[] voiceId, int requestId) {
+        if (isSpeaking && speakingId != -1) {//正在讲话
+            speechStop(speakingId);
+        }
         Intent intent = new Intent(ACTION_VOICE_NOTIFICATION);
         intent.putExtra("voiceId", voiceId);
-        Logg.i(TAG,"voiceNotification=voiceId=="+voiceId[0]);
+        Logg.i(TAG, "voiceNotification=voiceId==" + voiceId[0]);
         intent.putExtra("requestId", requestId);
-        Logg.i(TAG,"voiceNotification=requestId=="+requestId);
+        Logg.i(TAG, "voiceNotification=requestId==" + requestId);
         sendOutBroadcast(intent);
+        isSpeaking = true;
+        speakingId = requestId;
     }
 
     public void speechStop(int requestId) {
         Intent intent = new Intent(ACTION_SPEECH_STOP);
         intent.putExtra("requestId", requestId);
-        Logg.i(TAG,"speechStop=requestId=="+requestId);
+        Logg.i(TAG, "speechStop=requestId==" + requestId);
         sendOutBroadcast(intent);
     }
 
     private void sendOutBroadcast(Intent intent) {
         mAppContext.sendBroadcast(intent);
     }
-
 }
