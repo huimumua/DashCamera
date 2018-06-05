@@ -1,8 +1,12 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.media.Image;
+import android.media.ImageReader;
 
+import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
@@ -27,6 +31,7 @@ public class DashCam implements DashCamControl{
     private StateCallback mStateCallback;
     private boolean mIsRunning;
     private StateMachine mStateMachine;
+    private AdasController mAdasController;
 
     public interface StateCallback {
         void onStarted();
@@ -83,6 +88,7 @@ public class DashCam implements DashCamControl{
         mConfig = config;
         mStateCallback = callback;
         mStateMachine = new StateMachine(this);
+        mAdasController = AdasController.getsInstance();
     }
 
     public void startVideoRecord(String reason) {
@@ -106,6 +112,19 @@ public class DashCam implements DashCamControl{
     @Override
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
+        mAdasController.start(mContext);
+        ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
+        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                Image image = reader.acquireLatestImage();
+                if (image != null) {
+                    mAdasController.process(image);
+                    image.close();
+                }
+            }
+        }, null);
+
 
         boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
         if (!sdcardAvailable) {
@@ -131,6 +150,7 @@ public class DashCam implements DashCamControl{
         }
 
         mCamera2Controller = new Camera2Controller(mContext);
+        mCamera2Controller.setImageReader(imageReader);
         mCamera2Controller.startBackgroundThread();
         if (mConfig.cameraId() == 0) {
             mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);

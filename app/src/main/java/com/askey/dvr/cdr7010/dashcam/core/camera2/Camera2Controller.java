@@ -12,6 +12,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -19,7 +20,9 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Surface;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +30,11 @@ public class Camera2Controller {
     private static final String TAG = "Camera2Controller";
     private boolean mIsPreviewing;
     private boolean mIsRecordingVideo;
+    private ImageReader mImageReader;
+
+    public void setImageReader(@NonNull ImageReader imageReader) {
+        mImageReader = imageReader;
+    }
 
     public enum CAMERA {MAIN, EXT}
 
@@ -45,6 +53,7 @@ public class Camera2Controller {
     public Camera2Controller(Context context) {
         mContext = context.getApplicationContext();
         mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+        mImageReader = null;
     }
 
     public void startBackgroundThread() {
@@ -170,8 +179,12 @@ public class Camera2Controller {
             Surface surface = new Surface(surfaceTexture);
             mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
             mCaptureBuilder.addTarget(surface);
-
-            mCameraDevice.createCaptureSession(Collections.singletonList(surface),
+            List<Surface> listSurface = new ArrayList<>();
+            listSurface.add(surface);
+            if (mImageReader != null) {
+                listSurface.add(mImageReader.getSurface());
+            }
+            mCameraDevice.createCaptureSession(listSurface,
                     new CameraCaptureSession.StateCallback() {
 
                 @Override
@@ -213,6 +226,9 @@ public class Camera2Controller {
     }
 
     private void setUpCaptureRequestBuilder(CaptureRequest.Builder builder) {
+        if (mImageReader != null) {
+            builder.addTarget(mImageReader.getSurface());
+        }
         builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
     }
 }
