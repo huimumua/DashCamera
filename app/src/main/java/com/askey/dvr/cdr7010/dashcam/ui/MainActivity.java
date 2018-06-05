@@ -200,8 +200,8 @@ public class MainActivity extends DialogActivity {
     private EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback() {
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp) {
-            TTSManager.getInstance().ttsEventStart(eventInfo.getVoiceGuidence() + "", eventInfo.getEventType(),
-                    eventInfo.getPriority());
+            TTSManager.getInstance().ttsEventStart( eventInfo.getEventType(),
+                    eventInfo.getPriority(),new int[]{eventInfo.getVoiceGuidence()});
         }
     };
 

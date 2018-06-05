@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class TTSReceiver extends BroadcastReceiver {
@@ -14,11 +16,13 @@ public class TTSReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        int requestId = -1;
+        int result = -1;
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_VOICE_CANCEL_RESPONSE)) {
-            int requestId = intent.getIntExtra("requestId", -1);
+            requestId = intent.getIntExtra("requestId", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: requestId=" + requestId);
-            int result = intent.getIntExtra("result", -1);
+            result = intent.getIntExtra("result", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: result=" + result);
             if (result == 0) {//0 : 正常完了
                 if (TTS.isSpeaking && requestId == TTS.speakingId) {
@@ -32,9 +36,9 @@ public class TTSReceiver extends BroadcastReceiver {
                 Logg.i(LOG_TAG, "==2 : キャンセル失敗=");
             }
         } else if (action.equals(ACTION_VOICE_END_RESPONSE)) {
-            int requestId = intent.getIntExtra("requestId", -1);
+            requestId = intent.getIntExtra("requestId", -1);
             Logg.i(LOG_TAG, "onReceive: requestId=" + requestId);
-            int result = intent.getIntExtra("result", -1);
+            result = intent.getIntExtra("result", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_END_RESPONSE: result=" + result);
             if (result == 0) {// 0 : 再生正常完了
                 if (TTS.isSpeaking && requestId == TTS.speakingId) {
@@ -51,6 +55,12 @@ public class TTSReceiver extends BroadcastReceiver {
             } else if (result == 99) {//99 : その他再生失敗
                 Logg.i(LOG_TAG, "==99 : その他再生失敗==");
             }
+        }
+        if(Event.contains(Event.noticeEvent,requestId)){
+            DialogManager.getIntance().setSpeechCompleted(true);
+        }
+        if(Event.contains(Event.detectEvent,requestId)){
+            Communication.getInstance().alertComplite(requestId);
         }
     }
 }

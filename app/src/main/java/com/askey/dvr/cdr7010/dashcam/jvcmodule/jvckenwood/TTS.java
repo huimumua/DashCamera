@@ -6,6 +6,7 @@ import android.content.Intent;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
+
 public class TTS {
     private static final String TAG = "TTS";
     public static final String ACTION_VOICE_NOTIFICATION = "com.jvckenwood.tts.VOICE_NOTIFICATION";
@@ -18,10 +19,14 @@ public class TTS {
         mAppContext = DashCamApplication.getAppContext();
     }
 
-    public void voiceNotification(int[] voiceId, int requestId) {
-        if (isSpeaking && speakingId != -1) {//正在讲话
-            speechStop(speakingId);
+    public boolean isSpeaking(){
+        if (isSpeaking && speakingId != -1) {
+            return true;
         }
+        return false;
+    }
+
+    public void voiceNotification(int[] voiceId, final int requestId) {
         Intent intent = new Intent(ACTION_VOICE_NOTIFICATION);
         intent.putExtra("voiceId", voiceId);
         Logg.i(TAG, "voiceNotification=voiceId==" + voiceId[0]);

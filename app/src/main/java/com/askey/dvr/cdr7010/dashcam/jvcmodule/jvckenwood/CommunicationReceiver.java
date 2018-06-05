@@ -8,6 +8,7 @@ import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
+import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import org.json.JSONException;
@@ -78,7 +79,7 @@ public class CommunicationReceiver extends BroadcastReceiver{
                 if(code != null && !code.equals("00")){
                     int codeInteger = Integer.parseInt(code,16);
                     Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
-                    TTS.getInstance().voiceNotification(new int[]{codeInteger}, WEATHER_REQUEST_ID);
+                    TTSManager.getInstance().ttsEventStart(140,0,new int[]{codeInteger});
                 }
             }
         } catch (JSONException e) {

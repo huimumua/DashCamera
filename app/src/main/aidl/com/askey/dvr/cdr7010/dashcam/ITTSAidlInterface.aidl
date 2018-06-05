@@ -3,19 +3,7 @@ package com.askey.dvr.cdr7010.dashcam;
 
 interface ITTSAidlInterface {
 
-    void ttsNormalStart(String message);
+    void ttsStop(int requestId);
 
-    void ttsResume();
-
-    void ttsPause();
-
-    void ttsStop();
-
-    void ttsRelease();
-
-    void changeLanguage(String language);
-
-    void ttsEventStart(String message,int eventType,int priority);
-
-    void setTtsStreamVolume();
+    void ttsEventStart(int requestId,int priority,int voiceId);
 }

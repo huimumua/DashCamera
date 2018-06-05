@@ -3,17 +3,18 @@ package com.askey.dvr.cdr7010.dashcam.service;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.business.CReaderSpeaker;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.TTS;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class TTSManager{
     private static final String TAG = TTSManager.class.getSimpleName();
     private volatile static TTSManager instance;
-    private CReaderSpeaker cReaderSpeaker;
+    private TTS tts;
     private int lastPriority = Integer.MAX_VALUE;
+    private int lastRequestId = -1;
 
+    private TTSManager(){ }
 
-    private TTSManager(){
-
-    }
     public static TTSManager getInstance() {
         if (instance == null) {
             synchronized (TTSManager.class) {
@@ -25,86 +26,38 @@ public class TTSManager{
         return instance;
     }
     public void initTTS(){
-        cReaderSpeaker = new CReaderSpeaker(DashCamApplication.getAppContext());
-        cReaderSpeaker.setOnUtteranceProgressListener(new CReaderSpeaker.OnUtteranceProgressListener() {
-            @Override
-            public void onStart() {
-
-            }
-
-            @Override
-            public void onDone() {
-
-            }
-
-            @Override
-            public void onError() {
-                ttsCancel();
-                initTTS();
-            }
-        });
+        tts = new TTS();
         return;
     }
-    public void ttsNormalStart(String message){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
-        }
-    }
-    public void ttsEventStart(String message,int eventType,int priority){
+    public void ttsEventStart(int requestId,int priority,int[] voiceId){
         if(ttsIsSpeaking()){
             if(priority <= lastPriority){
-                if(instance != null && cReaderSpeaker != null){
-                    cReaderSpeaker.onStop();
-                    cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
+                if(instance != null && tts != null){
+                    tts.speechStop(lastRequestId);
+                    tts.voiceNotification(voiceId,requestId);
                 }
+                lastRequestId = requestId;
                 lastPriority = priority;
             }
         }else{
-            if(instance != null && cReaderSpeaker != null){
-                cReaderSpeaker.onTtsSpeak(message,CReaderSpeaker.QueueModeConstant.QUEUE_FLUSH,null);
+            if(instance != null && tts != null){
+                tts.voiceNotification(voiceId,requestId);
                 lastPriority = priority;
+                lastRequestId = requestId;
             }
         }
 
     }
-    public void ttsResume(){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onResume();
-        }
-    }
-    public void ttsPause(){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onPause();
-        }
-    }
-    public void ttsStop(){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onStop();
-        }
-    }
-    public void ttsRelease(){
-        if(instance != null && cReaderSpeaker != null){
-            cReaderSpeaker.onRelease();
-        }
-    }
-    private void ttsCancel(){
-        if( cReaderSpeaker != null){
-            cReaderSpeaker.onStop();
-            cReaderSpeaker.onRelease();
+    public void ttsStop(int requestId){
+        if(instance != null && tts != null){
+            tts.speechStop(requestId);
         }
     }
     private boolean ttsIsSpeaking(){
-        if(instance != null && cReaderSpeaker != null){
-            return cReaderSpeaker.isSpeaking();
+        if(instance != null && tts != null){
+            return tts.isSpeaking();
         }
         return false;
-    }
-    public void changeLanguage(String language) {
-        ttsCancel();
-        setTtsStreamVolume();
-    }
-    public void setTtsStreamVolume(){
-        initTTS();
     }
 
 }

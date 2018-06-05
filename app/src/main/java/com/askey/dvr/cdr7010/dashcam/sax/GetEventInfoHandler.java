@@ -68,7 +68,7 @@ public class GetEventInfoHandler extends DefaultHandler{
         }
         if(qName.equals("voice_guidence")){
             try {
-                eventInfo.setVoiceGuidence(Integer.parseInt(value));
+                eventInfo.setVoiceGuidence(Integer.parseInt(value,16));
             }catch(Exception e){
                 eventInfo.setVoiceGuidence(-1);
             }
