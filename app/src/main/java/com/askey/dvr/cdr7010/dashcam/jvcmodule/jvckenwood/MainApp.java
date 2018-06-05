@@ -54,6 +54,8 @@ public class MainApp {
             Logg.d(LOG_TAG, "onServiceConnected: MainApp");
             mMainAppInterface = IMainApp.Stub.asInterface(service);
             registerCallback(mMainAppCallbackCallback);
+
+            startInitialSetup(); //进入到MainApp的录制界面后endInitialSetup
         }
 
         @Override

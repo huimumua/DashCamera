@@ -6,11 +6,8 @@ import com.askey.dvr.cdr7010.dashcam.ICommunicationCallback;
 interface ICommunication {
     //by broadcast
 	void changeUserID(int userId);
-	void alertComplite(int eventType);
 	void setEventData(int eventNo, long timeStamp, out List<String> picturePath, out List<String> moviePath);
 	//IMainApp
-	void startInitialSetup();
-	void endInitialSetup();
 	void settingsUpdateRequest(String setings);
 	void FWUpdateRequest();
 

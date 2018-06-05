@@ -13,6 +13,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -67,6 +68,9 @@ public class MainActivity extends DialogActivity {
             timeFinishApp.cancel();
             timeFinishApp = null;
         }
+        //add by Mark
+        MainApp.getInstance().endInitialSetup();
+        //end add
         super.onDestroy();
     }
 

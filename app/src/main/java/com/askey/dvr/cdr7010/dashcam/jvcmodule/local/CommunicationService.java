@@ -37,21 +37,6 @@ public class CommunicationService extends Service {
         }
 
         @Override
-        public void alertComplite(int eventType) {
-            Communication.getInstance().alertComplite(eventType);
-        }
-
-        @Override
-        public void startInitialSetup() {
-            MainApp.getInstance().startInitialSetup();
-        }
-
-        @Override
-        public void endInitialSetup() {
-            MainApp.getInstance().endInitialSetup();
-        }
-
-        @Override
         public void settingsUpdateRequest(String setings) {
             MainApp.getInstance().settingsUpdateRequest(setings);
         }
