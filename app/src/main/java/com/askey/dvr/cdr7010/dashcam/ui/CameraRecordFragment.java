@@ -74,6 +74,7 @@ public class CameraRecordFragment extends Fragment {
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private boolean hasStopped;
+    private boolean isEventRecording;
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
@@ -152,6 +153,7 @@ public class CameraRecordFragment extends Fragment {
             }
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     RECORDING_CONTINUOUS));
+            isEventRecording = false;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -166,6 +168,21 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onStoped");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
+            if(!isEventRecording) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventManager.getInstance().handOutEventInfo(105);
+                    }
+                });
+            }else{
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventManager.getInstance().handOutEventInfo(124);
+                    }
+                });
+            }
 
         }
 
@@ -188,6 +205,7 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT : RECORDING_CONTINUOUS));
+            isEventRecording = on;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -388,6 +406,7 @@ public class CameraRecordFragment extends Fragment {
                 break;
             case SDCARD_INIT_SUCCESS:
                 DialogManager.getIntance().setSdcardInitSuccess(true);
+                LedMananger.getInstance().setLedRecStatus(true,false,0);
                 break;
             default:
         }
