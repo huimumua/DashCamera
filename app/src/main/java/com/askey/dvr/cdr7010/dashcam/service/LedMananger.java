@@ -13,10 +13,11 @@ public class LedMananger{
         askeyLedManager = AskeyLedManager.getInstance();
     }
     public static LedMananger getInstance() {
-        if(instance == null)
-            synchronized (LedMananger.class){
-            if(instance == null){
-                instance = new LedMananger();
+        if (instance == null) {
+            synchronized (LedMananger.class) {
+                if (instance == null) {
+                    instance = new LedMananger();
+                }
             }
         }
 

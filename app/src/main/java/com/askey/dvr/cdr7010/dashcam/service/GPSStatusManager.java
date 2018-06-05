@@ -50,20 +50,30 @@ public class GPSStatusManager {
         void hideGpsOnScreenIndicator();
     }
 
-    public GPSStatusManager(Context context, Listener listener) {
+    private GPSStatusManager(Context context, Listener listener) {
         mContext = context;
         mListener = listener;
     }
 
     public static GPSStatusManager getInstance(Context context) {
-        if (mnLocationManager == null)
-            mnLocationManager = new GPSStatusManager(context, null);
+        if (mnLocationManager == null) {
+            synchronized (GPSStatusManager.class) {
+                if (mnLocationManager == null) {
+                    mnLocationManager = new GPSStatusManager(context, null);
+                }
+            }
+        }
         return mnLocationManager;
     }
 
     public static GPSStatusManager getInstance() {
-        if (mnLocationManager == null)
-            mnLocationManager = new GPSStatusManager(DashCamApplication.getAppContext(), null);
+        if (mnLocationManager == null) {
+            synchronized (GPSStatusManager.class) {
+                if (mnLocationManager == null) {
+                    mnLocationManager = new GPSStatusManager(DashCamApplication.getAppContext(), null);
+                }
+            }
+        }
         return mnLocationManager;
     }
 
