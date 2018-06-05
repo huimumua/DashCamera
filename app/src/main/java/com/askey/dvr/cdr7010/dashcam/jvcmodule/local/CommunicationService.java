@@ -42,11 +42,6 @@ public class CommunicationService extends Service {
         }
 
         @Override
-        public void weatherAlertRequest() {
-            Communication.getInstance().weatherAlertRequest();
-        }
-
-        @Override
         public void startInitialSetup() {
             MainApp.getInstance().startInitialSetup();
         }
@@ -120,21 +115,6 @@ public class CommunicationService extends Service {
         }
         mCommunicationCallbackList.finishBroadcast();
 
-    }
-
-    public static void weatherAlertResponse(String response){
-        if(mCommunicationCallbackList == null)
-            return;
-
-        int num = mCommunicationCallbackList.beginBroadcast();
-        try {
-            for (int i = 0; i < num; i++) {
-                mCommunicationCallbackList.getBroadcastItem(i).weatherAlertResponse(response);
-            }
-        } catch (RemoteException e) {
-            Logg.e(LOG_TAG, "weatherAlertResponse: " + e.getMessage());
-        }
-        mCommunicationCallbackList.finishBroadcast();
     }
 
     public static void tripIdVersionUpResponse(int fairmware, int voice){

@@ -7,7 +7,6 @@ interface ICommunication {
     //by broadcast
 	void changeUserID(int userId);
 	void alertComplite(int eventType);
-	void weatherAlertRequest();
 	void setEventData(int eventNo, long timeStamp, out List<String> picturePath, out List<String> moviePath);
 	//IMainApp
 	void startInitialSetup();

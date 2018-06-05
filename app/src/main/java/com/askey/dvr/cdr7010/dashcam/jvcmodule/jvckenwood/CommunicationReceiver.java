@@ -4,10 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CommunicationReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "CommunicationReceiver";
@@ -17,6 +21,8 @@ public class CommunicationReceiver extends BroadcastReceiver{
     private static final String ACTION_WEATHER_ALERT_RESPONSE = "com.jvckenwood.communication.WEATHER_ALERT_RESPONSE";
     private static final String ACTION_TRIPID_VERSIONUP_RESPONSE = "com.jvckenwood.communication.TRIPID_VERSIONUP_RESPONSE";
     private static final String ACTION_TRIPID_LOG_UPLOAD_RESPONSE = "com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE";
+
+    public static final int WEATHER_REQUEST_ID = R.id.weather_request_id;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -38,7 +44,7 @@ public class CommunicationReceiver extends BroadcastReceiver{
         } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");
-            CommunicationService.weatherAlertResponse(response);
+            speakWeather(response);
 
         } else if (action.equals(ACTION_TRIPID_VERSIONUP_RESPONSE)) {
             //通知VersionUp中取得TripID时的固件更新信息通知
@@ -60,6 +66,24 @@ public class CommunicationReceiver extends BroadcastReceiver{
             return false;
         }
         return true;
+    }
+
+    private void speakWeather(String response){
+        try {
+            Logg.d(LOG_TAG, "speakWeather: response=" + response);
+            JSONObject jsonObject = new JSONObject(response);
+            int status = jsonObject.getInt("status");
+            if(status == 0){
+                String code = jsonObject.getString("code");
+                if(code != null && !code.equals("00")){
+                    int codeInteger = Integer.parseInt(code,16);
+                    Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
+                    TTS.getInstance().voiceNotification(new int[]{codeInteger}, WEATHER_REQUEST_ID);
+                }
+            }
+        } catch (JSONException e) {
+            Logg.e(LOG_TAG, "speakWeather: " + e.getMessage());
+        }
     }
 
 }

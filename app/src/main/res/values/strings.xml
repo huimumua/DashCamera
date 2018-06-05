@@ -2,4 +2,6 @@
     <string name="app_name">DashCam</string>
     <string name="after_contract_day_stop">契約が終了したため.\nドライブレコーダーは\nこ利用てきません.\n約1分後に電源をオフします.</string>
     <string name="before_contract_day_start">契約開始射なのて。\n緊急通報などのー部機能\nは\nこ利用できません</string>
+
+    <item name="weather_request_id" type="id" />
 </resources>
