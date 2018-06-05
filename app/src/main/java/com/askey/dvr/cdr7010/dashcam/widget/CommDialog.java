@@ -11,12 +11,15 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 public class CommDialog extends Dialog{
     private TextView messageText;
@@ -30,7 +33,6 @@ public class CommDialog extends Dialog{
     private  String BUTTON_CANCEL_MSG = Const.STR_BUTTON_CANCEL;
     private OnClickListener mPositiveButtonListener;
     private OnClickListener mNegativeButtonListener;
-    private OnKeyListener mOnKeyListener;
     private int width = 0;
     private int height = 0;
 
@@ -54,7 +56,13 @@ public class CommDialog extends Dialog{
         parames.height = height ==0 ? 136 : height;
         parames.width = width == 0 ? 248 : width;
         getWindow().setAttributes(parames);
-        setCanceledOnTouchOutside(false);
+        if(type == TYPE_BUTTON_HIDE) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            setCanceledOnTouchOutside(true);
+        }else{
+            setCanceledOnTouchOutside(false);
+        }
         initViews();
     }
     private void initViews(){
@@ -145,16 +153,10 @@ public class CommDialog extends Dialog{
     public void setNegativeButtonListener(final OnClickListener onClickListener){
         this.mNegativeButtonListener = onClickListener;
     }
-    public void setOnkeyListener(OnKeyListener onkeyListener){
-        mOnKeyListener = onkeyListener;
-    }
     @Override
     public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
-        if(type == TYPE_BUTTON_HIDE){
-            if(mOnKeyListener != null){
-                mOnKeyListener.onKey(this,event.getKeyCode(),event);
-            }
-            return true;
+        if (event.getKeyCode() == KeyAdapter.KEY_BACK) {
+                return true;
         }
         return super.dispatchKeyEvent(event);
     }

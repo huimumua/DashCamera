@@ -65,7 +65,8 @@ public abstract class DialogActivity extends AppCompatActivity {
         DialogInterface.OnKeyListener onKeyListener = new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                return handleKeyEvent(event);
+           //     return handleKeyEvent(event);
+                return true;
             }
         };
         switch (id) {
@@ -75,7 +76,6 @@ public abstract class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
-                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_WARNING:
                 dialog = new WarningDialog(this, R.style.dialogNoTitle);
@@ -90,7 +90,6 @@ public abstract class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
-                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_COMM_CONFIRM:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -98,7 +97,6 @@ public abstract class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_OK);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
-                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_ERROR:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -108,7 +106,6 @@ public abstract class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
                 ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
-                ((CommDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             default:
         }
@@ -197,4 +194,71 @@ public abstract class DialogActivity extends AppCompatActivity {
         super.onDestroy();
     }
     protected  abstract  boolean handleKeyEvent(KeyEvent event);
+    private int keydowmRepeatCount =0;
+
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        keydowmRepeatCount++;
+        if(keydowmRepeatCount==1){
+            onKeyHoldHalfASecond(keyCode);
+        }else if(keydowmRepeatCount==2){
+            onKeyHoldOneSecond(keyCode);
+        }else if(keydowmRepeatCount==3){
+            onKeyHoldThreeSecond(keyCode);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        event.startTracking();
+
+        if(keydowmRepeatCount==1){
+            onContinueKeyHoldHalfASecond(keyCode);
+        }else if(keydowmRepeatCount==2){
+            onContinueKeyHoldOneSecond(keyCode);
+        }else if(keydowmRepeatCount==3){
+            onContinueKeyHoldThreeSecond(keyCode);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        event.startTracking();
+        if (keydowmRepeatCount==0) {
+            onKeyShortPressed(keyCode);
+        }else{
+            keydowmRepeatCount= 0;
+        }
+        return true;
+    }
+
+    public void onKeyShortPressed(int keyCode) {
+
+    }
+
+    public  void onKeyHoldHalfASecond(int keyCode){
+
+    }
+
+    public  void onKeyHoldOneSecond(int keyCode){
+
+    }
+
+    public  void onKeyHoldThreeSecond(int keyCode){
+
+    }
+
+    public void onContinueKeyHoldHalfASecond(int keyCode) {
+
+    }
+
+    public void onContinueKeyHoldOneSecond(int keyCode) {
+
+    }
+
+    public void onContinueKeyHoldThreeSecond(int keyCode) {
+
+    }
 }
