@@ -11,12 +11,17 @@ import android.view.KeyEvent;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.ui.MainActivity;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.CommDialog;
 import com.askey.dvr.cdr7010.dashcam.widget.WarningDialog;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 
 public abstract class DialogActivity extends AppCompatActivity {
@@ -34,6 +39,7 @@ public abstract class DialogActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventUtil.register(this);
         DialogManager.getIntance().registerContext(this);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
@@ -179,10 +185,16 @@ public abstract class DialogActivity extends AppCompatActivity {
         }
         return true;
     }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onHandleEvent ( Integer eventType){
+        Logg.d(TAG,"onMessageEvent onHandleEvent,eventType="+eventType.intValue());
+        EventManager.getInstance().handOutEventInfo(eventType.intValue());
+    }
 
     @Override
     public void onDestroy() {
         DialogManager.getIntance().unregisterContext(this);
+        EventUtil.unregister(this);
         super.onDestroy();
     }
     protected  abstract  boolean handleKeyEvent(KeyEvent event);

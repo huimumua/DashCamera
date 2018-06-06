@@ -8,12 +8,14 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
@@ -111,7 +113,7 @@ public class MainApp {
             Logg.d(LOG_TAG, "reportDrivingReport: oos=" + oos + ", response=" + response);
             //id 52, 運転レポート Driving report, eventType define 101
             int eventType = 101;
-            EventManager.getInstance().handOutEventInfo(eventType);
+            EventUtil.sendEvent(Integer.valueOf(eventType));
         }
 
         @Override
@@ -119,7 +121,7 @@ public class MainApp {
             Logg.d(LOG_TAG, "reportManthlyDrivingReport: oos=" + oos + ", response=" + response);
             //id 53, 月間運転レポート Monthly driving report, eventType define 102
             int eventType = 102;
-            EventManager.getInstance().handOutEventInfo(eventType);
+            EventUtil.sendEvent(Integer.valueOf(eventType));
         }
 
         @Override
@@ -127,7 +129,7 @@ public class MainApp {
             Logg.d(LOG_TAG, "reportServerNotifocation: oos=" + oos + ", response=" + response);
             //id 51, お知らせ Notice, eventType define 100
             int eventType = 100;
-            EventManager.getInstance().handOutEventInfo(eventType);
+            EventUtil.sendEvent(Integer.valueOf(eventType));
         }
 
         @Override
@@ -135,7 +137,7 @@ public class MainApp {
             Logg.d(LOG_TAG, "reportDrivingAdvice: oos=" + oos + ", response=" + response);
             //id 54, 運転前アドバイス Advice before driving, eventType define 103
             int eventType = 103;
-            EventManager.getInstance().handOutEventInfo(eventType);
+            EventUtil.sendEvent(Integer.valueOf(eventType));
         }
 
         @Override
