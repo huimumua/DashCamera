@@ -18,7 +18,6 @@ public class CommunicationReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "CommunicationReceiver";
     private static final String ACTION_VOIP_CALL = "com.jvckenwood.communication.VOIP_CALL";
     private static final String ACTION_MANUAL_UPLOAD_COMPLETE = "com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE";
-    private static final String ACTION_TRIPID_UPDATE_NOTIFICATION = "com.jvckenwood.communication.TRIPID_UPDATE_NOTIFICATION";
     private static final String ACTION_WEATHER_ALERT_RESPONSE = "com.jvckenwood.communication.WEATHER_ALERT_RESPONSE";
     private static final String ACTION_TRIPID_VERSIONUP_RESPONSE = "com.jvckenwood.communication.TRIPID_VERSIONUP_RESPONSE";
     private static final String ACTION_TRIPID_LOG_UPLOAD_RESPONSE = "com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE";
@@ -38,16 +37,12 @@ public class CommunicationReceiver extends BroadcastReceiver{
             String response = intent.getStringExtra("response");
             ManualUploadService.manualUploadComplete(userCancel, response);
 
-        } else if (action.equals(ACTION_TRIPID_UPDATE_NOTIFICATION)) {
-            //通过用户变更等取得TripID的时候通知事件检测
-            CommunicationService.tripIdUpdateNotification();
-
         } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");
             speakWeather(response);
 
-        } else if (action.equals(ACTION_TRIPID_VERSIONUP_RESPONSE)) {
+        } else if (action.equals(ACTION_TRIPID_VERSIONUP_RESPONSE)) { //MainApp无需应对
             //通知VersionUp中取得TripID时的固件更新信息通知
             int fairmware = intent.getIntExtra("fairmware", -1);
             int voice = intent.getIntExtra("voice", -1);

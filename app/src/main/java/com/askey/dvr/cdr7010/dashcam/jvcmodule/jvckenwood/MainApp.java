@@ -140,6 +140,9 @@ public class MainApp {
 
         @Override
         public void reportTxEventProgress(int eventNo, int progress, int total) throws RemoteException {
+            /**
+             * MainApp无需应对
+             */
             Logg.d(LOG_TAG, "reportTxEventProgress: progress=" + progress + ", total=" + total);
             CommunicationService.reportTxEventProgress(eventNo, progress, total);
         }
