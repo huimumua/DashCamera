@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -168,14 +169,14 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onStoped");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
-            if(!isEventRecording) {
+            if (!isEventRecording) {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         EventManager.getInstance().handOutEventInfo(105);
                     }
                 });
-            }else{
+            } else {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -323,6 +324,9 @@ public class CameraRecordFragment extends Fragment {
             GPSStatusManager.getInstance().recordLocation(false);
             getActivity().unregisterReceiver(simCardReceiver);
         }
+        if (timeFinishShow != null) {
+            timeFinishShow.cancel();
+        }
         super.onDestroy();
     }
 
@@ -406,7 +410,7 @@ public class CameraRecordFragment extends Fragment {
                 break;
             case SDCARD_INIT_SUCCESS:
                 DialogManager.getIntance().setSdcardInitSuccess(true);
-                LedMananger.getInstance().setLedRecStatus(true,false,0);
+                LedMananger.getInstance().setLedRecStatus(true, false, 0);
                 break;
             default:
         }
@@ -542,11 +546,30 @@ public class CameraRecordFragment extends Fragment {
      * 合约开始日之前，停止界面更新，停止录像
      */
     public void beforeContractDayStart() {
-        tvContent.setVisibility(View.VISIBLE);
-        osdView.setVisibility(View.GONE);
-        tvContent.setText(getString(R.string.before_contract_day_start));
-        releaseAll();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvContent.setVisibility(View.VISIBLE);
+                osdView.setVisibility(View.GONE);
+                tvContent.setText(getString(R.string.before_contract_day_start));
+                releaseAll();
+                timeFinishShow.start();
+            }
+        });
     }
+
+    private CountDownTimer timeFinishShow = new CountDownTimer(60000, 1000) {
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+        }
+
+        @Override
+        public void onFinish() {
+            tvContent.setVisibility(View.GONE);
+            osdView.setVisibility(View.VISIBLE);
+        }
+    };
 
     private void releaseAll() {
         stopVideoRecord("Fragment onPause");
@@ -563,9 +586,14 @@ public class CameraRecordFragment extends Fragment {
     }
 
     public void afterContractDayEnd() {
-        tvContent.setVisibility(View.VISIBLE);
-        osdView.setVisibility(View.GONE);
-        tvContent.setText(getString(R.string.after_contract_day_stop));
-        releaseAll();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvContent.setVisibility(View.VISIBLE);
+                osdView.setVisibility(View.GONE);
+                tvContent.setText(getString(R.string.after_contract_day_stop));
+                releaseAll();
+            }
+        });
     }
 }
