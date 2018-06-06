@@ -65,6 +65,9 @@ public class Communication {
         sendOutBroadcast(intent);
     }
 
+    /**
+     * 被删除
+     */
     public void changeUserID(int userId){
         Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
         Intent intent = new Intent(ACTION_CHANGE_USERID);
