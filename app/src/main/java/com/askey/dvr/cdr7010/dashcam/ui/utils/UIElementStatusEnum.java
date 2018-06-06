@@ -35,7 +35,8 @@ public class UIElementStatusEnum{
         LTE_SIGNAL_STRENGTH_POOR(1),
         LTE_SIGNAL_STRENGTH_MODERATE(2),
         LTE_SIGNAL_STRENGTH_GOOD(3),
-        LTE_SIGNAL_STRENGTH_GREAT(4);
+        LTE_SIGNAL_STRENGTH_GREAT(4),
+        LTE_NONE(5);
 
         public final int value;
         LTEStatusType(int value){

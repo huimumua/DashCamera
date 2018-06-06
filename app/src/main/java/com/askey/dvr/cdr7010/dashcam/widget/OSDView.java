@@ -30,6 +30,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.FOTAFil
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_NOT_FIXES;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
@@ -92,6 +93,7 @@ public class OSDView extends View {
     private Bitmap lte_sinal_strength_good;
     private Bitmap lte_sinal_strength_moderate;
     private Bitmap lte_sinal_strength_poor;
+    private Bitmap lte_signal_none;
     private Bitmap lte_none;
     private Bitmap volume_up;
     private Bitmap volume_down;
@@ -159,6 +161,7 @@ public class OSDView extends View {
         lte_sinal_strength_good = decodeResource(getResources(), R.drawable.lte_sinal_strength_good);
         lte_sinal_strength_moderate= decodeResource(getResources(), R.drawable.lte_sinal_strength_moderate);
         lte_sinal_strength_poor = decodeResource(getResources(), R.drawable.lte_sinal_strength_poor);
+        lte_signal_none = decodeResource(getResources(), R.drawable.lte_sinal_none);
         lte_none = decodeResource(getResources(), R.drawable.lte_none);
 
 
@@ -364,7 +367,7 @@ public class OSDView extends View {
             canvas.drawBitmap(mic_off,null, micRectF, null);
         }
         if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN){
-            canvas.drawBitmap(lte_none,null, lteRectF, null);
+            canvas.drawBitmap(lte_signal_none,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GREAT){
             canvas.drawBitmap(lte_sinal_strength_great,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_GOOD){
@@ -373,6 +376,8 @@ public class OSDView extends View {
             canvas.drawBitmap(lte_sinal_strength_moderate,null, lteRectF, null);
         }else if(osdProvider.getLTEStatus() == LTE_SIGNAL_STRENGTH_POOR){
             canvas.drawBitmap(lte_sinal_strength_poor,null, lteRectF, null);
+        }else if(osdProvider.getLTEStatus() == LTE_NONE){
+            canvas.drawBitmap(lte_none,null, lteRectF, null);
         }
 
         if(osdProvider.getEventRecordingLimitStatus() == EVENT_RECORDING_REACH_LIMIT_CONDITION){
@@ -408,8 +413,7 @@ public class OSDView extends View {
         }
         if(osdProvider.getSimCardStatus() == SIM_STATE_NETWORK_LOCKED
                 || osdProvider.getSimCardStatus() ==  SIM_STATE_PIN_REQUIRED
-                || osdProvider.getSimCardStatus() ==  SIM_STATE_PUK_REQUIRED
-                || osdProvider.getSimCardStatus() ==  SIM_STATE_UNKNOWN){
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_PUK_REQUIRED){
             canvas.drawBitmap(simcard_error,null,simCardRectF,null);
         }
         if(osdProvider.getGpsStatus() == GPS_STRENGTH_FIXES){

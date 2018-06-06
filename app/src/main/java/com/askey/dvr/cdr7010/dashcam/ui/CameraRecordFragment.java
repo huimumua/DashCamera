@@ -50,6 +50,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_NONE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GOOD;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_GREAT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_MODERATE;
@@ -395,7 +396,11 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE) {
             GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus) messageEvent.getData());
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
-            SimCardManager.getInstant().setSimState(SimCardManager.getInstant().getSimState());
+            int simState = SimCardManager.getInstant().getSimState();
+            SimCardManager.getInstant().setSimState(simState);
+            if(simState == TelephonyManager.SIM_STATE_ABSENT){
+                GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
+            }
         }
         osdView.invalidateView();
     }
