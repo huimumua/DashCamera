@@ -150,7 +150,7 @@ public class OSDView extends View {
         event_recording = decodeResource(getResources(), R.drawable.event_recording);
         stop_recording = decodeResource(getResources(), R.drawable.stop_recording);
 
-        micRectF = new RectF(240,212,292,240);
+        micRectF = new RectF(230,212,282,240);
         mic_on = decodeResource(getResources(), R.drawable.mic_on);
         mic_off = decodeResource(getResources(), R.drawable.mic_off);
 
@@ -162,13 +162,13 @@ public class OSDView extends View {
         lte_none = decodeResource(getResources(), R.drawable.lte_none);
 
 
-        volumeUpRectF = new RectF(292,20,320,72);
+        volumeUpRectF = new RectF(292,22,320,74);
         volume_up = decodeResource(getResources(), R.drawable.volume_up);
 
-        volumeDownRectF = new RectF(292,164,320,216);
+        volumeDownRectF = new RectF(292,167,320,219);
         volume_down = decodeResource(getResources(), R.drawable.volume_down);
 
-        menuRectF = new RectF(292,96,320,148);
+        menuRectF = new RectF(292,94,320,146);
         menu = decodeResource(getResources(), R.drawable.menu);
 
         countTimeRectF = new RectF(62,8,77,24);

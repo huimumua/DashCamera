@@ -62,13 +62,6 @@ public abstract class DialogActivity extends AppCompatActivity {
                 }
             }
         };
-        DialogInterface.OnKeyListener onKeyListener = new DialogInterface.OnKeyListener() {
-            @Override
-            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-           //     return handleKeyEvent(event);
-                return true;
-            }
-        };
         switch (id) {
             case DIALOG_TYPE_SDCARD:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -80,7 +73,6 @@ public abstract class DialogActivity extends AppCompatActivity {
             case DIALOG_TYPE_WARNING:
                 dialog = new WarningDialog(this, R.style.dialogNoTitle);
                 ((WarningDialog) dialog).setMessage(args.getString("Message"));
-                ((WarningDialog) dialog).setOnkeyListener(onKeyListener);
                 break;
             case DIALOG_TYPE_COMM_TEXT:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);

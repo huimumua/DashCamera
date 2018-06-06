@@ -35,6 +35,8 @@ public class CommDialog extends Dialog{
     private OnClickListener mNegativeButtonListener;
     private int width = 0;
     private int height = 0;
+    private  Button btnCancel =null;
+    private  Button btnOk = null;
 
     public CommDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
         super(context,cancelable,cancelListener);
@@ -72,26 +74,25 @@ public class CommDialog extends Dialog{
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
         messageText.setTextColor(Color.BLACK);
-        messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,22);
+        messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
         messageText.setGravity(Gravity.CENTER);
-        messageText.setLineSpacing(1.0f,1.2f);
 
-        final Button btnOk = (Button) findViewById(R.id.ib_ok);
+        btnOk = (Button) findViewById(R.id.ib_ok);
         btnOk.setOnClickListener(clickListener);
         btnOk.setTextColor(Color.BLACK);
         btnOk.setText(BUTTON_OK_MSG);
         btnOk.setGravity(Gravity.CENTER);
-        btnOk.getPaint().setTextSize(22);
+        btnOk.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
         btnOk.getLayoutParams().width = 80;
         btnOk.getLayoutParams().height = 26;
         ((ViewGroup.MarginLayoutParams)btnOk.getLayoutParams()).leftMargin = 52;
 
-        Button btnCancel = (Button) findViewById(R.id.ib_cancle);
+        btnCancel = (Button) findViewById(R.id.ib_cancle);
         btnCancel.setOnClickListener(clickListener);
         btnCancel.setTextColor(Color.BLACK);
         btnCancel.setText(BUTTON_CANCEL_MSG);
         btnCancel.setGravity(Gravity.CENTER);
-        btnCancel.getPaint().setTextSize(22);
+        btnCancel.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
         btnCancel.getLayoutParams().width = 80;
         btnCancel.getLayoutParams().height = 26;
         ((ViewGroup.MarginLayoutParams)btnCancel.getLayoutParams()).leftMargin = 20;
@@ -113,7 +114,16 @@ public class CommDialog extends Dialog{
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                btnOk.requestFocusFromTouch();
+                if(type ==(TYPE_BUTTON_CANCEL|TYPE_BUTTON_OK)){
+                    btnOk.requestFocusFromTouch();
+                }else {
+                    if ((type & TYPE_BUTTON_CANCEL) == 0) {
+                        btnOk.requestFocusFromTouch();
+                    }
+                    if ((type & TYPE_BUTTON_OK) == 0) {
+                        btnCancel.requestFocusFromTouch();
+                    }
+                }
             }
         },20);
     }
@@ -157,6 +167,18 @@ public class CommDialog extends Dialog{
     public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
         if (event.getKeyCode() == KeyAdapter.KEY_BACK) {
                 return true;
+        }
+        if(type == (TYPE_BUTTON_OK|TYPE_BUTTON_CANCEL)){
+            if(btnOk.hasFocus()){
+                if(event.getKeyCode() == KeyAdapter.KEY_VOLUME_UP){
+                    btnCancel.requestFocusFromTouch();
+                }
+            }
+            if(btnCancel.hasFocus()){
+                if(event.getKeyCode() == KeyAdapter.KEY_VOLUME_DOWN){
+                    btnOk.requestFocusFromTouch();
+                }
+            }
         }
         return super.dispatchKeyEvent(event);
     }

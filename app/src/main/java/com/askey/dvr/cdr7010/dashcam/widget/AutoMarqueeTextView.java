@@ -12,12 +12,10 @@ public class AutoMarqueeTextView extends TextView {
 
     public AutoMarqueeTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        setFocusable(true);
     }
 
     public AutoMarqueeTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setFocusable(true);
     }
 
     @Override

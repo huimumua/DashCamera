@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,7 +24,6 @@ public class WarningDialog extends Dialog {
     private TextView messageText;
     private String msg;
     private Context mContext;
-    private OnKeyListener mOnKeyListener;
     public WarningDialog(Context context, boolean cancelable, OnCancelListener cancelListener){
         super(context,cancelable,cancelListener);
         mContext =context;
@@ -44,6 +44,9 @@ public class WarningDialog extends Dialog {
         parames.height = 136;
         parames.width = 248;
         getWindow().setAttributes(parames);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        setCanceledOnTouchOutside(true);
         initViews();
     }
     private void initViews(){
@@ -51,17 +54,19 @@ public class WarningDialog extends Dialog {
         LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
         param.width = 248;
         param.height = 66;
-        param.topMargin = 17;
+        param.topMargin = 18;
         param.gravity = Gravity.CENTER;
         waringImg.setLayoutParams(param);
         waringImg.setImageResource(R.drawable.dialog_warning_img);
 
+        LinearLayout.LayoutParams messageParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,20);
+        messageParam.topMargin = 10;
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
-       // ((ViewGroup.MarginLayoutParams)messageText.getLayoutParams()).topMargin = 8;
         messageText.setTextColor(Color.BLACK);
-        messageText.setGravity(Gravity.CENTER);
-        messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,22);
+        messageText.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
+        messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
+        messageText.setLayoutParams(messageParam);
     }
     public void setMessage(int resId){
         this.msg = mContext.getResources().getString(resId);
@@ -74,17 +79,6 @@ public class WarningDialog extends Dialog {
         if(messageText != null){
             messageText.setText(msg);
         }
-    }
-    public void setOnkeyListener(OnKeyListener onkeyListener){
-        mOnKeyListener = onkeyListener;
-    }
-    @Override
-    public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
-        if(mOnKeyListener != null){
-            mOnKeyListener.onKey(this,event.getKeyCode(),event);
-            return true;
-        }
-        return super.dispatchKeyEvent(event);
     }
 
 }
