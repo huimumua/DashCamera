@@ -1,6 +1,9 @@
 <resources>
+    <string name="app_name">DashCam</string>
     <string name="system_update_completed">System update completed</string>
     <string name="warning_title">warning</string>
     <string name="warning_description">Please operate this product before stopping at a safe place.\noperating while driving can cause accident accidents.</string>
+    <string name="after_contract_day_stop">Because the contract is over. \nThis drive recorder will not be used. \nTurn off the power in about 1 minute.</string>
+    <string name="before_contract_day_start">As it is before the contract begins,\nEmergency call function can not be used.</string>
 
 </resources>
