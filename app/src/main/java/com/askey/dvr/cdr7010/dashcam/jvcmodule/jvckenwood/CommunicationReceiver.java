@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -74,7 +76,13 @@ public class CommunicationReceiver extends BroadcastReceiver{
                 if(code != null && !code.equals("00")){
                     int codeInteger = Integer.parseInt(code,16);
                     Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
-                    TTSManager.getInstance().ttsEventStart(140,0,new int[]{codeInteger});
+                    if(Event.contains(Event.weatherWarning,codeInteger)){
+                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(codeInteger);
+                        EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT);
+                    }else if(Event.contains(Event.specialWeatherWarning,codeInteger)){
+                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT_SPECIAL).setVoiceGuidence(codeInteger);
+                        EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT_SPECIAL);
+                    }
                 }
             }
         } catch (JSONException e) {
