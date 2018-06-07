@@ -45,6 +45,6 @@ public class TTS {
     }
 
     private void sendOutBroadcast(Intent intent) {
-        mAppContext.sendBroadcast(intent);
+        mAppContext.sendBroadcastAsUser(intent, android.os.Process.myUserHandle());
     }
 }

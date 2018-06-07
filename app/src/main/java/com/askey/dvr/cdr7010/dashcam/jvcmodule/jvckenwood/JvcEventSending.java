@@ -49,6 +49,6 @@ public class JvcEventSending {
     }
 
     private static void sendOutBroadcast(Intent intent){
-        DashCamApplication.getAppContext().sendBroadcast(intent);
+        DashCamApplication.getAppContext().sendBroadcastAsUser(intent, android.os.Process.myUserHandle());
     }
 }
