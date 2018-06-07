@@ -12,7 +12,6 @@ import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.SDCardUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -138,14 +137,10 @@ public class DashCam implements DashCamControl{
 
         boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
         if (!sdcardAvailable) {
-            throw new RuntimeException("sd card unavailable");
-        }
-
-        if (!SDCardUtils.isSDCardEnable()) {
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
-            throw new IOException("SD Card unavailable");
+            throw new RuntimeException("sd card unavailable");
         }
 
         if (mIsRunning) {
