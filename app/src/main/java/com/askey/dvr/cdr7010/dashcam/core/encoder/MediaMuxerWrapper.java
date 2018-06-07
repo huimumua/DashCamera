@@ -17,6 +17,7 @@ import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.core.event.Event;
 import com.askey.dvr.cdr7010.dashcam.core.event.EventState;
 import com.askey.dvr.cdr7010.dashcam.core.jni.MediaBuffer;
+import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDCardUtils;
@@ -332,6 +333,7 @@ public class MediaMuxerWrapper {
     static private class MuxerHandler extends Handler {
 
         private AndroidMuxer muxer;
+//        private NmeaRecorder nmeaRecorder;
         private WeakReference<MediaMuxerWrapper> weakParent;
         private boolean flagTerm = false;
         private EventMuxer eventMuxer;
@@ -397,6 +399,9 @@ public class MediaMuxerWrapper {
                         try {
                             String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
                             muxer = new AndroidMuxer(path);
+                            //TODO: Next vesion Change FileManage
+                            String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("NORMAL", "SYSTEM/NMEA/NORMAL");
+                            NmeaRecorder nmeaRecorder = NmeaRecorder.create(nmeaPath);
                             if (parent.mSegmentCallback != null) {
                                 parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
                             }
@@ -404,6 +409,8 @@ public class MediaMuxerWrapper {
                             muxer.addTrack(SAMPLE_TYPE_AUDIO, parent.mAudioFormat);
                             muxer.setMaxDuration(parent.mSegmentDurationLimitedUs);
                             muxer.start(time);
+
+                            nmeaRecorder.start(time, parent.mSegmentDurationLimitedUs / 1000000);
                             final long startTimeMs = muxer.startTimeMs();
                             parent.mHandler.post(new Runnable() {
                                 @Override

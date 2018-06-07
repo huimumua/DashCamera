@@ -8,6 +8,7 @@ import android.media.ImageReader;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
+import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
@@ -122,6 +123,7 @@ public class DashCam implements DashCamControl{
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
         mAdasController.start(mContext);
+        NmeaRecorder.init(mContext);
         ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
