@@ -35,6 +35,7 @@ public abstract class DialogActivity extends AppCompatActivity {
     public static final int DIALOG_TYPE_COMM_TEXT = 3;
     public static final int DIALOG_TYPE_COMM_CONFIRM = 4;
     public static final int DIALOG_TYPE_ERROR =5;
+    public static final int DIALOG_TYPE_UPDATE =6;
     private Dialog dialog = null;
     private int dialogType = 0;
     private AudioManager audioManager;
@@ -165,6 +166,15 @@ public abstract class DialogActivity extends AppCompatActivity {
                 ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
                 break;
             case DIALOG_TYPE_ERROR:
+                dialog = new CommDialog(this, R.style.dialogNoTitle);
+                ((CommDialog) dialog).setMessage(args.getString("Message"));
+                ((CommDialog) dialog).setDialogHeight(args.getInt("Height",0));
+                ((CommDialog) dialog).setDialogWidth(args.getInt("Width",0));
+                ((CommDialog) dialog).setType(CommDialog.TYPE_BUTTON_HIDE);
+                ((CommDialog) dialog).setNegativeButtonListener(onClickListener);
+                ((CommDialog) dialog).setPositiveButtonListener(onClickListener);
+                break;
+            case DIALOG_TYPE_UPDATE:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
                 ((CommDialog) dialog).setMessage(args.getString("Message"));
                 ((CommDialog) dialog).setDialogHeight(args.getInt("Height",0));

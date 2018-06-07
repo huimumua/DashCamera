@@ -37,7 +37,10 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onKeyShortPressed(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_ENTER:
-                startNextActivity();
+                if(updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_SUCCESS)
+                        &&(updateInfo.updateType == Const.SDCARD_UPDATE)) {
+                    startNextActivity();
+                }
         }
     }
 
@@ -74,7 +77,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     }
     @Override
     public void displayTipInfo() {
-        DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_COMM_TEXT,"システムを更新しました",true);
+        DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE,"システムを更新しました",true);
     }
     private UpdateInfo parseJson(String updateResult){
         if(TextUtils.isEmpty(updateResult)){
@@ -101,7 +104,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onDestroy() {
         updateInfo = null;
         if(isUpdate) {
-            DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_COMM_TEXT);
+            DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_UPDATE);
             isUpdate = false;
         }
         super.onDestroy();

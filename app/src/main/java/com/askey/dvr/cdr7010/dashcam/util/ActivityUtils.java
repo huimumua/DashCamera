@@ -26,7 +26,7 @@ public class ActivityUtils {
                                              @NonNull Fragment fragment, int frameId) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(frameId, fragment);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
     public static void hideFragment(@NonNull FragmentManager fragmentManager,@NonNull Fragment fragment){
         FragmentTransaction transaction = fragmentManager.beginTransaction();
