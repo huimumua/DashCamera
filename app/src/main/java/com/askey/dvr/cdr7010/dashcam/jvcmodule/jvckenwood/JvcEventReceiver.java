@@ -3,10 +3,18 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.RemoteException;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 public class JvcEventReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "JvcEventReceiver";
@@ -29,7 +37,22 @@ public class JvcEventReceiver extends BroadcastReceiver{
             int eventNo = intent.getIntExtra(EXTRA_EVENT_NO, -1);
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
+            boolean sdcardAvailable = false;
+            try {
+                sdcardAvailable = FileManager.getInstance(context).isSdcardAvailable();
+            } catch (RemoteException e) {
+                Logg.e(LOG_TAG, "sd card unavailable");
+            }
 
+            if (!sdcardAvailable) {
+                ArrayList<Integer> results = new ArrayList<>(Arrays.asList(100, 100, 100, 100, 100, 100, 100, 100));
+                ArrayList<String> files = new ArrayList<>();
+                JvcEventSending.recordResponse(eventNo, results, files);
+            } else {
+                Intent i = new  Intent("com.askey.dashcam.record.EVENT");
+                i.putExtra("id", eventNo);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+            }
         }
     }
 

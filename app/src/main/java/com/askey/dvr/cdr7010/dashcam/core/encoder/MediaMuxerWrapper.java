@@ -258,6 +258,7 @@ public class MediaMuxerWrapper {
             mMuxerHandler.eventMuxer.stop();
 
             unregisterReceiver();
+            mEventState.release();
 
             if (mStateCallback != null) {
                 if (mReasonInterruption) {

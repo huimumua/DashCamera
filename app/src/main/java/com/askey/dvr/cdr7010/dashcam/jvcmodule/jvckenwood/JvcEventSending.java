@@ -40,7 +40,7 @@ public class JvcEventSending {
     }
 
     public static void recordResponse(int eventNo, ArrayList<Integer> result, ArrayList<String> recordPath){
-        Logg.d(LOG_TAG, "recordResponse: eventNo=" + eventNo);
+        Logg.d(LOG_TAG, "recordResponse: eventNo=" + eventNo + " result=" + result + " recordPath=" + recordPath);
         Intent intent = new Intent(ACTION_EVENT_RECORD_RESPONSE);
         intent.putExtra("eventNo", eventNo);
         intent.putIntegerArrayListExtra("result", result);
