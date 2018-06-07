@@ -346,7 +346,7 @@
         <name>Weather information(Warning)</name>
         <description>Weather alert</description>
         <voice_guidence>0804</voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
         <speech>yes</speech>
@@ -359,7 +359,7 @@
         <name>Weather information(Special warning)</name>
         <description>Weather alert</description>
         <voice_guidence>0803</voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
         <speech>yes</speech>
@@ -372,7 +372,7 @@
         <name>Weather information(typhoon)</name>
         <description>Weather alert</description>
         <voice_guidence>0802</voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
         <speech>yes</speech>
@@ -385,7 +385,7 @@
         <name>Weather information(The closest typhoon)</name>
         <description>Weather alert</description>
         <voice_guidence>0801</voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
         <speech>yes</speech>
