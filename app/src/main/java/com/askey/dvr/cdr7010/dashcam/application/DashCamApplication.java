@@ -7,11 +7,13 @@ import android.content.res.Configuration;
 import com.askey.dvr.cdr7010.dashcam.EventBusIndex;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.Communication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +35,7 @@ public class DashCamApplication extends Application {
         setAppContext(this);
         FileManager.getInstance(this); // bindService
         TTSManager.getInstance().initTTS();
+        EventManager.getInstance().loadXML(Locale.getDefault().getLanguage());
         MainApp.getInstance().bindJvcMainAppService();
         new Timer().schedule(new TimerTask() {
             @Override

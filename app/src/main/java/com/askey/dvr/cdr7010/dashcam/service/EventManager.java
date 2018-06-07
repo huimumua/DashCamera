@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class EventManager {
     private static final String LOG_TAG = "EventManager";
@@ -82,7 +83,11 @@ public class EventManager {
 
     public void loadXML(String language) {
         try {
-            inputStream = assets.open("eventlist_en.xml");
+            if(language.equals("en") || language.equals("us")) {
+                inputStream = assets.open("eventlist_en.xml");
+            }else{
+                inputStream = assets.open("eventlist_jp.xml");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
