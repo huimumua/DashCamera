@@ -617,7 +617,7 @@
         <event_type>120</event_type>
         <dialog_type>2</dialog_type>
         <name>緊急通報_ユーザー</name>
-        <description></description>
+        <description>緊急通報_ユーザー</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
@@ -630,7 +630,7 @@
         <event_type>27</event_type>
         <dialog_type>2</dialog_type>
         <name>緊急通報_サーバー </name>
-        <description></description>
+        <description>緊急通報_サーバー</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>

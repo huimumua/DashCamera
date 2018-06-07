@@ -617,7 +617,7 @@
         <event_type>120</event_type>
         <dialog_type>2</dialog_type>
         <name>Emergency call(user)</name>
-        <description></description>
+        <description> Emergency call(user)</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
@@ -629,8 +629,8 @@
         <priority>0</priority>
         <event_type>27</event_type>
         <dialog_type>2</dialog_type>
-        <name>Emergency call(surver)</name>
-        <description></description>
+        <name>Emergency call(server)</name>
+        <description> Emergency call(server)</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
