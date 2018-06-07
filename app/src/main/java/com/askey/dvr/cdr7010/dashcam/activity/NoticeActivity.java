@@ -1,8 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.activity;
 
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 
@@ -19,8 +17,6 @@ import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 
 import org.json.JSONObject;
-
-import java.io.File;
 
 
 public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener,UpdateFragment.UpdateListener {
@@ -52,7 +48,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         updateInfo = parseJson(updateResult);
             if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_SUCCESS) ) {
                 isUpdate = true;
-                SPUtils.put(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED, null);
+                SPUtils.remove(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED);
                 updateFragment = new UpdateFragment();
                 Bundle bundle = new Bundle();
                 bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE)? Const.OTA_UPDATE:Const.SDCARD_UPDATE);

@@ -6,7 +6,7 @@ import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.PreferencesUtils;
+import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +44,7 @@ public class VersionUpReceiver extends BroadcastReceiver{
                 jsonObject.put("result", result); //0：成功、-1：アップデート失敗
                 String saveJson = jsonObject.toString();
                 Logg.d(LOG_TAG, "Save UPDATE_COMPLETED information : " + saveJson);
-                PreferencesUtils.put(context, PREFERENCE_KEY_UPDATE_COMPLETED, saveJson);
+                SPUtils.put(context, PREFERENCE_KEY_UPDATE_COMPLETED, saveJson);
             } catch (JSONException e) {
                 Logg.e(LOG_TAG, "Save UPDATE_COMPLETED information error: " + e.getMessage());
             }
