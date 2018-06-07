@@ -81,6 +81,13 @@
                 <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".jvcmodule.jvckenwood.VersionUpReceiver">
+            <intent-filter>
+                <action android:name="com.jvckenwood.versionup.DOWNLOAD_RESULT"/>
+                <action android:name="com.jvckenwood.versionup.UPDATE_READY"/>
+                <action android:name="com.jvckenwood.versionup.UPDATE_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <receiver android:name=".jvcmodule.jvckenwood.CommunicationReceiver">
             <intent-filter>
                 <action android:name="com.jvckenwood.communication.VOIP_CALL"/>

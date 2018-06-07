@@ -24,16 +24,20 @@ import java.util.List;
 public class LocalJvcStatusManager {
     private static final String LOG_TAG = "LocalJvcStatusManager";
     private static List<LocalJvcStatusCallback> mCallbacks = Collections.synchronizedList(new ArrayList<LocalJvcStatusCallback>());
+    private static boolean isInsuranceTermArriving;
 
     public static EnumMap<JvcStatusParam, Object> getInsuranceTerm(LocalJvcStatusCallback callback){
+        Logg.d(LOG_TAG, "getInsuranceTerm: isInsuranceTermArriving=" + isInsuranceTermArriving);
+        EnumMap<JvcStatusParam, Object> object = null;
         Context appContext = DashCamApplication.getAppContext();
-        @SuppressWarnings("unchecked")
-        EnumMap<JvcStatusParam, Object> object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
-        if(callback != null){
-            if(object != null) {
-                callback.onDataArriving(object);
-            }else {
-                mCallbacks.add(callback);
+        if(isInsuranceTermArriving){
+            object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
+            if(callback != null){
+                if(object != null) {
+                    callback.onDataArriving(object);
+                }else {
+                    mCallbacks.add(callback);
+                }
             }
         }
 
@@ -42,6 +46,7 @@ public class LocalJvcStatusManager {
 
     public static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap, boolean checkBeforeSave){
         if(enumMap != null){
+            isInsuranceTermArriving = true;
             int oos = (int)enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
             //圏外の場合は取得できなかったことを通知するのでMainAPPで保持している設定値(前回値)を使用すること
             if(!checkBeforeSave || (checkBeforeSave && oos == 1)) {
