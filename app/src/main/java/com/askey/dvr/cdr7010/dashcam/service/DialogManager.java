@@ -60,7 +60,7 @@ public class DialogManager{
             Bundle bundle = new Bundle();
             bundle.putString("Message",message);
             if(resize){
-                bundle.putInt("Width",300);
+                bundle.putInt("Width",240);
                 bundle.putInt("Height",136);
             }
             ((DialogActivity)mContext).showDialog(dialogType,bundle);

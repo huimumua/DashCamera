@@ -57,6 +57,10 @@ public class CommDialog extends Dialog{
         android.view.WindowManager.LayoutParams parames = getWindow().getAttributes();
         parames.height = height ==0 ? 136 : height;
         parames.width = width == 0 ? 248 : width;
+        if(height != 0){
+            getWindow().setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
+            parames.x = 20;
+        }
         getWindow().setAttributes(parames);
         if(type == TYPE_BUTTON_HIDE) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,

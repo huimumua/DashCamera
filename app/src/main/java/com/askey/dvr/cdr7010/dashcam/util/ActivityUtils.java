@@ -28,6 +28,18 @@ public class ActivityUtils {
         transaction.add(frameId, fragment);
         transaction.commit();
     }
+    public static void hideFragment(@NonNull FragmentManager fragmentManager,@NonNull Fragment fragment){
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        if (fragment != null) {
+            transaction.hide(fragment);
+        }
+    }
+    public static void displayFragmentToActivtity(@NonNull FragmentManager fragmentManager,@NonNull Fragment fragment){
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        if (fragment != null) {
+            transaction.show(fragment);
+        }
+    }
 
     public static void startActivity(Context context, String packageName, String className, boolean isFinish) {
         startActivity(context, packageName, className, null, isFinish);

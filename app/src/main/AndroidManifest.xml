@@ -42,9 +42,6 @@
         <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
             android:exported="true">
         </activity>
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.UpdateCompleteActivity"
-            android:exported="true">
-        </activity>
 
         <service
             android:name=".service.TTSSevice"

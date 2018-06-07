@@ -9,9 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
+import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.ui.MainActivity;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
@@ -36,6 +40,68 @@ public abstract class DialogActivity extends AppCompatActivity {
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
 
+
+    private static EventManager.EventCallback popUpEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+            DialogManager.getIntance().showDialog(eventInfo.getEventType(), 0);
+        }
+    };
+
+    private static EventManager.EventCallback iconEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+
+        }
+    };
+
+    private static EventManager.EventCallback ledEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+            switch (eventInfo.getEventType()) {
+                case Event.CONTINUOUS_RECORDING_START:
+                case Event.EVENT_RECORDING_START:
+                    LedMananger.getInstance().setLedRecStatus(true, true, eventInfo.getPriority());
+                    break;
+                case Event.CONTINUOUS_RECORDING_END:
+                case Event.EVENT_RECORDING_END:
+                case Event.RECORDING_STOP:
+                case Event.HIGH_TEMPERATURE_THRESHOLD_LV2:
+                    LedMananger.getInstance().setLedRecStatus(true, false, eventInfo.getPriority());
+                    break;
+                case Event.SDCARD_UNMOUNTED:
+                case Event.SDCARD_UNFORMATTED:
+                case Event.SDCARD_UNSUPPORTED:
+                case Event.SDCARD_ERROR:
+                    LedMananger.getInstance().setLedRecStatus(false, false, eventInfo.getPriority());
+                    break;
+                case Event.AUDIO_RECORDING_ON:
+                    LedMananger.getInstance().setLedMicStatus(true);
+                    break;
+                case Event.AUDIO_RECORDING_OFF:
+                    LedMananger.getInstance().setLedMicStatus(false);
+                    break;
+                default:
+            }
+
+        }
+    };
+
+    private static EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+            TTSManager.getInstance().ttsEventStart( eventInfo.getEventType(),
+                    eventInfo.getPriority(),new int[]{eventInfo.getVoiceGuidence()});
+        }
+    };
+
+    static{
+        EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
+        EventManager.getInstance().registIconEventCallback(iconEventCallback);
+        EventManager.getInstance().registLedEventCallback(ledEventCallback);
+        EventManager.getInstance().registTtsEventCallback(ttsEventCallback);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +118,8 @@ public abstract class DialogActivity extends AppCompatActivity {
         }
         return super.dispatchKeyEvent(event);
     }
+
+
 
     @Override
     protected Dialog onCreateDialog(int id, Bundle args) {
