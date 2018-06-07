@@ -10,12 +10,16 @@ import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
@@ -47,12 +51,16 @@ public class MainActivity extends DialogActivity {
         if (audioManager != null) {
             maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
         }
+        EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
+        EventManager.getInstance().registIconEventCallback(iconEventCallback);
+        EventManager.getInstance().registLedEventCallback(ledEventCallback);
 
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
     }
 
     @Override
     public void onDestroy() {
+        removeListeners();
         if (timeFinishApp != null) {
             timeFinishApp.cancel();
             timeFinishApp = null;
@@ -63,8 +71,58 @@ public class MainActivity extends DialogActivity {
         super.onDestroy();
     }
 
+    private void removeListeners() {
+        EventManager.getInstance().unRegistPopUpEventCallback(popUpEventCallback);
+        EventManager.getInstance().unRegistIconEventCallback(iconEventCallback);
+        EventManager.getInstance().unRegistLedEventCallback(ledEventCallback);
+    }
 
 
+    private  EventManager.EventCallback popUpEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+            DialogManager.getIntance().showDialog(eventInfo.getEventType(), 0);
+        }
+    };
+
+    private  EventManager.EventCallback iconEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+
+        }
+    };
+
+    private  EventManager.EventCallback ledEventCallback = new EventManager.EventCallback() {
+        @Override
+        public void onEvent(EventInfo eventInfo, long timeStamp) {
+            switch (eventInfo.getEventType()) {
+                case Event.CONTINUOUS_RECORDING_START:
+                case Event.EVENT_RECORDING_START:
+                    LedMananger.getInstance().setLedRecStatus(true, true, eventInfo.getPriority());
+                    break;
+                case Event.CONTINUOUS_RECORDING_END:
+                case Event.EVENT_RECORDING_END:
+                case Event.RECORDING_STOP:
+                case Event.HIGH_TEMPERATURE_THRESHOLD_LV2:
+                    LedMananger.getInstance().setLedRecStatus(true, false, eventInfo.getPriority());
+                    break;
+                case Event.SDCARD_UNMOUNTED:
+                case Event.SDCARD_UNFORMATTED:
+                case Event.SDCARD_UNSUPPORTED:
+                case Event.SDCARD_ERROR:
+                    LedMananger.getInstance().setLedRecStatus(false, false, eventInfo.getPriority());
+                    break;
+                case Event.AUDIO_RECORDING_ON:
+                    LedMananger.getInstance().setLedMicStatus(true);
+                    break;
+                case Event.AUDIO_RECORDING_OFF:
+                    LedMananger.getInstance().setLedMicStatus(false);
+                    break;
+                default:
+            }
+
+        }
+    };
 
     private LocalJvcStatusManager.LocalJvcStatusCallback jvcStatusCallback = new LocalJvcStatusManager.LocalJvcStatusCallback() {
         @Override
@@ -92,6 +150,7 @@ public class MainActivity extends DialogActivity {
                                         int flg = jsonObject.optInt("flg");
                                         switch (flg) {
                                             case 1://始期日以前
+                                                removeListeners();
                                                 fragment.beforeContractDayStart();
                                                 break;
                                             case 2://証券期間中 do nothing
