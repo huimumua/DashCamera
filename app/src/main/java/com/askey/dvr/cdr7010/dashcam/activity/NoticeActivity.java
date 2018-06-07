@@ -77,13 +77,15 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     }
     @Override
     public void displayTipInfo() {
-        DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE,"システムを更新しました",true);
+        DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE,getResources().getString(R.string.system_update_completed),true);
     }
     private UpdateInfo parseJson(String updateResult){
         if(TextUtils.isEmpty(updateResult)){
             return null;
         }
         UpdateInfo updateInfo = new UpdateInfo();
+        updateInfo.updateType = 2;
+        updateInfo.updateResultState = 0;
         try {
             JSONObject jsonObject = new JSONObject(updateResult);
             updateInfo.updateType = jsonObject.getInt("type");

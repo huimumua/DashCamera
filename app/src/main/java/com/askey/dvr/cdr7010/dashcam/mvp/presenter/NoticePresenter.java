@@ -2,6 +2,8 @@ package com.askey.dvr.cdr7010.dashcam.mvp.presenter;
 
 import android.text.TextUtils;
 
+import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.basemvp.BasePresenter;
 import com.askey.dvr.cdr7010.dashcam.domain.NoticeItem;
 import com.askey.dvr.cdr7010.dashcam.mvp.model.NoticeModel;
@@ -42,13 +44,13 @@ public class NoticePresenter extends BasePresenter<NoticeContract.View> implemen
         }
 
         if (TextUtils.isEmpty(title)) {
-            mView.showTitle("警告");
+            mView.showTitle(DashCamApplication.getAppContext().getResources().getString(R.string.warning_title));
         } else {
             mView.showTitle(title);
         }
 
         if (TextUtils.isEmpty(description)) {
-            mView.showDescription(DESCRIPTION);
+            mView.showDescription(DashCamApplication.getAppContext().getResources().getString(R.string.warning_description));
         } else {
             mView.showDescription(description);
         }

@@ -95,6 +95,14 @@
                 <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE"/>
             </intent-filter>
         </receiver>
+        <receiver
+            android:name="com.askey.dvr.cdr7010.dashcam.receiver.LanguageReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.LOCALE_CHANGED"/>
+            </intent-filter>
+        </receiver>
         <service
             android:name=".jvcmodule.local.ManualUploadService"
             android:exported="true">
