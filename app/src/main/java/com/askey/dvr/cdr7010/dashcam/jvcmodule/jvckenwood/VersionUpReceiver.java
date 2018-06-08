@@ -36,7 +36,7 @@ public class VersionUpReceiver extends BroadcastReceiver{
 
         }else if(action.equals(ACTION_EVENT_UPDATE_COMPLETED)){
             int type = intent.getIntExtra("type", -1);
-            int result = intent.getIntExtra("result", -1);
+            int result = intent.getIntExtra("result", -10); //-1被正常使用
 
             try {
                 JSONObject jsonObject = new JSONObject();
