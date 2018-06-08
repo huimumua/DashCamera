@@ -67,6 +67,7 @@ public class MainActivity extends DialogActivity {
         }
         //add by Mark
         MainApp.getInstance().endInitialSetup();
+        MainApp.getInstance().unBindJvcMainAppService();
         //end add
         super.onDestroy();
     }
