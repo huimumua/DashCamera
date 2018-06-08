@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DashCam</string>
-    <string name="after_contract_day_stop">契約が終了したため.\nドライブレコーダーは\nこ利用てきません.\n約1分後に電源をオフします.</string>
-    <string name="before_contract_day_start">契約開始射なのて。\n緊急通報などのー部機能\nは\nこ利用できません</string>
+    <string name="after_contract_day_stop">契約が終了したため、\nドライブレコーダーは\nご利用できません。\n約1分後に電源をオフします。</string>
+    <string name="before_contract_day_start">契約開始前のため、\n緊急通報機能は\nご利用できません。</string>
     <string name="system_update_completed">システムを更新しました</string>
     <string name="warning_title">警告</string>
     <string name="warning_description">本製品の操作は、必ず安全場所に停車してからおこなってください。\n運転中のに操作をおこなうと、思わめ事故の原因になります。</string>
