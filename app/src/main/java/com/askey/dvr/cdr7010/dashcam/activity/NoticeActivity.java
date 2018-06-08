@@ -13,10 +13,15 @@ import com.askey.dvr.cdr7010.dashcam.mvp.view.UpdateFragment;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 
 
 public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener,UpdateFragment.UpdateListener {
@@ -47,14 +52,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Override
     public void noticeJump() {
-        String updateResult = (String)SPUtils.get(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED, "");
-        updateInfo = parseJson(updateResult);
-            if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_SUCCESS) ) {
+        updateInfo = parseFile("/cache/recovery_result");
+            if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
+                     ||(updateInfo.updateResultState == Const.UPDATE_FAIL))) {
                 isUpdate = true;
-                SPUtils.remove(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED);
                 updateFragment = new UpdateFragment();
                 Bundle bundle = new Bundle();
-                bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE)? Const.OTA_UPDATE:Const.SDCARD_UPDATE);
+                bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
                 updateFragment.setArguments(bundle);
                 ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
                 ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
@@ -77,19 +81,38 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     }
     @Override
     public void displayTipInfo() {
-        DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE,getResources().getString(R.string.system_update_completed),true);
+        if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_SUCCESS)) {
+            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_success), true);
+        }else if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_FAIL)){
+            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
+        }
     }
-    private UpdateInfo parseJson(String updateResult){
-        if(TextUtils.isEmpty(updateResult)){
+    private UpdateInfo parseFile(String filePath){
+        UpdateInfo updateInfo =null;
+        if(TextUtils.isEmpty(filePath)){
             return null;
         }
-        UpdateInfo updateInfo = new UpdateInfo();
-        try {
-            JSONObject jsonObject = new JSONObject(updateResult);
-            updateInfo.updateType = jsonObject.getInt("type");
-            updateInfo.updateResultState = jsonObject.getInt("result");
-        }catch(Exception e){
-            e.printStackTrace();
+        File dir = new File(filePath);
+        if (dir.exists()) {
+            try {
+                updateInfo = new UpdateInfo();
+                FileReader mFileReader = new FileReader("/cache/recovery_result");
+                BufferedReader mBufferedReader = new BufferedReader(mFileReader);
+                String mReadText = "";
+                String mTextLine = mBufferedReader.readLine();
+                while (mTextLine!=null) {
+                    mReadText += mTextLine+"\n";
+                    mTextLine = mBufferedReader.readLine();
+                }
+                updateInfo.updateType =Const.SDCARD_UPDATE;
+                if(mReadText.contains("0")) {
+                    updateInfo.updateResultState =Const.UPDATE_SUCCESS;
+                }
+                else {
+                    updateInfo.updateResultState =Const.UPDATE_FAIL;
+                }
+            } catch(Exception e) {
+            }
         }
         return updateInfo;
     }
