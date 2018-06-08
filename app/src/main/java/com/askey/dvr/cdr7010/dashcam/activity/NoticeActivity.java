@@ -84,8 +84,6 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
             return null;
         }
         UpdateInfo updateInfo = new UpdateInfo();
-        updateInfo.updateType = 2;
-        updateInfo.updateResultState = 0;
         try {
             JSONObject jsonObject = new JSONObject(updateResult);
             updateInfo.updateType = jsonObject.getInt("type");
