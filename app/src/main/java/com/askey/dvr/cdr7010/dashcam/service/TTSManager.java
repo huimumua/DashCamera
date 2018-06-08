@@ -30,6 +30,7 @@ public class TTSManager{
         return;
     }
     public void ttsEventStart(int requestId,int priority,int[] voiceId){
+        Logg.d(TAG,"ttsEventStart requestId="+requestId+",priority="+priority+",voiceId="+voiceId[0]);
         if(ttsIsSpeaking()){
             if(priority <= lastPriority){
                 if(instance != null && tts != null){

@@ -226,11 +226,11 @@ public class OSDView extends View {
         Date trialTime = new Date();
         calendar.setTime(trialTime);
         String language = Locale.getDefault().getLanguage();
-        if(language.equals("en") || language.equals("us")){
+        if(language.equals("ja") ){
             hour= calendar.get(Calendar.HOUR_OF_DAY);
             minute= calendar.get(Calendar.MINUTE);
             timeString=(hour < 10 ? "0" + hour : hour)+":"+(minute < 10 ? "0" + minute : minute);
-        }else if(language.equals("ja")){
+        }else if(language.equals("us") || language.equals("en") ){
             hour= calendar.get(Calendar.HOUR);
             minute= calendar.get(Calendar.MINUTE);
             int am_pm = calendar.get(Calendar.AM_PM);
