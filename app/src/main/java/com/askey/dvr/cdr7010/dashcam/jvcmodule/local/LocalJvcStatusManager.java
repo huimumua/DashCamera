@@ -26,18 +26,19 @@ public class LocalJvcStatusManager {
     private static List<LocalJvcStatusCallback> mCallbacks = Collections.synchronizedList(new ArrayList<LocalJvcStatusCallback>());
     private static boolean isInsuranceTermArriving;
 
-    public static EnumMap<JvcStatusParam, Object> getInsuranceTerm(LocalJvcStatusCallback callback){
+    public static EnumMap<JvcStatusParam, Object> getInsuranceTerm(LocalJvcStatusCallback callback) {
         Logg.d(LOG_TAG, "getInsuranceTerm: isInsuranceTermArriving=" + isInsuranceTermArriving);
-        EnumMap<JvcStatusParam, Object> object = null;
         Context appContext = DashCamApplication.getAppContext();
-        if(isInsuranceTermArriving){
-            object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
-            if(callback != null){
-                if(object != null) {
-                    callback.onDataArriving(object);
-                }else {
-                    mCallbacks.add(callback);
-                }
+        EnumMap<JvcStatusParam, Object> object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
+
+        Logg.d(LOG_TAG, "getInsuranceTerm: callback null=" + (callback == null) + ", object null=" + (object == null));
+        if (callback != null) {
+            if(isInsuranceTermArriving && object != null){
+                Logg.d(LOG_TAG, "getInsuranceTerm: start callback. ");
+                callback.onDataArriving(object);
+            }else {
+                Logg.d(LOG_TAG, "getInsuranceTerm: add callback. ");
+                mCallbacks.add(callback);
             }
         }
 
@@ -45,6 +46,7 @@ public class LocalJvcStatusManager {
     }
 
     public static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap, boolean checkBeforeSave){
+        Logg.d(LOG_TAG, "setInsuranceTerm: ");
         if(enumMap != null){
             isInsuranceTermArriving = true;
             int oos = (int)enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
@@ -56,12 +58,15 @@ public class LocalJvcStatusManager {
 
             Context appContext = DashCamApplication.getAppContext();
             EnumMap<JvcStatusParam, Object> object = (EnumMap<JvcStatusParam, Object>) ObjectPreference.getObjectFromShare(appContext, JvcStatus.INSURANCE_TERM.getName());
+            Logg.d(LOG_TAG, "setInsuranceTerm: oos=" + oos + ", saveObject null=" + (object==null));
             if(oos == 0 || (oos == 1 && object == null)){
+                Logg.d(LOG_TAG, "setInsuranceTerm: start callback, callbackSize=" + mCallbacks.size());
                 for(LocalJvcStatusCallback callback : mCallbacks){
                     callback.onDataArriving(enumMap);
                     mCallbacks.remove(callback); //返回后移除该callback
                 }
             }else if(object != null){
+                Logg.d(LOG_TAG, "setInsuranceTerm: start callback, callbackSize=" + mCallbacks.size());
                 for(LocalJvcStatusCallback callback : mCallbacks){
                     callback.onDataArriving(object);
                     mCallbacks.remove(callback); //返回后移除该callback
