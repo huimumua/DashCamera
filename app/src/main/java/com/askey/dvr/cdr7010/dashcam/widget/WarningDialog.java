@@ -59,7 +59,7 @@ public class WarningDialog extends Dialog {
         waringImg.setLayoutParams(param);
         waringImg.setImageResource(R.drawable.dialog_warning_img);
 
-        LinearLayout.LayoutParams messageParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,20);
+        LinearLayout.LayoutParams messageParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,24);
         messageParam.topMargin = 10;
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
