@@ -354,7 +354,7 @@ public class MediaMuxerWrapper {
                     nmeaRecorder.stop();
                 }
                 nmeaRecorder = null;
-                Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+//                Logg.i(LOG_TAG,"terminate: nmeaRecorder stop");
             }
             synchronized (syncObj) {
                 if (muxer != null) {
@@ -379,7 +379,7 @@ public class MediaMuxerWrapper {
                             nmeaRecorder.stop();
                         }
                         nmeaRecorder = null;
-                        Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+//                        Logg.i(LOG_TAG,"stop: nmeaRecorder stop");
                     }
                 }
             }
@@ -396,7 +396,7 @@ public class MediaMuxerWrapper {
                             nmeaRecorder.stop();
                         }
                         nmeaRecorder = null;
-                        Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+//                        Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
                     }
                 }
             }
@@ -421,7 +421,7 @@ public class MediaMuxerWrapper {
                                 nmeaRecorder.stop();
                             }
                             nmeaRecorder = null;
-                            Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+//                            Logg.i(LOG_TAG,"muxSampleData: nmeaRecorder stop");
                         }
                     }
 

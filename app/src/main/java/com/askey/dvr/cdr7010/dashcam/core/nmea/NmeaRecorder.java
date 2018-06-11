@@ -26,7 +26,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,7 @@ public class NmeaRecorder {
     private long recordTime, startTime, endTime;
     private static final Object mSync = new Object();
     private static final String newLineSymbol = "\r\n";
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssZ");
 
     public enum RecorderState {
         CREATED,
@@ -97,7 +100,7 @@ public class NmeaRecorder {
         this.state = RecorderState.STARTED;
         startTime = startTimeStamp / 1000;
         recordTime = startTime - 10;
-        endTime = startTime + 5;
+        endTime = startTime + 4;
         Log.i(LOG_TAG, "startTime = " + startTime + ", recordTime" + recordTime + ", endTime" + endTime);
         try {
             this.outputStream.write("$GTRIP,ABCD1234,2".getBytes()); //TODO: Change JVC format
@@ -153,19 +156,14 @@ public class NmeaRecorder {
         try {
             NmeaNodeSet nmeaNodeSet = histroyPool.get(recodingTime);
             if (nmeaNodeSet != null) {
-//                String tempString = "number" + nmeaNodeSet.keyNumber;
-//                outputStream.write(tempString.getBytes());
-//                outputStream.write(newLineSymbol.getBytes());
                 for (int nodeNumber = 0; nodeNumber < nmeaNodeSet.nmeaNodes.length; nodeNumber++) {
-                    //outputStream.write(("nodeNumber" + nodeNumber).getBytes());
-                    //outputStream.write(newLineSymbol.getBytes());
                     for (int dataNumber = 0; dataNumber < nmeaNodeSet.nmeaNodes[nodeNumber].dataArray.length; dataNumber++) {
                         if (this.state == RecorderState.STOPPED) {
                             return true;
                         }
                         if (!nmeaNodeSet.nmeaNodes[nodeNumber].dataArray[dataNumber].isEmpty()) {
                             outputStream.write(nmeaNodeSet.nmeaNodes[nodeNumber].dataArray[dataNumber].getBytes());
-                            if (dataNumber > 3)
+                            if (dataNumber > 4)
                                 outputStream.write(newLineSymbol.getBytes());
                         }
                     }
@@ -369,6 +367,9 @@ public class NmeaRecorder {
                                 tempDataArray[3] = tempDataArray[3] + entry.getValue();
                             }
 
+                            long currentTime = System.currentTimeMillis();
+
+                            setNmeaJkopt(currentTime);
 
                             NmeaNode nmeaNode = nmeaNodePool.remove(nmeaNodePool.entrySet().iterator().next().getKey());
                             if (nmeaNode != null) {
@@ -376,7 +377,7 @@ public class NmeaRecorder {
                                 nmeaNode.dataArray[1] = tempDataArray[1];
                                 nmeaNode.dataArray[2] = tempDataArray[2];
                                 nmeaNode.dataArray[3] = tempDataArray[3];
-                                nmeaNode.dataArray[4] = "$JKOPT,0x10,0x07,0x0f,0x08,0x36,0x0c,0x01f58a56,0x07a7ee6b,0x01,0x01,0x006d,0x0000,0"; //TODO: Chnage JVC format
+                                nmeaNode.dataArray[4] = setNmeaJkopt(currentTime); //TODO: Chnage JVC format
                                 nmeaNode.dataArray[5] = "$JKDSA,,,,,,,,,,,"; //TODO: Change JVC format
 //                    Log.i(LOG_TAG,"nmeaNode nodeNumber = " + nmeaNode.nodeNumber);
                                 if (nmeaNode.nodeNumber % 2 == 0) {
@@ -385,7 +386,7 @@ public class NmeaRecorder {
                                     NmeaNode nmeaNodeFront = nmeaNodePool.get(nmeaNode.nodeNumber - 1);
 
                                     NmeaNodeSet nmeaNodeSet = histroyPool.remove(histroyPool.entrySet().iterator().next().getKey());
-                                    nmeaNodeSet.keyNumber = System.currentTimeMillis() / 1000;
+                                    nmeaNodeSet.keyNumber = currentTime / 1000;
                                     nmeaNodeSet.nmeaNodes[0] = nmeaNodeFront;
                                     nmeaNodeSet.nmeaNodes[1] = nmeaNode;
                                     histroyPool.put(nmeaNodeSet.keyNumber, nmeaNodeSet);
@@ -395,7 +396,6 @@ public class NmeaRecorder {
                         /*for (NmeaRecorder nmeaRecorder : removeNmeaRecorders) {
                             nmeaRecorderListener.remove(nmeaRecorder);
                         }*/
-
                                     for (NmeaRecorder nmeaRecorder : nmeaRecorderListener) {
 //                                        Log.i(LOG_TAG, "nmeaRecorder = " + nmeaRecorder.state + ", write = " + nmeaNodeSet.keyNumber);
                                         while (nmeaRecorder.recordTime < nmeaNodeSet.keyNumber) {
@@ -428,6 +428,18 @@ public class NmeaRecorder {
                 }
             }, 0, 500, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private static String setNmeaJkopt (long currentTime) {
+        Date date = new Date(currentTime);
+        char[] timeSplit = dateFormat.format(date).toCharArray();
+        String jkpot = "$JKOPT,0x" + timeSplit[0] + timeSplit[1] + ",0x"
+                + timeSplit[2] + timeSplit[3] + ",0x" + timeSplit[4] + timeSplit[5] + ",0x"
+                + timeSplit[6] + timeSplit[7] + ",0x" + timeSplit[8] + timeSplit[9] + ",0x"
+                + timeSplit[10] + timeSplit[11] + ",,,,,,0x0000,0" + newLineSymbol;
+//        Log.i(LOG_TAG,"show string = " + jkpot);
+
+        return jkpot;
     }
 
     private static void initNmeaDirToSDcard() {  //TODO: Change to FileManager

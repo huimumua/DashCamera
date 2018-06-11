@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper.SegmentCallback;
 import com.askey.dvr.cdr7010.dashcam.core.event.Event;
+import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -34,6 +35,7 @@ public class EventMuxer implements Runnable{
     private MediaFormat mVideoFormat;
     private MediaFormat mAudioFormat;
     private AndroidMuxer mMuxer;
+    private NmeaRecorder nmeaRecorder;
     private boolean mFlagTerm = false;
     private boolean mFlagStop = false;
     private Context mContext;
@@ -100,6 +102,11 @@ public class EventMuxer implements Runnable{
                             String path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
                             mMuxer = createMuxer(path, eventId, eventTime);
                             isNewFile = true;
+                            String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("EVENT", "SYSTEM/NMEA/EVENT");
+//                            Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
+                            nmeaRecorder = NmeaRecorder.create(nmeaPath);
+                            nmeaRecorder.eventStart(eventTime);
+
                         } catch (RemoteException e) {
                             Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
                                     + e.getMessage());
@@ -175,6 +182,13 @@ public class EventMuxer implements Runnable{
         Logg.d(LOG_TAG, "terminate");
         mFlagTerm = true;
         mInputQueue.add(new Slice(0, 0, null));
+        if (nmeaRecorder != null) {
+            if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                nmeaRecorder.stop();
+            }
+            nmeaRecorder = null;
+//            Logg.i(LOG_TAG,"terminate: nmeaRecorder stop");
+        }
     }
 
     void release() {
@@ -207,6 +221,7 @@ public class EventMuxer implements Runnable{
                     }
                 }
             });
+
         } catch (IOException e) {
             Logg.e(LOG_TAG, "Fail to create muxer");
         }
