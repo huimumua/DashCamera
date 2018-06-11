@@ -20,6 +20,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pools.SynchronizedPool;
 import android.util.Log;
 
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -46,13 +48,13 @@ public class NmeaRecorder {
     private static String[] tempDataArray = new String[6];
     private static float[] tempSensorArray = new float[3];
 
-    private RecorderState state;
+    public RecorderState state;
     private FileOutputStream outputStream;
     private long recordTime, startTime, endTime;
     private static final Object mSync = new Object();
     private static final String newLineSymbol = "\r\n";
 
-    private enum RecorderState {
+    public enum RecorderState {
         CREATED,
         STARTED,
         STOPPED
@@ -68,6 +70,7 @@ public class NmeaRecorder {
         initSensorManager(context);
         initNmeaDirToSDcard();
         initScheduleRate();
+        Logg.i(LOG_TAG, "init");
         return true;
     }
 
@@ -75,15 +78,18 @@ public class NmeaRecorder {
         NmeaRecorder acquire = nmeaRecorderPool.acquire();
         if (acquire == null) {
             acquire = new NmeaRecorder();
+            Logg.i(LOG_TAG, "new acquire = " + acquire);
         }
+
         acquire.state = RecorderState.CREATED;
         File file = new File(filePath); //TODO: Need to follow fileManager process
         try {
             acquire.outputStream = new FileOutputStream(file);
         } catch (FileNotFoundException e) {
+            Logg.i(LOG_TAG, "create error = " + e);
             throw new RuntimeException(e);
         }
-
+        Logg.i(LOG_TAG, "create file done = " + acquire);
         return acquire;
     }
 
@@ -128,15 +134,18 @@ public class NmeaRecorder {
     public boolean stop() {
         if (this.state != RecorderState.STARTED)
             throw new RuntimeException("The NmeaRecorder state is not STARTED.");
+        this.state = RecorderState.STOPPED;
 
         try {
+            Log.i(LOG_TAG, "stop: recordTime = " + recordTime);
             this.outputStream.flush();
             this.outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         nmeaRecorderPool.release(this);
-        this.state = RecorderState.STOPPED;
+        nmeaRecorderListener.remove(this);
+
         return true;
     }
 
@@ -151,6 +160,9 @@ public class NmeaRecorder {
                     //outputStream.write(("nodeNumber" + nodeNumber).getBytes());
                     //outputStream.write(newLineSymbol.getBytes());
                     for (int dataNumber = 0; dataNumber < nmeaNodeSet.nmeaNodes[nodeNumber].dataArray.length; dataNumber++) {
+                        if (this.state == RecorderState.STOPPED) {
+                            return true;
+                        }
                         if (!nmeaNodeSet.nmeaNodes[nodeNumber].dataArray[dataNumber].isEmpty()) {
                             outputStream.write(nmeaNodeSet.nmeaNodes[nodeNumber].dataArray[dataNumber].getBytes());
                             if (dataNumber > 3)
@@ -159,7 +171,7 @@ public class NmeaRecorder {
                     }
                 }
             } else {
-//                Log.i(LOG_TAG, "no nmeaNodeSet");
+                Log.i(LOG_TAG, "no nmeaNodeSet = " + recodingTime);
                 return false;
             }
         } catch (IOException e) {
@@ -168,30 +180,39 @@ public class NmeaRecorder {
         return true;
     }
 
-    public static boolean deinit() {
-        sensorThreadPool.shutdownNow();
-        GPSThreadPool.shutdownNow();
+    public static boolean deinit(Context context) {
+        SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.unregisterListener(sensorEventListener);
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(locationListener);
+        locationManager.removeNmeaListener(nmeaListener);
         return true;
     }
 
     private static void initNmeaSet() {
-
-        for (long timestamp = 0; timestamp < 15; timestamp++) {
-            NmeaNodeSet nmeaNodeSet = new NmeaNodeSet();
-            nmeaNodeSet.keyNumber = timestamp;
-            histroyPool.put(timestamp, nmeaNodeSet);
+        if (histroyPool.size() == 0) {
+            for (long timestamp = 0; timestamp < 15; timestamp++) {
+                NmeaNodeSet nmeaNodeSet = new NmeaNodeSet();
+                nmeaNodeSet.keyNumber = timestamp;
+                histroyPool.put(timestamp, nmeaNodeSet);
+            }
         }
 
-        for (int number = 0; number < 20; number++) {
-            NmeaNode nmeaNode = new NmeaNode();
-            nmeaNode.nodeNumber = number;
-            nmeaNodePool.put(number, nmeaNode);
+        if (nmeaNodePool.size() == 0) {
+            for (int number = 0; number < 20; number++) {
+                NmeaNode nmeaNode = new NmeaNode();
+                nmeaNode.nodeNumber = number;
+                nmeaNodePool.put(number, nmeaNode);
+            }
         }
 
-        for (int number = 0; number < 5; number++) {
-            String sensorNode = "$GSENS,,,";
-            sensorNodePool.put(number, sensorNode);
+        if (sensorNodePool.size() == 0) {
+            for (int number = 0; number < 5; number++) {
+                String sensorNode = "$GSENS,999.999,999.999,999.999" + newLineSymbol;
+                sensorNodePool.put(number, sensorNode);
+            }
         }
+
         for (int number = 0; number < 6; number++) {
             tempDataArray[number] = "";
         }
@@ -272,12 +293,14 @@ public class NmeaRecorder {
             String[] datas = nmea.split(",");
             switch (datas[0]) {
                 case "$GNRMC":
+                    nmea.replaceFirst("GNRMC","GPRMC"); //Change to GPRMC
                     tempDataArray[0] = nmea;
                     break;
                 case "$GPRMC":
                     tempDataArray[0] = nmea;
                     break;
                 case "$GNGGA":
+                    nmea.replaceFirst("GNGGA","GPGGA"); //Change to GPGGA
                     tempDataArray[1] = nmea;
                     break;
                 case "$GPGGA":
@@ -316,76 +339,95 @@ public class NmeaRecorder {
     }
 
     private static void initScheduleRate() {
-        sensorThreadPool.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
+        if (sensorThreadPool.getPoolSize() == 0 && GPSThreadPool.getPoolSize() == 0) {
+            sensorThreadPool.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
 //                Log.i(LOG_TAG, "SensorPool");
-                //tempDataArray[3] = tempDataArray[3] + sensorNodePool;
-                int keyNumber = sensorNodePool.entrySet().iterator().next().getKey();
-                String sensorData = sensorNodePool.remove(keyNumber);
-                sensorData = "$GSENS," + String.format("%.3f", tempSensorArray[0]) + String.format(",%.3f", tempSensorArray[1]) + String.format(",%.3f", tempSensorArray[2]) + newLineSymbol;
-                //sensorData = System.currentTimeMillis()%1000 + sensorData;
-                sensorNodePool.put(keyNumber, sensorData);
-            }
-        }, 0, 100, TimeUnit.MILLISECONDS);
-
-        GPSThreadPool.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mSync) {
-                    tempDataArray[3] = "";
-                    for (Map.Entry<Integer, String> entry : sensorNodePool.entrySet()) {
-                        tempDataArray[3] = tempDataArray[3] + entry.getValue();
+                    int keyNumber = sensorNodePool.entrySet().iterator().next().getKey();
+                    String sensorData = sensorNodePool.remove(keyNumber);
+                    if (tempSensorArray[0] == 0.0 && tempSensorArray[1] == 0.0 && tempSensorArray[2] ==0.0){
+                        sensorData = "$GSENS,999.999,999.999,999.999" + newLineSymbol;
+                    } else {
+                        sensorData = "$GSENS," + String.format("%.3f", tempSensorArray[0]) + String.format(",%.3f", tempSensorArray[1]) + String.format(",%.3f", tempSensorArray[2]) + newLineSymbol;
                     }
+                    sensorNodePool.put(keyNumber, sensorData);
+                }
+            }, 0, 100, TimeUnit.MILLISECONDS);
 
-                    NmeaNode nmeaNode = nmeaNodePool.remove(nmeaNodePool.entrySet().iterator().next().getKey());
-                    nmeaNode.dataArray[0] = tempDataArray[0];
-                    nmeaNode.dataArray[1] = tempDataArray[1];
-                    nmeaNode.dataArray[2] = tempDataArray[2];
-                    nmeaNode.dataArray[3] = tempDataArray[3];
-                    nmeaNode.dataArray[4] = "$JKOPT,0x10,0x07,0x0f,0x08,0x36,0x0c,0x01f58a56,0x07a7ee6b,0x01,0x01,0x006d,0x0000,0"; //TODO: Chnage JVC format
-                    nmeaNode.dataArray[5] = "$JKDSA,,,,,,,,,,,"; //TODO: Change JVC format
+            GPSThreadPool.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    long errorTime;
+                    try {
+                        synchronized (mSync) {
+                            if (!tempDataArray[0].contains("$GPRMC")) {
+                                tempDataArray[0] = "$GPRMC,,V,,,,,,,,,,N*AA";
+                            }
+                            tempDataArray[3] = "";
+                            for (Map.Entry<Integer, String> entry : sensorNodePool.entrySet()) {
+                                tempDataArray[3] = tempDataArray[3] + entry.getValue();
+                            }
+
+
+                            NmeaNode nmeaNode = nmeaNodePool.remove(nmeaNodePool.entrySet().iterator().next().getKey());
+                            if (nmeaNode != null) {
+                                nmeaNode.dataArray[0] = tempDataArray[0];
+                                nmeaNode.dataArray[1] = tempDataArray[1];
+                                nmeaNode.dataArray[2] = tempDataArray[2];
+                                nmeaNode.dataArray[3] = tempDataArray[3];
+                                nmeaNode.dataArray[4] = "$JKOPT,0x10,0x07,0x0f,0x08,0x36,0x0c,0x01f58a56,0x07a7ee6b,0x01,0x01,0x006d,0x0000,0"; //TODO: Chnage JVC format
+                                nmeaNode.dataArray[5] = "$JKDSA,,,,,,,,,,,"; //TODO: Change JVC format
 //                    Log.i(LOG_TAG,"nmeaNode nodeNumber = " + nmeaNode.nodeNumber);
-                    if (nmeaNode.nodeNumber % 2 == 0) {
-                        nmeaNodePool.put(nmeaNode.nodeNumber, nmeaNode);
-                    } else if (nmeaNode.nodeNumber % 2 == 1) {
-                        NmeaNode nmeaNodeFront = nmeaNodePool.get(nmeaNode.nodeNumber - 1);
+                                if (nmeaNode.nodeNumber % 2 == 0) {
+                                    nmeaNodePool.put(nmeaNode.nodeNumber, nmeaNode);
+                                } else if (nmeaNode.nodeNumber % 2 == 1) {
+                                    NmeaNode nmeaNodeFront = nmeaNodePool.get(nmeaNode.nodeNumber - 1);
 
-                        NmeaNodeSet nmeaNodeSet = histroyPool.remove(histroyPool.entrySet().iterator().next().getKey());
-                        nmeaNodeSet.keyNumber = System.currentTimeMillis() / 1000;
-                        nmeaNodeSet.nmeaNodes[0] = nmeaNodeFront;
-                        nmeaNodeSet.nmeaNodes[1] = nmeaNode;
-                        histroyPool.put(nmeaNodeSet.keyNumber, nmeaNodeSet);
-                        nmeaNodePool.put(nmeaNode.nodeNumber, nmeaNode);
-//                        Log.i(LOG_TAG, "nmeaNodeSet keyNumber" + nmeaNodeSet.keyNumber);
-                        List<NmeaRecorder> removeNmeaRecorders = new ArrayList<NmeaRecorder>();
-                        for (NmeaRecorder nmeaRecorder : nmeaRecorderListener) {
-//                            Log.i(LOG_TAG, "nmeaRecorder = "+ nmeaRecorder.state +", write = " + nmeaNodeSet.keyNumber);
-                            while (nmeaRecorder.recordTime < nmeaNodeSet.keyNumber) {
-                                nmeaRecorder.writeToFile(nmeaRecorder.recordTime);
-                                nmeaRecorder.recordTime++;
-                            }
-                            if (nmeaRecorder.state != RecorderState.STARTED) {
-                                nmeaRecorder.writeToFile(nmeaNodeSet.keyNumber);
-                                nmeaRecorder.recordTime++;
-                            }
+                                    NmeaNodeSet nmeaNodeSet = histroyPool.remove(histroyPool.entrySet().iterator().next().getKey());
+                                    nmeaNodeSet.keyNumber = System.currentTimeMillis() / 1000;
+                                    nmeaNodeSet.nmeaNodes[0] = nmeaNodeFront;
+                                    nmeaNodeSet.nmeaNodes[1] = nmeaNode;
+                                    histroyPool.put(nmeaNodeSet.keyNumber, nmeaNodeSet);
+                                    nmeaNodePool.put(nmeaNode.nodeNumber, nmeaNode);
+//                                    Log.i(LOG_TAG, "nmeaNodeSet keyNumber" + nmeaNodeSet.keyNumber);
+                                    List<NmeaRecorder> removeNmeaRecorders = new ArrayList<NmeaRecorder>();
+                        /*for (NmeaRecorder nmeaRecorder : removeNmeaRecorders) {
+                            nmeaRecorderListener.remove(nmeaRecorder);
+                        }*/
 
+                                    for (NmeaRecorder nmeaRecorder : nmeaRecorderListener) {
+//                                        Log.i(LOG_TAG, "nmeaRecorder = " + nmeaRecorder.state + ", write = " + nmeaNodeSet.keyNumber);
+                                        while (nmeaRecorder.recordTime < nmeaNodeSet.keyNumber) {
+                                            nmeaRecorder.writeToFile(nmeaRecorder.recordTime);
+                                            nmeaRecorder.recordTime++;
+                                        }
+                                        if (nmeaRecorder.state == RecorderState.STARTED) {
+                                            nmeaRecorder.writeToFile(nmeaNodeSet.keyNumber);
+                                            nmeaRecorder.recordTime++;
+                                        }
+//                                        Log.i(LOG_TAG, "nmeaRecorder endTime = " + nmeaRecorder.endTime);
                             if (nmeaNodeSet.keyNumber == nmeaRecorder.endTime) {
+                                Log.i(LOG_TAG,"call stop()");
                                 nmeaRecorder.stop();
                                 removeNmeaRecorders.add(nmeaRecorder);
-                                Log.i(LOG_TAG, "nmeaRecorder stop");
-
+                            }
+//                            Log.i(LOG_TAG, "nmeaRecorder startTime = "+ nmeaRecorder.startTime);
+                                    }
+                                } else {
+                                    throw new RuntimeException("The NmeaRecorder state is not CREATED.");
+                                }
+                            } else {
+                                Log.i(LOG_TAG, "nnmeaNode not get node");
                             }
                         }
-                        for (NmeaRecorder nmeaRecorder : removeNmeaRecorders) {
-                            nmeaRecorderListener.remove(nmeaRecorder);
-                        }
-                    } else {
-                        throw new RuntimeException("The NmeaRecorder state is not CREATED.");
+
+                    } catch (Throwable throwable) {
+                        Log.i(LOG_TAG, "error = " + throwable);
                     }
                 }
-            }
-        }, 0, 500, TimeUnit.MILLISECONDS);
+            }, 0, 500, TimeUnit.MILLISECONDS);
+        }
     }
 
     private static void initNmeaDirToSDcard() {  //TODO: Change to FileManager

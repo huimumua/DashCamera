@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.support.annotation.IntDef;
+import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.core.event.Event;
@@ -333,7 +334,7 @@ public class MediaMuxerWrapper {
     static private class MuxerHandler extends Handler {
 
         private AndroidMuxer muxer;
-//        private NmeaRecorder nmeaRecorder;
+        private NmeaRecorder nmeaRecorder;
         private WeakReference<MediaMuxerWrapper> weakParent;
         private boolean flagTerm = false;
         private EventMuxer eventMuxer;
@@ -348,11 +349,19 @@ public class MediaMuxerWrapper {
 
         void terminate() {
             flagTerm = true;
+            if (nmeaRecorder != null) {
+                if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                    nmeaRecorder.stop();
+                }
+                nmeaRecorder = null;
+                Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+            }
             synchronized (syncObj) {
                 if (muxer != null) {
                     muxer.stop();
                     muxer = null;
                 }
+
             }
         }
 
@@ -365,6 +374,13 @@ public class MediaMuxerWrapper {
                         parent.closeMuxer(muxer);
                     }
                     muxer = null;
+                    if (nmeaRecorder != null) {
+                        if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                            nmeaRecorder.stop();
+                        }
+                        nmeaRecorder = null;
+                        Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+                    }
                 }
             }
         }
@@ -375,6 +391,13 @@ public class MediaMuxerWrapper {
                 if (parent != null && muxer != null) {
                     parent.closeMuxer(muxer);
                     muxer = null;
+                    if (nmeaRecorder != null) {
+                        if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                            nmeaRecorder.stop();
+                        }
+                        nmeaRecorder = null;
+                        Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+                    }
                 }
             }
         }
@@ -393,15 +416,25 @@ public class MediaMuxerWrapper {
                     if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
                         parent.closeMuxer(muxer);
                         muxer = null;
+                        if (nmeaRecorder != null) {
+                            if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                                nmeaRecorder.stop();
+                            }
+                            nmeaRecorder = null;
+                            Logg.i(LOG_TAG,"pauseContinuesRecording: nmeaRecorder stop");
+                        }
                     }
 
                     if (muxer == null) {
                         try {
                             String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
                             muxer = new AndroidMuxer(path);
+
                             //TODO: Next vesion Change FileManage
                             String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("NORMAL", "SYSTEM/NMEA/NORMAL");
-                            NmeaRecorder nmeaRecorder = NmeaRecorder.create(nmeaPath);
+                            nmeaRecorder = NmeaRecorder.create(nmeaPath);
+                            //Logg.i(LOG_TAG,"muxer address = " + muxer + ", nmeaRecorder = " + nmeaRecorder);
+
                             if (parent.mSegmentCallback != null) {
                                 parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, muxer.filePath());
                             }
@@ -409,7 +442,7 @@ public class MediaMuxerWrapper {
                             muxer.addTrack(SAMPLE_TYPE_AUDIO, parent.mAudioFormat);
                             muxer.setMaxDuration(parent.mSegmentDurationLimitedUs);
                             muxer.start(time);
-
+                            //Logg.i(LOG_TAG,"Nmea : setTime = " + time);
                             nmeaRecorder.start(time, parent.mSegmentDurationLimitedUs / 1000000);
                             final long startTimeMs = muxer.startTimeMs();
                             parent.mHandler.post(new Runnable() {

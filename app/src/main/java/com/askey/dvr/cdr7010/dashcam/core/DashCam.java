@@ -123,7 +123,6 @@ public class DashCam implements DashCamControl{
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
         mAdasController.start(mContext);
-        NmeaRecorder.init(mContext);
         ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
@@ -171,7 +170,7 @@ public class DashCam implements DashCamControl{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        NmeaRecorder.init(mContext);
         mRenderer = new EGLRenderer(mContext,
                 mConfig.videoStampEnable(),
                 new EGLRenderer.OnSurfaceTextureListener() {
@@ -227,6 +226,7 @@ public class DashCam implements DashCamControl{
                 mRecorder.release();
                 mRecorder = null;
             }
+            NmeaRecorder.deinit(mContext);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
