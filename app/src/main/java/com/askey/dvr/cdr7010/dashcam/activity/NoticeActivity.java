@@ -52,9 +52,12 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Override
     public void noticeJump() {
-        updateInfo = parseFile("/cache/recovery_result");
+        String updateResult = (String)SPUtils.get(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED, "");
+        updateInfo = parseJson(updateResult);
+        //updateInfo = parseFile("/cache/recovery_result");
             if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
                      ||(updateInfo.updateResultState == Const.UPDATE_FAIL))) {
+                SPUtils.remove(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED);
                 isUpdate = true;
                 updateFragment = new UpdateFragment();
                 Bundle bundle = new Bundle();
@@ -87,6 +90,22 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
             DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
         }
     }
+
+    private UpdateInfo parseJson(String updateResult){
+        if(TextUtils.isEmpty(updateResult)){
+            return null;
+        }
+        UpdateInfo updateInfo = new UpdateInfo();
+        try {
+                JSONObject jsonObject = new JSONObject(updateResult);
+                updateInfo.updateType = jsonObject.getInt("type");
+                updateInfo.updateResultState = jsonObject.getInt("result");
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return updateInfo;
+    }
+
     private UpdateInfo parseFile(String filePath){
         UpdateInfo updateInfo =null;
         if(TextUtils.isEmpty(filePath)){
