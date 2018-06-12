@@ -37,7 +37,7 @@
         <popup>no</popup>
         <icon>yes</icon>
         <led>yes</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>4</id>
@@ -76,7 +76,7 @@
         <popup>yes</popup>
         <icon>no</icon>
         <led>no</led>
-        <speech>yes</speech>
+        <speech>no</speech>
     </event>
     <event>
         <id>7</id>
@@ -111,7 +111,7 @@
         <dialog_type>2</dialog_type>
         <name>Impact detection</name>
         <description>Impact detected</description>
-        <voice_guidence>0106</voice_guidence>
+        <voice_guidence>0x0106</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -124,7 +124,7 @@
         <dialog_type>2</dialog_type>
         <name>Driving time(Over 2H)</name>
         <description>Long time driving..</description>
-        <voice_guidence>0602</voice_guidence>
+        <voice_guidence>0x0602</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -137,7 +137,7 @@
         <dialog_type>2</dialog_type>
         <name>Rapid acceleration(5times)</name>
         <description>Rapid accelerate</description>
-        <voice_guidence>0603</voice_guidence>
+        <voice_guidence>0x0603</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -150,7 +150,7 @@
         <dialog_type>2</dialog_type>
         <name>Rapid deceleration(5times)</name>
         <description>Rapid decelerate</description>
-        <voice_guidence>0604</voice_guidence>
+        <voice_guidence>0x0604</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -163,7 +163,7 @@
         <dialog_type>2</dialog_type>
         <name>Abrupt handle</name>
         <description>Abrupt handling</description>
-        <voice_guidence>0605</voice_guidence>
+        <voice_guidence>0x0605</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -176,7 +176,7 @@
         <dialog_type>2</dialog_type>
         <name>Fluctuation detection</name>
         <description>Wobble handling</description>
-        <voice_guidence>0606</voice_guidence>
+        <voice_guidence>0x0606</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -189,7 +189,7 @@
         <dialog_type>2</dialog_type>
         <name>Reverse run detection</name>
         <description>Reverse driving</description>
-        <voice_guidence>0607</voice_guidence>
+        <voice_guidence>0x0607</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -202,7 +202,7 @@
         <dialog_type>2</dialog_type>
         <name>Driving outside the designated area</name>
         <description>Outside designated area</description>
-        <voice_guidence>0608</voice_guidence>
+        <voice_guidence>0x0608</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -215,7 +215,7 @@
         <dialog_type>2</dialog_type>
         <name>Accident frequently occurring area</name>
         <description>Frequently accident area</description>
-        <voice_guidence>0609</voice_guidence>
+        <voice_guidence>0x0609</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -228,7 +228,7 @@
         <dialog_type>2</dialog_type>
         <name>Speed ​​regulation area(Zone30)</name>
         <description>Speed limit 30 Km</description>
-        <voice_guidence>060A</voice_guidence>
+        <voice_guidence>0x060A</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -241,7 +241,7 @@
         <dialog_type>2</dialog_type>
         <name>Pause</name>
         <description>Tempotary stop</description>
-        <voice_guidence>060B</voice_guidence>
+        <voice_guidence>0x060B</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -254,7 +254,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (deer)</name>
         <description>Animal alert</description>
-        <voice_guidence>0701</voice_guidence>
+        <voice_guidence>0x0701</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -267,7 +267,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (raccoon dog)</name>
         <description>Animal alert</description>
-        <voice_guidence>0702</voice_guidence>
+        <voice_guidence>0x0702</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -280,7 +280,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (Amami Rabbit(Pentalagus furnessi))</name>
         <description>Animal alert</description>
-        <voice_guidence>0703</voice_guidence>
+        <voice_guidence>0x0703</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -293,7 +293,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (Gallirallus okinawae(Okinawa rail))</name>
         <description>Animal alert</description>
-        <voice_guidence>0704</voice_guidence>
+        <voice_guidence>0x0704</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -306,7 +306,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (Wildcat)</name>
         <description>Animal alert</description>
-        <voice_guidence>0705</voice_guidence>
+        <voice_guidence>0x0705</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -319,7 +319,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (Generic animal)</name>
         <description>Animal alert</description>
-        <voice_guidence>0706</voice_guidence>
+        <voice_guidence>0x0706</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -332,7 +332,7 @@
         <dialog_type>2</dialog_type>
         <name>Road kill (Rare animal)</name>
         <description>Animal alert</description>
-        <voice_guidence>0707</voice_guidence>
+        <voice_guidence>0x0707</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -345,7 +345,7 @@
         <dialog_type>2</dialog_type>
         <name>Weather information(Warning)</name>
         <description>Weather alert</description>
-        <voice_guidence>0804</voice_guidence>
+        <voice_guidence>0x0804</voice_guidence>
         <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -358,7 +358,7 @@
         <dialog_type>2</dialog_type>
         <name>Weather information(Special warning)</name>
         <description>Weather alert</description>
-        <voice_guidence>0803</voice_guidence>
+        <voice_guidence>0x0803</voice_guidence>
         <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -371,7 +371,7 @@
         <dialog_type>2</dialog_type>
         <name>Weather information(typhoon)</name>
         <description>Weather alert</description>
-        <voice_guidence>0802</voice_guidence>
+        <voice_guidence>0x0802</voice_guidence>
         <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -384,7 +384,7 @@
         <dialog_type>2</dialog_type>
         <name>Weather information(The closest typhoon)</name>
         <description>Weather alert</description>
-        <voice_guidence>0801</voice_guidence>
+        <voice_guidence>0x0801</voice_guidence>
         <popup>no</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -397,7 +397,7 @@
         <dialog_type>2</dialog_type>
         <name>Forward collision</name>
         <description>Collision alert</description>
-        <voice_guidence>0902</voice_guidence>
+        <voice_guidence>0x0902</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -410,7 +410,7 @@
         <dialog_type>2</dialog_type>
         <name>Lane departure Right</name>
         <description>Right lane alert</description>
-        <voice_guidence>0904</voice_guidence>
+        <voice_guidence>0x0904</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -423,25 +423,25 @@
         <dialog_type>2</dialog_type>
         <name> Lane departure Left</name>
         <description>Left lane alert</description>
-        <voice_guidence>0903</voice_guidence>
+        <voice_guidence>0x0903</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
         <speech>yes</speech>
     </event>
-    <event>
-        <id>34</id>
-        <priority>3</priority>
-        <event_type>7</event_type>
-        <dialog_type>2</dialog_type>
-        <name>Start delay</name>
-        <description>Start delay alert</description>
-        <voice_guidence>0905</voice_guidence>
-        <popup>yes</popup>
-        <icon>yes</icon>
-        <led>no</led>
-        <speech>yes</speech>
-    </event>
+    <!--<event>-->
+        <!--<id>34</id>-->
+        <!--<priority>3</priority>-->
+        <!--<event_type>7</event_type>-->
+        <!--<dialog_type>2</dialog_type>-->
+        <!--<name>Start delay</name>-->
+        <!--<description>Start delay alert</description>-->
+        <!--<voice_guidence>0x0905</voice_guidence>-->
+        <!--<popup>yes</popup>-->
+        <!--<icon>yes</icon>-->
+        <!--<led>no</led>-->
+        <!--<speech>yes</speech>-->
+    <!--</event>-->
     <event>
         <id>35</id>
         <priority>2</priority>
@@ -449,7 +449,7 @@
         <dialog_type>2</dialog_type>
         <name>pedestrian collision</name>
         <description>Pedestrian alert</description>
-        <voice_guidence>0906</voice_guidence>
+        <voice_guidence>0x0906</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -462,7 +462,7 @@
         <dialog_type>3</dialog_type>
         <name>location information</name>
         <description>GPS detecting</description>
-        <voice_guidence>0108</voice_guidence>
+        <voice_guidence>0x0107</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -475,7 +475,7 @@
         <dialog_type>3</dialog_type>
         <name>location information error</name>
         <description>GPS detecting error</description>
-        <voice_guidence>0109</voice_guidence>
+        <voice_guidence>0x0108</voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
         <led>no</led>
@@ -488,7 +488,7 @@
         <dialog_type>1</dialog_type>
         <name>No SD card inserted</name>
         <description>No SD card</description>
-        <voice_guidence>0101</voice_guidence>
+        <voice_guidence>0x0101</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -501,7 +501,7 @@
         <dialog_type>1</dialog_type>
         <name>SD card illegal / unformatted</name>
         <description>Abnormal SD card format, format needed</description>
-        <voice_guidence>0104</voice_guidence>
+        <voice_guidence>0x0104</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -514,7 +514,7 @@
         <dialog_type>1</dialog_type>
         <name>SD card not supported</name>
         <description>SD card not supported</description>
-        <voice_guidence>0103</voice_guidence>
+        <voice_guidence>0x0103</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -527,7 +527,7 @@
         <dialog_type>1</dialog_type>
         <name>SD card error / unrecognizable</name>
         <description>SD card error</description>
-        <voice_guidence>0102</voice_guidence>
+        <voice_guidence>0x0102</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
@@ -540,7 +540,7 @@
         <dialog_type>5</dialog_type>
         <name>Stop recording by detecting abnormality</name>
         <description>Stop recording</description>
-        <voice_guidence>0105</voice_guidence>
+        <voice_guidence>0x0105</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
