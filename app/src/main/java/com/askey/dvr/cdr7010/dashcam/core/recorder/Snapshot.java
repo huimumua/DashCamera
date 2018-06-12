@@ -129,6 +129,7 @@ public class Snapshot {
                         String filePath = fileManager.getFilePathForPicture(info.presentationTimeUs);
                         compressToJpeg(filePath, image);
                         image.close();
+                        ExifHelper.build(filePath, info.presentationTimeUs);
                         fileNames.add(filePath);
                         Logg.d(TAG, "save jpeg: " + filePath);
                     } catch (RemoteException e) {
