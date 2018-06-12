@@ -109,6 +109,7 @@ public class NmeaRecorder {
             e.printStackTrace();
         }
         while (recordTime < startTime) {
+//            Logg.i(LOG_TAG,"recordTime = " + recordTime);
             writeToFile(recordTime);
             recordTime++;
         }
@@ -156,6 +157,9 @@ public class NmeaRecorder {
         try {
             NmeaNodeSet nmeaNodeSet = histroyPool.get(recodingTime);
             if (nmeaNodeSet != null) {
+//                String tempString = "number" + nmeaNodeSet.keyNumber;
+//                outputStream.write(tempString.getBytes());
+//                outputStream.write(newLineSymbol.getBytes());
                 for (int nodeNumber = 0; nodeNumber < nmeaNodeSet.nmeaNodes.length; nodeNumber++) {
                     for (int dataNumber = 0; dataNumber < nmeaNodeSet.nmeaNodes[nodeNumber].dataArray.length; dataNumber++) {
                         if (this.state == RecorderState.STOPPED) {
@@ -197,7 +201,7 @@ public class NmeaRecorder {
         }
 
         if (nmeaNodePool.size() == 0) {
-            for (int number = 0; number < 20; number++) {
+            for (int number = 0; number < 30; number++) {
                 NmeaNode nmeaNode = new NmeaNode();
                 nmeaNode.nodeNumber = number;
                 nmeaNodePool.put(number, nmeaNode);
@@ -369,8 +373,6 @@ public class NmeaRecorder {
 
                             long currentTime = System.currentTimeMillis();
 
-                            setNmeaJkopt(currentTime);
-
                             NmeaNode nmeaNode = nmeaNodePool.remove(nmeaNodePool.entrySet().iterator().next().getKey());
                             if (nmeaNode != null) {
                                 nmeaNode.dataArray[0] = tempDataArray[0];
@@ -437,7 +439,7 @@ public class NmeaRecorder {
                 + timeSplit[2] + timeSplit[3] + ",0x" + timeSplit[4] + timeSplit[5] + ",0x"
                 + timeSplit[6] + timeSplit[7] + ",0x" + timeSplit[8] + timeSplit[9] + ",0x"
                 + timeSplit[10] + timeSplit[11] + ",,,,,,0x0000,0" + newLineSymbol;
-//        Log.i(LOG_TAG,"show string = " + jkpot);
+//        Log.i(LOG_TAG,"currentTime = " + currentTime + "show string = " + jkpot);
 
         return jkpot;
     }
