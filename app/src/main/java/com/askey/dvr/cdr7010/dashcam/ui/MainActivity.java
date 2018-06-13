@@ -201,13 +201,6 @@ public class MainActivity extends DialogActivity {
 
     @Override
     protected boolean handleKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (event.getKeyCode()) {
-                case KeyAdapter.KEY_MENU:
-                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
-                    return true;
-            }
-        }
         return false;
     }
     @Override
@@ -236,6 +229,9 @@ public class MainActivity extends DialogActivity {
                 int newVal = (micValue == 0) ? 1 : 0;
                 boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
                 EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
+                break;
+            case KeyAdapter.KEY_MENU:
+                ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
         }
     }
     @Override
