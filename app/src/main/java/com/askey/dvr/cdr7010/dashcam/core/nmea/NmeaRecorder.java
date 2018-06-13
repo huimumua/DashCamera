@@ -364,7 +364,7 @@ public class NmeaRecorder {
                     try {
                         synchronized (mSync) {
                             if (!tempDataArray[0].contains("$GPRMC")) {
-                                tempDataArray[0] = "$GPRMC,,V,,,,,,,,,,N*AA";
+                                tempDataArray[0] = "$GPRMC,,V,,,,,,,,,,N*AA" + newLineSymbol;
                             }
                             tempDataArray[3] = "";
                             for (Map.Entry<Integer, String> entry : sensorNodePool.entrySet()) {
