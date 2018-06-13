@@ -8,6 +8,8 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Message;
 
+import com.askey.dvr.cdr7010.dashcam.BuildConfig;
+
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +34,8 @@ public class TimestampOSD extends BaseOSD {
     private final Timer mTimer = new Timer();
     private final MyHandler mHandler;
     private boolean mRefresh = false;
+    private static Date sBuildTime = BuildConfig.buildTime;
+    private String mText;
 
     static class MyHandler extends Handler {
         WeakReference<TimestampOSD> weakParent;
@@ -97,9 +101,13 @@ public class TimestampOSD extends BaseOSD {
 
     private void update() {
         mDate.setTime(System.currentTimeMillis());
-        String text = FORMAT.format(mDate);
+        if (mDate.before(sBuildTime)) {
+            mText = "--/--/--　--:--:--";
+        } else {
+            mText = FORMAT.format(mDate);
+        }
         mBitmap.eraseColor(Color.TRANSPARENT);
-        mCanvas.drawText(text, 12, TEXT_HEIGHT - 3, mPaint);
+        mCanvas.drawText(mText, 12, TEXT_HEIGHT - 3, mPaint);
         mRefresh = true;
     }
 }

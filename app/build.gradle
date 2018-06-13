@@ -20,6 +20,7 @@ android {
         versionName rootProject.ext.version.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.singnedconfig
+        buildConfigField "java.util.Date", "buildTime", "new java.util.Date(" + System.currentTimeMillis() + "L)"
 
         externalNativeBuild {
             cmake {
