@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -33,9 +34,12 @@ import java.util.EnumMap;
 
 public class MainActivity extends DialogActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int FROM_MAINAPP =0;
+    private static final int TO_MAINAPP = 1;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
     private CameraRecordFragment fragment;
+    private boolean isFromOtherApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +55,20 @@ public class MainActivity extends DialogActivity {
         if (audioManager != null) {
             maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
         }
+        isFromOtherApp =false;
         EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
         EventManager.getInstance().registIconEventCallback(iconEventCallback);
         EventManager.getInstance().registLedEventCallback(ledEventCallback);
 
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isFromOtherApp) {
+            menuTransition(TO_MAINAPP);
+            isFromOtherApp =false;
+        }
     }
 
     @Override
@@ -231,6 +244,8 @@ public class MainActivity extends DialogActivity {
                 EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
                 break;
             case KeyAdapter.KEY_MENU:
+                isFromOtherApp = true;
+                menuTransition(FROM_MAINAPP);
                 ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
         }
     }
@@ -251,6 +266,15 @@ public class MainActivity extends DialogActivity {
                             0);
                 }
                 break;
+        }
+    }
+    public void menuTransition(int status){
+        try {
+            Intent intent = new Intent("android.intent.action.MENU_TRANSITION");
+            intent.putExtra("status", status);
+            this.sendBroadcast(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
