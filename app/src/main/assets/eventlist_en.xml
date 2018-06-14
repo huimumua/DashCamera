@@ -754,4 +754,32 @@
         <led>no</led>
         <speech>no</speech>
     </event>
+
+
+    <event>
+        <id>59</id>
+        <priority>10</priority>
+        <event_type>29</event_type>
+        <dialog_type>2</dialog_type>
+        <name>Abrupt handle left</name>
+        <description>Abrupt handling left</description>
+        <voice_guidence>0605</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event>
+        <id>60</id>
+        <priority>10</priority>
+        <event_type>30</event_type>
+        <dialog_type>2</dialog_type>
+        <name>Abrupt handle right</name>
+        <description>Abrupt handling right</description>
+        <voice_guidence>0605</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
 </eventlist>

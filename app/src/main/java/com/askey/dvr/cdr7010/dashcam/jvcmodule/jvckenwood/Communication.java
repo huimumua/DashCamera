@@ -22,7 +22,7 @@ public class Communication {
     public static final String ACTION_MANUAL_UPLOAD_REQUEST = "com.jvckenwood.communication.MANUAL_UPLOAD_REQUEST";
     public static final String ACTION_CHANGE_USERID = "com.jvckenwood.communication.CHANGE_USERID";
     public static final String ACTION_ALERT_COMPLETE = "com.jvckenwood.communication.ALERT_COMPLETE";
-    public static final String ACTION_CANCEL_EMERGENCY_CALL = "com.jvckenwood.communication.CANCEL_EMERGENCY_CALL";
+    public static final String ACTION_VOIP_INFORMATION_REQUEST = "com.jvckenwood.communication.VOIP_INFORMATION_REQUEST";
     public static final String ACTION_DISC_EMERGENCY_CALL = "com.jvckenwood.communication.DISC_EMERGENCY_CALL";
     public static final String ACTION_WEATHER_ALERT_REQUEST = "com.jvckenwood.communication.WEATHER_ALERT_REQUEST";
     public static final String ACTION_SET_EVENT_DATA = "com.jvckenwood.communication.SET_EVENT_DATA";
@@ -66,14 +66,14 @@ public class Communication {
     }
 
     /**
-     * 被删除
+     * 被弃用
      */
-    public void changeUserID(int userId){
-        Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
-        Intent intent = new Intent(ACTION_CHANGE_USERID);
-        intent.putExtra("userId", userId);
-        sendOutBroadcast(intent);
-    }
+//    public void changeUserID(int userId){
+//        Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
+//        Intent intent = new Intent(ACTION_CHANGE_USERID);
+//        intent.putExtra("userId", userId);
+//        sendOutBroadcast(intent);
+//    }
 
     public void alertComplite(int eventType){
         Logg.d(LOG_TAG, "alertComplite: eventType=" + eventType);
@@ -82,19 +82,28 @@ public class Communication {
         sendOutBroadcast(intent);
     }
 
-    public void cancelEmergencyCall(){
-        Logg.d(LOG_TAG, "cancelEmergencyCall: ");
-        Intent intent = new Intent(ACTION_CANCEL_EMERGENCY_CALL);
+    /**
+     * @param requestID
+     *      VoIP情報取得依頼ID(Uniqueであること.同じ値を含んだRESULTが結果となる)
+     * @param isUserCall
+     *      1.User Button Press / 2.Realtime.
+     */
+    public void voipInformationRequest(int requestID, int isUserCall){
+        Logg.d(LOG_TAG, "alertComplite: requestID=" + requestID + ", isUserCall=" + isUserCall);
+        Intent intent = new Intent(ACTION_VOIP_INFORMATION_REQUEST);
+        intent.putExtra("requestID", requestID);
+        intent.putExtra("isUserCall", isUserCall);
         sendOutBroadcast(intent);
     }
 
     /**
      *
      * @param status
-     *          0:不明
-     *          1:正常通話完了
-     *          2:キャンセル(接続NG)
-     *          3:キャンセル
+     * 	    0:不明
+     *      1:正常通話完了
+     *      2:キャンセル(接続NG)
+     *      3.キャンセル(事故発生画面にてキャンセル押下)
+     *      4.キャンセル(その他)
      */
     public void discEmergencyCall(int status){
         Logg.d(LOG_TAG, "discEmergencyCall: status=" + status);

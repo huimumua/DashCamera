@@ -20,10 +20,6 @@ public class EcallService extends Service {
     }
 
     class MyBinder extends IEcall.Stub {
-        @Override
-        public void cancelEmergencyCall() throws RemoteException {
-            Communication.getInstance().cancelEmergencyCall();
-        }
 
         @Override
         public void discEmergencyCall(int status) throws RemoteException {

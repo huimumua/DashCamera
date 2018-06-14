@@ -6,5 +6,4 @@
     <string name="system_update_fail">更新を失敗しました</string>
     <string name="warning_title">警告</string>
     <string name="warning_description">本製品の操作は、必ず安全場所に停車してからおこなってください。\n運転中のに操作をおこなうと、思わめ事故の原因になります。</string>
-    <item name="weather_request_id" type="id" />
 </resources>

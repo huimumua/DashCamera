@@ -754,4 +754,32 @@
         <led>no</led>
         <speech>no</speech>
     </event>
+
+
+    <event>
+        <id>59</id>
+        <priority>10</priority>
+        <event_type>29</event_type>
+        <dialog_type>2</dialog_type>
+        <name>左急ハンドル検知</name>
+        <description>左急ハンドル検知</description>
+        <voice_guidence>0605</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event>
+        <id>60</id>
+        <priority>10</priority>
+        <event_type>30</event_type>
+        <dialog_type>2</dialog_type>
+        <name>右急ハンドル検知</name>
+        <description>右急ハンドル検知</description>
+        <voice_guidence>0605</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
 </eventlist>

@@ -8,8 +8,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
@@ -54,8 +52,6 @@ public class MainApp {
             Logg.d(LOG_TAG, "onServiceConnected: MainApp");
             mMainAppInterface = IMainApp.Stub.asInterface(service);
             registerCallback(mMainAppCallbackCallback);
-
-            startInitialSetup(); //进入到MainApp的录制界面后endInitialSetup
         }
 
         @Override
@@ -67,47 +63,44 @@ public class MainApp {
 
     private IMainAppCallback.Stub mMainAppCallbackCallback = new IMainAppCallback.Stub() {
         @Override
-        public void reportInsuranceTerm(int oos, String response) throws RemoteException {
+        public void reportInsuranceTerm(int oos, String response) {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
-            CommunicationService.reportInsuranceTerm(oos, response);
 
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            LocalJvcStatusManager.setInsuranceTerm(enumMap, true);
+            LocalJvcStatusManager.setInsuranceTerm(enumMap);
         }
 
         @Override
-        public void reportUserList(int oos, String response) throws RemoteException {
+        public void reportUserList(int oos, int defaultUser, int selectUser, int userList, String response) {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
-            CommunicationService.reportUserList(oos, response);
 
-            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
-            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
-            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            LocalJvcStatusManager.setUserList(enumMap);
         }
 
         @Override
-        public void reportSystemSettings(int oos, String response) throws RemoteException {
+        public void reportSystemSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportSystemSettings: oos=" + oos + ", response=" + response);
-            CommunicationService.reportSystemSettings(oos, response);
+
+
         }
 
         @Override
-        public void reportUserSettings(int oos, String response) throws RemoteException {
+        public void reportUserSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
-            CommunicationService.reportUserSettings(oos, response);
+
+
         }
 
         @Override
-        public void reportSettingsUpdate(int oos, String response) throws RemoteException {
+        public void reportSettingsUpdate(int oos, String response) {
             Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
-            CommunicationService.reportSettingsUpdate(oos, response);
+
+
         }
 
         @Override
-        public void reportDrivingReport(int oos, String response) throws RemoteException {
+        public void reportDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingReport: oos=" + oos + ", response=" + response);
             //id 52, 運転レポート Driving report, eventType define 101
             int eventType = 101;
@@ -115,7 +108,7 @@ public class MainApp {
         }
 
         @Override
-        public void reportManthlyDrivingReport(int oos, String response) throws RemoteException {
+        public void reportManthlyDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportManthlyDrivingReport: oos=" + oos + ", response=" + response);
             //id 53, 月間運転レポート Monthly driving report, eventType define 102
             int eventType = 102;
@@ -123,7 +116,7 @@ public class MainApp {
         }
 
         @Override
-        public void reportServerNotifocation(int oos, String response) throws RemoteException {
+        public void reportServerNotifocation(int oos, String response) {
             Logg.d(LOG_TAG, "reportServerNotifocation: oos=" + oos + ", response=" + response);
             //id 51, お知らせ Notice, eventType define 100
             int eventType = 100;
@@ -131,7 +124,7 @@ public class MainApp {
         }
 
         @Override
-        public void reportDrivingAdvice(int oos, String response) throws RemoteException {
+        public void reportDrivingAdvice(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingAdvice: oos=" + oos + ", response=" + response);
             //id 54, 運転前アドバイス Advice before driving, eventType define 103
             int eventType = 103;
@@ -139,30 +132,24 @@ public class MainApp {
         }
 
         @Override
-        public void reportTxEventProgress(int eventNo, int progress, int total) throws RemoteException {
+        public void reportTxEventProgress(int eventNo, int mainPicture, int mainMovie, int secondPicture, int secondMovie) {
             /**
              * MainApp无需应对
              */
-            Logg.d(LOG_TAG, "reportTxEventProgress: progress=" + progress + ", total=" + total);
-            CommunicationService.reportTxEventProgress(eventNo, progress, total);
+            Logg.d(LOG_TAG, "reportTxEventProgress: eventNo=" + eventNo);
         }
 
         @Override
-        public void reportTxManualProgress(int progress1, int total1, int progress2, int total2) throws RemoteException {
+        public void reportTxManualProgress(int progress1, int total1, int progress2, int total2) {
             Logg.d(LOG_TAG, "reportTxManualProgress: progress1=" + progress1 + ", total1=" + total1 + ", progress2=" + progress2 + ", total2=" + total2);
             ManualUploadService.reportTxManualProgress(progress1 ,total1, progress2, total2);
         }
 
         @Override
-        public void voipInfomationResponse(int oos, String response) throws RemoteException {
-            Logg.d(LOG_TAG, "voipInfomationResponse: oos=" + oos + ", response=" + response);
-            EcallUtils.startVoipActivity(oos, response);
-        }
+        public void logUploadResult(int oos, String result) {
+            Logg.d(LOG_TAG, "logUploadResult: oos=" + oos + ", result=" + result);
 
-        @Override
-        public void onFWUpdateRequest(int result) throws RemoteException {
-            Logg.d(LOG_TAG, "onFWUpdateRequest: result=" + result);
-            CommunicationService.onFWUpdateRequest(result);
+
         }
     };
 
@@ -179,82 +166,11 @@ public class MainApp {
         mAppContext.unbindService(mMainAppConn);
     }
 
-    public void startInitialSetup(){
-        Logg.d(LOG_TAG, "startInitialSetup: ");
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.startInitialSetup();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void endInitialSetup(){
-        Logg.d(LOG_TAG, "endInitialSetup: ");
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.endInitialSetup();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void settingsUpdateRequest(String setings){
-        Logg.d(LOG_TAG, "settingsUpdateRequest: setings=" + setings);
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.settingsUpdateRequest(setings);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void manualUploadCancel(int cancel){
-        Logg.d(LOG_TAG, "manualUploadCancel: cancel=" + cancel);
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.manualUploadCancel(cancel);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
-     * @param userId
-     * @param isUserCall;  1.ユーザからの要求発信 / 2.コールセンターからの要求発信(リアルタイム)
+     * **********************************************
+     * ********************** API ****************************
+     * **********************************************
      */
-    public void voipInfomationRequest(int userId,int isUserCall){
-        Logg.d(LOG_TAG, "voipInfomationRequest: userId=" + userId + ", isUserCall=" + isUserCall);
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.voipInfomationRequest(userId, isUserCall);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void FWUpdateRequest(){
-        Logg.d(LOG_TAG, "FWUpdateRequest: ");
-        if(!checkConnection())
-            return;
-
-        try {
-            mMainAppInterface.FWUpdateRequest();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void registerCallback(IMainAppCallback callback){
         Logg.d(LOG_TAG, "registerCallback: ");
         if(!checkConnection())
@@ -278,6 +194,49 @@ public class MainApp {
             e.printStackTrace();
         }
     }
+
+    public void settingsUpdateRequest(String setings){
+        Logg.d(LOG_TAG, "settingsUpdateRequest: setings=" + setings);
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.settingsUpdateRequest(setings);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * @param cancel
+     *      0:中断
+     *      1:再開
+     *      2:キャンセル
+     */
+    public void manualUploadCancel(int cancel){
+        Logg.d(LOG_TAG, "manualUploadCancel: cancel=" + cancel);
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.manualUploadCancel(cancel);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logUpload(String zipPath){
+        Logg.d(LOG_TAG, "logUpload: zipPath=" + zipPath);
+        if(!checkConnection())
+            return;
+
+        try {
+            mMainAppInterface.logUpload(zipPath);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private boolean checkConnection(){
         if(mMainAppInterface == null){

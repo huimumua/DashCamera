@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -22,7 +21,7 @@ public class EcallButtonReceiver extends BroadcastReceiver{
             Logg.d(LOG_TAG, "onReceive: isAppTop=" + isAppTop);
             if(isAppTop){
                 int xxx_userID = 1000;
-                MainApp.getInstance().voipInfomationRequest(xxx_userID, 1);
+//                MainApp.getInstance().voipInfomationRequest(xxx_userID, 1);
             }
         }
     }

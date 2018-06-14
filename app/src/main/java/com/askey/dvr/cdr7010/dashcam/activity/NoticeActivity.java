@@ -13,7 +13,6 @@ import com.askey.dvr.cdr7010.dashcam.mvp.view.UpdateFragment;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
-import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 

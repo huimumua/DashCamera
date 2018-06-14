@@ -11,20 +11,6 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.local;
  ***/
 public class JvcStatusParams {
 
-    public enum JvcStatus {
-        INSURANCE_TERM("insuranceTerm"), USER_LIST("userList");
-
-        private String name;
-
-        JvcStatus(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
     public enum JvcStatusParam {
         OOS("oos"), RESPONSE("response");
 

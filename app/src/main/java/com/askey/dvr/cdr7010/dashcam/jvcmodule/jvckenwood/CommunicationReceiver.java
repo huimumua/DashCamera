@@ -4,13 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
-import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
-import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import org.json.JSONException;
@@ -19,40 +16,57 @@ import org.json.JSONObject;
 public class CommunicationReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "CommunicationReceiver";
     private static final String ACTION_VOIP_CALL = "com.jvckenwood.communication.VOIP_CALL";
+    private static final String ACTION_VOIP_INFORMATION_RESULT = "com.jvckenwood.communication.VOIP_INFORMATION_RESULT";
     private static final String ACTION_MANUAL_UPLOAD_COMPLETE = "com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE";
     private static final String ACTION_WEATHER_ALERT_RESPONSE = "com.jvckenwood.communication.WEATHER_ALERT_RESPONSE";
-    private static final String ACTION_TRIPID_VERSIONUP_RESPONSE = "com.jvckenwood.communication.TRIPID_VERSIONUP_RESPONSE";
     private static final String ACTION_TRIPID_LOG_UPLOAD_RESPONSE = "com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE";
-
-    public static final int WEATHER_REQUEST_ID = R.id.weather_request_id;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_VOIP_CALL)) {
-            int xxx_userID = 1000;
-            MainApp.getInstance().voipInfomationRequest(xxx_userID, 2);
+            /**
+             * 1:事故発生画面表示指示
+             * 2:VoIP指示
+             */
+            int order = intent.getIntExtra("order", -1);
+
+//            int xxx_userID = 1000;
+//            MainApp.getInstance().voipInfomationRequest(xxx_userID, 2);
+
+
+
+        } else if (action.equals(ACTION_VOIP_INFORMATION_RESULT)) {
+            int requestID = intent.getIntExtra("requestID", -1);
+            int status = intent.getIntExtra("status", -1);
+            long impactId = intent.getLongExtra("impactId", -1);
+            long policyNo = intent.getLongExtra("policyNo", -1);
+            int policyBranchNo = intent.getIntExtra("policyBranchNo", -1);
+            String authUserName = intent.getStringExtra("authUserName");
+            String displayName = intent.getStringExtra("displayName");
+            String outboundProxy = intent.getStringExtra("outboundProxy");
+            String password = intent.getStringExtra("password");
+            int port = intent.getIntExtra("port", -1);
+            String protocol = intent.getStringExtra("protocol");
+            boolean isSendKeepAlive = intent.getBooleanExtra("isSendKeepAlive", false);
+            String profileName = intent.getStringExtra("profileName");
+            boolean isAutoRegistration = intent.getBooleanExtra("isAutoRegistration", false);
+
+
 
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
             int userCancel = intent.getIntExtra("userCancel", -1);
             String response = intent.getStringExtra("response");
             ManualUploadService.manualUploadComplete(userCancel, response);
-
         } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");
             speakWeather(response);
-
-        } else if (action.equals(ACTION_TRIPID_VERSIONUP_RESPONSE)) { //MainApp无需应对
-            //通知VersionUp中取得TripID时的固件更新信息通知
-            int fairmware = intent.getIntExtra("fairmware", -1);
-            int voice = intent.getIntExtra("voice", -1);
-            CommunicationService.tripIdVersionUpResponse(fairmware, voice);
-
         } else if (action.equals(ACTION_TRIPID_LOG_UPLOAD_RESPONSE)) {
             int logupload = intent.getIntExtra("logupload", -1);
-            CommunicationService.tripIdLogUploadUpResponse(logupload);
+
+
 
         }
 
