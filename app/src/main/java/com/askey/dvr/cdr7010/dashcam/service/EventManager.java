@@ -151,6 +151,7 @@ public class EventManager {
     public void handOutEventInfo(int eventType){
         long timeStamp = System.currentTimeMillis();
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+        Logg.e(LOG_TAG, "handOutEventInfo: eventType=" + eventType);
         if(eventInfo == null){
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
             return;

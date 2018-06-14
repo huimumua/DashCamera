@@ -46,7 +46,6 @@ public class AppUtils {
         if (list != null && list.size() > 0 && list.get(0).topActivity.getClassName().equals(className)) {
             return true;
         }
-
         return false;
     }
 
