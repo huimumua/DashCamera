@@ -13,6 +13,9 @@ import android.support.annotation.NonNull;
 
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.NMEAUtils;
+
+import net.sf.marineapi.nmea.util.Position;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,116 +34,137 @@ public class Snapshot {
     private static final int DECODE_COLOR_FORMAT = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
     private static final long SEEK_STEP = 3 * 1000 * 1000L;
 
-    public static List<String> take3Pictures(@NonNull String videoFilePath,
-                                             long timeStamp,
-                                             long firstTime,
-                                             @NonNull FileManager filemanager) {
-        MediaExtractor extractor = null;
-        MediaCodec decoder = null;
-        List<String> ret = null;
+    public interface OnPictureTakeListener {
+        void onPictureTake(List<String> path);
+    }
+
+    public static void take3Pictures(@NonNull String videoFilePath,
+                                     long timeStamp,
+                                     long firstTime,
+                                     @NonNull FileManager filemanager,
+                                     OnPictureTakeListener listener) {
         try {
             File videoFile = new File(videoFilePath);
-            extractor = new MediaExtractor();
+            MediaExtractor extractor = new MediaExtractor();
             extractor.setDataSource(videoFile.toString());
             int trackIndex = selectVideoTrack(extractor);
             if (trackIndex < 0) {
                 Logg.e(TAG, "No video track found in " + videoFilePath);
-                return null;
+                return;
             }
             extractor.selectTrack(trackIndex);
             MediaFormat mediaFormat = extractor.getTrackFormat(trackIndex);
             String mime = mediaFormat.getString(MediaFormat.KEY_MIME);
-            decoder = MediaCodec.createDecoderByType(mime);
+            MediaCodec decoder = MediaCodec.createDecoderByType(mime);
             if (isColorFormatSupported(DECODE_COLOR_FORMAT, decoder.getCodecInfo().getCapabilitiesForType(mime))) {
                 mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, DECODE_COLOR_FORMAT);
             }
-            ret = decodeFramesToImage(decoder, extractor, mediaFormat, timeStamp, firstTime, filemanager);
-            decoder.stop();
+            decodeFramesToImage(videoFilePath, decoder, extractor, mediaFormat, timeStamp, firstTime, filemanager, listener);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (decoder != null) {
-                decoder.stop();
-                decoder.release();
-            }
-            if (extractor != null) {
-                extractor.release();
-            }
         }
-        return ret;
     }
 
-    private static List<String> decodeFramesToImage(MediaCodec decoder,
+    private static void decodeFramesToImage(String videoPath,
+                                            MediaCodec decoder,
                                             MediaExtractor extractor,
                                             MediaFormat mediaFormat,
                                             long timeStamp,
                                             long time,
-                                            FileManager fileManager) {
-        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        boolean sawInputEOS = false;
-        boolean sawOutputEOS = false;
-        decoder.configure(mediaFormat, null, null, 0);
-        decoder.start();
-        int sampleCount = 0;
-        long seekPos = time;
+                                            FileManager fileManager,
+                                            OnPictureTakeListener listener) {
+        Logg.d(TAG, "videoPath==" + videoPath);
+        String nmeaPath = videoPath.replace("EVENT", "SYSTEM/NMEA/EVENT").replace("mp4", "nmea");
+        Logg.d(TAG, "nmeaPath==" + nmeaPath);
         List<String> fileNames = new ArrayList<>(3);
-        while (!sawOutputEOS) {
-            if (!sawInputEOS) {
-                int inputBufferId = decoder.dequeueInputBuffer(DEFAULT_TIMEOUT_US);
-                if (inputBufferId >= 0) {
-                    ByteBuffer inputBuffer = decoder.getInputBuffer(inputBufferId);
-                    if (inputBuffer == null) {
-                        continue;
-                    }
-                    extractor.seekTo(seekPos, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
-                    inputBuffer.clear();
-                    int sampleSize = extractor.readSampleData(inputBuffer, 0);
-                    if (sampleSize < 0 || sampleCount >= 3) {
-                        decoder.queueInputBuffer(inputBufferId, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                        sawInputEOS = true;
-                    } else {
-                        //long presentationTimeUs = extractor.getSampleTime();
-                        int flags = extractor.getSampleFlags();
-                        long pts = 0;
-                        if (sampleCount == 0) {
-                            pts = timeStamp - 3000;
-                        } else if (sampleCount == 1) {
-                            pts = timeStamp;
-                        } else if (sampleCount == 2) {
-                            pts = timeStamp + 3000;
+        try {
+            NMEAUtils nmeaUtils = new NMEAUtils(nmeaPath);
+            nmeaUtils.setOnFinishListener(list -> {
+                Logg.d(TAG, "list..." + list.size());
+                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+                boolean sawInputEOS = false;
+                boolean sawOutputEOS = false;
+                decoder.configure(mediaFormat, null, null, 0);
+                decoder.start();
+                int sampleCount = 0;
+                long seekPos = time;
+                while (!sawOutputEOS) {
+                    if (!sawInputEOS) {
+                        int inputBufferId = decoder.dequeueInputBuffer(DEFAULT_TIMEOUT_US);
+                        if (inputBufferId >= 0) {
+                            ByteBuffer inputBuffer = decoder.getInputBuffer(inputBufferId);
+                            if (inputBuffer == null) {
+                                continue;
+                            }
+                            extractor.seekTo(seekPos, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+                            inputBuffer.clear();
+                            int sampleSize = extractor.readSampleData(inputBuffer, 0);
+                            if (sampleSize < 0 || sampleCount >= 3) {
+                                decoder.queueInputBuffer(inputBufferId, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                                sawInputEOS = true;
+                            } else {
+                                //long presentationTimeUs = extractor.getSampleTime();
+                                int flags = extractor.getSampleFlags();
+                                long pts = 0;
+                                if (sampleCount == 0) {
+                                    pts = timeStamp - 3000;
+                                } else if (sampleCount == 1) {
+                                    pts = timeStamp;
+                                } else if (sampleCount == 2) {
+                                    pts = timeStamp + 3000;
+                                }
+                                decoder.queueInputBuffer(inputBufferId, 0, sampleSize, pts, flags);
+                                sampleCount++;
+                                seekPos += SEEK_STEP;
+                            }
                         }
-                        decoder.queueInputBuffer(inputBufferId, 0, sampleSize, pts, flags);
-                        sampleCount++;
-                        seekPos += SEEK_STEP;
+                    }
+                    int outputBufferId = decoder.dequeueOutputBuffer(info, DEFAULT_TIMEOUT_US);
+                    if (outputBufferId >= 0) {
+                        if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                            sawOutputEOS = true;
+                        }
+                        if (info.size > 0) {
+                            Image image = decoder.getOutputImage(outputBufferId);
+                            if (image == null) {
+                                continue;
+                            }
+                            try {
+                                String filePath = fileManager.getFilePathForPicture(info.presentationTimeUs);
+                                Logg.d(TAG, "info.presentationTimeUs..." + info.presentationTimeUs);
+                                compressToJpeg(filePath, image);
+                                image.close();
+                                String timeNeed = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.indexOf("."));
+                                Logg.d(TAG, "timeNeed =" + timeNeed);
+                                Position location = null;
+                                try {
+                                    location = NMEAUtils.getLocationFromSentences(list, timeNeed);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                ExifHelper.build(filePath, info.presentationTimeUs, location);
+                                fileNames.add(filePath);
+                                Logg.d(TAG, "save jpeg: " + filePath);
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                                Logg.e(TAG, "fail to get file path from FileManager with error: "
+                                        + e.getMessage());
+                            }
+                            decoder.releaseOutputBuffer(outputBufferId, true);
+                        }
                     }
                 }
-            }
-            int outputBufferId = decoder.dequeueOutputBuffer(info, DEFAULT_TIMEOUT_US);
-            if (outputBufferId >= 0) {
-                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    sawOutputEOS = true;
+                listener.onPictureTake(fileNames);
+                decoder.stop();
+                decoder.release();
+                if (extractor != null) {
+                    extractor.release();
                 }
-                if (info.size > 0) {
-                    Image image = decoder.getOutputImage(outputBufferId);
-                    if (image == null) {
-                        continue;
-                    }
-                    try {
-                        String filePath = fileManager.getFilePathForPicture(info.presentationTimeUs);
-                        compressToJpeg(filePath, image);
-                        image.close();
-                        ExifHelper.build(filePath, info.presentationTimeUs);
-                        fileNames.add(filePath);
-                        Logg.d(TAG, "save jpeg: " + filePath);
-                    } catch (RemoteException e) {
-                        Logg.e(TAG, "fail to get file path from FileManager with error: "
-                                + e.getMessage());
-                    }
-                    decoder.releaseOutputBuffer(outputBufferId, true);
-                }
-            }
+            });
+            nmeaUtils.start();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return fileNames;
     }
 
     private static int selectVideoTrack(MediaExtractor extractor) {

@@ -34,7 +34,7 @@ android {
         }
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [ eventBusIndex : 'com.askey.dvr.cdr7010.dashcam.EventBusIndex' ]
+                arguments = [eventBusIndex: 'com.askey.dvr.cdr7010.dashcam.EventBusIndex']
             }
         }
     }
@@ -72,22 +72,23 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation rootProject.ext.dependencies.appcompatV7
     implementation rootProject.ext.dependencies.supportV4
     implementation rootProject.ext.dependencies.supportV13
     implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.exifinterface
     implementation files('libs/com.askey.platform.jar')
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
     annotationProcessor "com.google.auto.value:auto-value:1.5.2"
-    compileOnly "com.google.auto.value:auto-value:1.5.2"
-
+    compileOnly 'com.google.auto.value:auto-value:1.5.2'
     testImplementation rootProject.ext.dependencies.junit
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'de.mindpipe.android:android-logging-log4j:1.0.3'
     implementation 'log4j:log4j:1.2.17'
     implementation files('src/main/libs/adas.jar')
+    implementation files('libs/marineapi-0.10.0.jar')
 }
 
 
