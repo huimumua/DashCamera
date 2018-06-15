@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -53,8 +54,8 @@ public class CommunicationReceiver extends BroadcastReceiver{
             String profileName = intent.getStringExtra("profileName");
             boolean isAutoRegistration = intent.getBooleanExtra("isAutoRegistration", false);
 
-
-
+            EcallService.onVoipInformationResult(requestID, status, impactId, policyNo, policyBranchNo, authUserName, displayName,
+                    outboundProxy, password, port, protocol, isSendKeepAlive, profileName, isAutoRegistration);
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
             int userCancel = intent.getIntExtra("userCancel", -1);
             String response = intent.getStringExtra("response");

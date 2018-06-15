@@ -6,9 +6,6 @@ import android.content.Intent;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
  * Copyright ©2014-2018 Chengdu Skysoft Info&Tech Co., Ltd.
@@ -121,15 +118,18 @@ public class Communication {
         sendOutBroadcast(intent);
     }
 
-    public void setEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath){
-        Logg.d(LOG_TAG, "setEventData: ");
-        Intent intent = new Intent(ACTION_SET_EVENT_DATA);
-        intent.putExtra("eventNo", eventNo);
-        intent.putExtra("timeStamp", timeStamp);
-        intent.putStringArrayListExtra("picturePath", (ArrayList<String>) picturePath);
-        intent.putStringArrayListExtra("moviePath", (ArrayList<String>) moviePath);
-        sendOutBroadcast(intent);
-    }
+    /**
+     * EventSending Apk和communication通信的接口
+     */
+//    public void setEventData(int eventNo, long timeStamp, List<String> picturePath, List<String> moviePath){
+//        Logg.d(LOG_TAG, "setEventData: ");
+//        Intent intent = new Intent(ACTION_SET_EVENT_DATA);
+//        intent.putExtra("eventNo", eventNo);
+//        intent.putExtra("timeStamp", timeStamp);
+//        intent.putStringArrayListExtra("picturePath", (ArrayList<String>) picturePath);
+//        intent.putStringArrayListExtra("moviePath", (ArrayList<String>) moviePath);
+//        sendOutBroadcast(intent);
+//    }
 
     private void sendOutBroadcast(Intent intent){
         mAppContext.sendBroadcastAsUser(intent, android.os.Process.myUserHandle());
