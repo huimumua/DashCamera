@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
@@ -15,6 +16,9 @@ import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.EnumMap;
 
@@ -102,33 +106,85 @@ public class MainApp {
         @Override
         public void reportDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingReport: oos=" + oos + ", response=" + response);
-            //id 52, 運転レポート Driving report, eventType define 101
-            int eventType = 101;
-            EventUtil.sendEvent(Integer.valueOf(eventType));
+            if(oos != 0) return;
+
+            try {
+                JSONObject jsonObject = new JSONObject(response);
+                int status = jsonObject.getInt("status");
+                if(status == 0){
+                    int result = jsonObject.getInt("result");
+                    //id 52, 運転レポート Driving report, eventType define 101
+                    int eventType = 101;
+                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+                    info.setResult(result);
+                    EventUtil.sendEvent(info);
+                }
+            } catch (JSONException e) {
+                Logg.e(LOG_TAG, "reportDrivingReport: error: " + e.getMessage());
+            }
         }
 
         @Override
         public void reportManthlyDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportManthlyDrivingReport: oos=" + oos + ", response=" + response);
-            //id 53, 月間運転レポート Monthly driving report, eventType define 102
-            int eventType = 102;
-            EventUtil.sendEvent(Integer.valueOf(eventType));
+            if(oos != 0) return;
+
+            try {
+                JSONObject jsonObject = new JSONObject(response);
+                int status = jsonObject.getInt("status");
+                if(status == 0){
+                    int result = jsonObject.getInt("result");
+                    //id 53, 月間運転レポート Monthly driving report, eventType define 102
+                    int eventType = 102;
+                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+                    info.setResult(result);
+                    EventUtil.sendEvent(info);
+                }
+            } catch (JSONException e) {
+                Logg.e(LOG_TAG, "reportManthlyDrivingReport: error: " + e.getMessage());
+            }
         }
 
         @Override
         public void reportServerNotifocation(int oos, String response) {
             Logg.d(LOG_TAG, "reportServerNotifocation: oos=" + oos + ", response=" + response);
-            //id 51, お知らせ Notice, eventType define 100
-            int eventType = 100;
-            EventUtil.sendEvent(Integer.valueOf(eventType));
+            if(oos != 0) return;
+
+            try {
+                JSONObject jsonObject = new JSONObject(response);
+                int status = jsonObject.getInt("status");
+                if(status == 0){
+                    int type = jsonObject.getInt("type");
+                    //id 51, お知らせ Notice, eventType define 100
+                    int eventType = 100;
+                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+                    info.setType(type);
+                    EventUtil.sendEvent(info);
+                }
+            } catch (JSONException e) {
+                Logg.e(LOG_TAG, "reportServerNotifocation: error: " + e.getMessage());
+            }
         }
 
         @Override
         public void reportDrivingAdvice(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingAdvice: oos=" + oos + ", response=" + response);
-            //id 54, 運転前アドバイス Advice before driving, eventType define 103
-            int eventType = 103;
-            EventUtil.sendEvent(Integer.valueOf(eventType));
+            if(oos != 0) return;
+
+            try {
+                JSONObject jsonObject = new JSONObject(response);
+                int status = jsonObject.getInt("status");
+                if(status == 0){
+                    int code = jsonObject.getInt("code");
+                    //id 54, 運転前アドバイス Advice before driving, eventType define 103
+                    int eventType = 103;
+                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+                    info.setCode(code);
+                    EventUtil.sendEvent(info);
+                }
+            } catch (JSONException e) {
+                Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
+            }
         }
 
         @Override
@@ -154,6 +210,7 @@ public class MainApp {
     };
 
     public boolean bindJvcMainAppService() {
+        Logg.d(LOG_TAG, "bindJvcMainAppService: ");
         Intent intent = new Intent();
 //        intent.setAction("service.jkccomm.IMainApp");
         intent.setAction("com.jvckenwood.communication.CommunicationService");
