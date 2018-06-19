@@ -83,6 +83,11 @@ public class CameraRecordFragment extends Fragment {
     private boolean hasStopped;
     private boolean isEventRecording;
 
+    private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
+    private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
+    private static final String SDCARD_FULL_LIMIT_EXIT = "show_unreach_sdcard_full_limit";
+    private static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
+
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
     private static final int REQUEST_SIMCARD_PERMISSIONS = 1003;
@@ -99,15 +104,28 @@ public class CameraRecordFragment extends Fragment {
             Manifest.permission.READ_PHONE_STATE,
     };
 
-    private BroadcastReceiver mSdAvailableListener = new BroadcastReceiver() {
+    private BroadcastReceiver mSdStatusListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("action_sdcard_status")) {
+            if (intent.getAction().equals(ACTION_SDCARD_STATUS)) {
                 final String ex = intent.getStringExtra("data");
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {
                         startVideoRecord("SD become available");
+                    } catch (Exception e) {
+                        Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+                    }
+                }
+            } else if (intent.getAction().equals(ACTION_SDCARD_LIMT)) {
+                final String ex = intent.getStringExtra("cmd_ex");
+                if (SDCARD_FULL_LIMIT.equals(ex)) {
+                    Logg.d(TAG, "SDCARD_FULL_LIMIT");
+                    stopVideoRecord("SDCARD_FULL_LIMIT");
+                } else if (SDCARD_FULL_LIMIT_EXIT.equals(ex)) {
+                    Logg.d(TAG, "SDCARD_FULL_LIMIT_EXIT");
+                    try {
+                        startVideoRecord("SDCARD_FULL_LIMIT_EXIT");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
@@ -292,8 +310,9 @@ public class CameraRecordFragment extends Fragment {
         getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
         IntentFilter filter2 = new IntentFilter();
-        filter2.addAction("action_sdcard_status");
-        getActivity().registerReceiver(mSdAvailableListener, filter2);
+        filter2.addAction(ACTION_SDCARD_STATUS);
+        filter2.addAction(ACTION_SDCARD_LIMT);
+        getActivity().registerReceiver(mSdStatusListener, filter2);
 
         getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
 
@@ -320,7 +339,7 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG, "onPause");
         if (!hasStopped) {
             stopVideoRecord("Fragment onPause");
-            getActivity().unregisterReceiver(mSdAvailableListener);
+            getActivity().unregisterReceiver(mSdStatusListener);
             getActivity().unregisterReceiver(mSdBadRemovalListener);
             getActivity().unregisterReceiver(mShutdownReceiver);
             mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
@@ -589,7 +608,7 @@ public class CameraRecordFragment extends Fragment {
     private void releaseAll() {
         stopVideoRecord("Fragment onPause");
         GPSStatusManager.getInstance().recordLocation(false);
-        getActivity().unregisterReceiver(mSdAvailableListener);
+        getActivity().unregisterReceiver(mSdStatusListener);
         getActivity().unregisterReceiver(mSdBadRemovalListener);
         getActivity().unregisterReceiver(mShutdownReceiver);
         getActivity().unregisterReceiver(simCardReceiver);
