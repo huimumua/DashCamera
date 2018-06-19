@@ -10,6 +10,7 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.local;
  * @see
  ***/
 public class JvcEventHandoutInfo {
+    private int oos;
     private int eventType;
     private int result;
     private int type;
@@ -17,6 +18,14 @@ public class JvcEventHandoutInfo {
 
     public JvcEventHandoutInfo(int eventType) {
         this.eventType = eventType;
+    }
+
+    public int getOos() {
+        return oos;
+    }
+
+    public void setOos(int oos) {
+        this.oos = oos;
     }
 
     public int getEventType() {

@@ -106,85 +106,89 @@ public class MainApp {
         @Override
         public void reportDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingReport: oos=" + oos + ", response=" + response);
-            if(oos != 0) return;
-
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                int status = jsonObject.getInt("status");
-                if(status == 0){
-                    int result = jsonObject.getInt("result");
-                    //id 52, 運転レポート Driving report, eventType define 101
-                    int eventType = 101;
-                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
-                    info.setResult(result);
-                    EventUtil.sendEvent(info);
+            //id 52, 運転レポート Driving report, eventType define 101
+            int eventType = 101;
+            JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+            info.setOos(oos);
+            if(oos == 0){
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if(status == 0){
+                        int result = jsonObject.getInt("result");
+                        info.setResult(result);
+                    }
+                } catch (JSONException e) {
+                    Logg.e(LOG_TAG, "reportDrivingReport: error: " + e.getMessage());
                 }
-            } catch (JSONException e) {
-                Logg.e(LOG_TAG, "reportDrivingReport: error: " + e.getMessage());
             }
+            EventUtil.sendEvent(info);
         }
 
         @Override
         public void reportManthlyDrivingReport(int oos, String response) {
             Logg.d(LOG_TAG, "reportManthlyDrivingReport: oos=" + oos + ", response=" + response);
-            if(oos != 0) return;
-
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                int status = jsonObject.getInt("status");
-                if(status == 0){
-                    int result = jsonObject.getInt("result");
-                    //id 53, 月間運転レポート Monthly driving report, eventType define 102
-                    int eventType = 102;
-                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
-                    info.setResult(result);
-                    EventUtil.sendEvent(info);
+            //id 53, 月間運転レポート Monthly driving report, eventType define 102
+            int eventType = 102;
+            JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+            info.setOos(oos);
+            if(oos == 0){
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if(status == 0){
+                        int result = jsonObject.getInt("result");
+                        info.setResult(result);
+                    }
+                } catch (JSONException e) {
+                    Logg.e(LOG_TAG, "reportManthlyDrivingReport: error: " + e.getMessage());
                 }
-            } catch (JSONException e) {
-                Logg.e(LOG_TAG, "reportManthlyDrivingReport: error: " + e.getMessage());
             }
+            EventUtil.sendEvent(info);
         }
 
         @Override
         public void reportServerNotifocation(int oos, String response) {
             Logg.d(LOG_TAG, "reportServerNotifocation: oos=" + oos + ", response=" + response);
-            if(oos != 0) return;
-
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                int status = jsonObject.getInt("status");
-                if(status == 0){
-                    int type = jsonObject.getInt("type");
-                    //id 51, お知らせ Notice, eventType define 100
-                    int eventType = 100;
-                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
-                    info.setType(type);
-                    EventUtil.sendEvent(info);
+            //id 51, お知らせ Notice, eventType define 100
+            int eventType = 100;
+            JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+            info.setOos(oos);
+            if(oos == 0){
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if(status == 0){
+                        int type = jsonObject.getInt("type");
+                        info.setType(type);
+                    }
+                } catch (JSONException e) {
+                    Logg.e(LOG_TAG, "reportServerNotifocation: error: " + e.getMessage());
                 }
-            } catch (JSONException e) {
-                Logg.e(LOG_TAG, "reportServerNotifocation: error: " + e.getMessage());
             }
+            EventUtil.sendEvent(info);
         }
 
         @Override
         public void reportDrivingAdvice(int oos, String response) {
             Logg.d(LOG_TAG, "reportDrivingAdvice: oos=" + oos + ", response=" + response);
-            if(oos != 0) return;
-
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                int status = jsonObject.getInt("status");
-                if(status == 0){
-                    int code = jsonObject.getInt("code");
-                    //id 54, 運転前アドバイス Advice before driving, eventType define 103
-                    int eventType = 103;
-                    JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
-                    info.setCode(code);
-                    EventUtil.sendEvent(info);
+            //id 54, 運転前アドバイス Advice before driving, eventType define 103
+            int eventType = 103;
+            JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
+            info.setOos(oos);
+            if(oos == 0){
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if(status == 0){
+                        int code = jsonObject.getInt("code");
+                        info.setCode(code);
+                    }
+                } catch (JSONException e) {
+                    Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
                 }
-            } catch (JSONException e) {
-                Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
             }
+            EventUtil.sendEvent(info);
         }
 
         @Override
