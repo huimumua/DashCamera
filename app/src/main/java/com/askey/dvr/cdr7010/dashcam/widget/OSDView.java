@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -19,6 +20,7 @@ import android.view.View;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.util.DisplayUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -79,6 +81,7 @@ public class OSDView extends View {
     private RectF  simCardRectF;
     private RectF  userInfoRectF;
     private Paint  timePaint;
+    private Paint  countDownPaint;
     private Paint  drawPaint;
     private boolean threadExitFlag = false;
     private int timerInterval = 1000;
@@ -141,7 +144,7 @@ public class OSDView extends View {
     private void initViews(){
         timeRectF = new RectF(11,214,95,240);
         timePaint = new Paint();
-        timePaint.setTextSize(14);
+        timePaint.setTextSize(DisplayUtils.sp2px(mContext,18));
         timePaint.setColor(Color.WHITE);
         timePaint.setAntiAlias(true);
 
@@ -175,6 +178,12 @@ public class OSDView extends View {
         menu = decodeResource(getResources(), R.drawable.menu);
 
         countTimeRectF = new RectF(62,8,77,24);
+        countDownPaint =  new Paint();
+        countDownPaint.setTextSize(DisplayUtils.sp2px(mContext,12));
+        countDownPaint.setColor(Color.WHITE);
+        countDownPaint.setAntiAlias(true);
+        Typeface font = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+        countDownPaint.setTypeface(font);
 
         parkingRecordingLimitRectF = new RectF(164,156,230,192);
         parking_recording_limit = decodeResource(getResources(), R.drawable.parking_recording_limit);
@@ -204,7 +213,7 @@ public class OSDView extends View {
 
         userInfoRectF = new RectF(85,8,192,25);
         drawPaint = new Paint();
-        drawPaint.setTextSize(14);
+        drawPaint.setTextSize(DisplayUtils.sp2px(mContext,12));
         drawPaint.setColor(Color.WHITE);
         drawPaint.setAntiAlias(true);
         startDrawX = (int)userInfoRectF.left;
@@ -287,6 +296,17 @@ public class OSDView extends View {
     public void invalidateView(){
         invalidate();
     }
+    private void drawRecordingCountDown(Canvas canvas,String countDownText,RectF dstRectF){
+        float x = dstRectF.left;
+        float y = dstRectF.top;
+        float width = dstRectF.width();
+        float height = dstRectF.height();
+        Rect strRect = new Rect();
+        countDownPaint.getTextBounds(countDownText,0,countDownText.length(),strRect);
+        Paint.FontMetrics fontMetrics = countDownPaint.getFontMetrics();
+        float baseline = (height - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
+        canvas.drawText(countDownText,x , y + baseline, countDownPaint);
+    }
     private void drawTime(Canvas canvas,RectF bgRectF,String timeText,RectF dstRectF){
         float x = dstRectF.left;
         float y = dstRectF.top;
@@ -321,7 +341,7 @@ public class OSDView extends View {
             isOutSide = false;
         }
         if (isJudge) {
-            float baseline = (rcItem.height() - rect.height() - txtMaxHeight) * 1/2;
+            float baseline = (rcItem.height() - rect.height() - txtMaxHeight) * 3/4;
             baseY = (int)(rcItem.bottom- fontMetrics.bottom - baseline) ;
         }
         if (isOutSide) {
@@ -355,7 +375,7 @@ public class OSDView extends View {
         }else if(osdProvider.getRecordingStatus() == RECORDING_EVENT){
             canvas.drawBitmap(event_recording,null, recordingRectF, null);
             if(countTime>=0) {
-                drawTime(canvas, null,"0" + countTime, countTimeRectF);
+                drawRecordingCountDown(canvas, "0" + countTime, countTimeRectF);
             }
         }else if(osdProvider.getRecordingStatus() == RECORDING_STOP
                 ||osdProvider.getRecordingStatus() == RECORDING_ERROR){

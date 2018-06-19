@@ -78,7 +78,7 @@ public class CommDialog extends Dialog{
         messageText = (TextView)findViewById(R.id.content);
         messageText.setText(msg);
         messageText.setTextColor(Color.BLACK);
-        messageText.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
+        messageText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
         messageText.setGravity(Gravity.CENTER);
 
         btnOk = (Button) findViewById(R.id.ib_ok);
@@ -86,7 +86,7 @@ public class CommDialog extends Dialog{
         btnOk.setTextColor(Color.BLACK);
         btnOk.setText(BUTTON_OK_MSG);
         btnOk.setGravity(Gravity.CENTER);
-        btnOk.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
+        btnOk.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
         btnOk.getLayoutParams().width = 80;
         btnOk.getLayoutParams().height = 26;
         ((ViewGroup.MarginLayoutParams)btnOk.getLayoutParams()).leftMargin = 52;
@@ -96,7 +96,7 @@ public class CommDialog extends Dialog{
         btnCancel.setTextColor(Color.BLACK);
         btnCancel.setText(BUTTON_CANCEL_MSG);
         btnCancel.setGravity(Gravity.CENTER);
-        btnCancel.setTextSize(TypedValue.COMPLEX_UNIT_PX,18);
+        btnCancel.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
         btnCancel.getLayoutParams().width = 80;
         btnCancel.getLayoutParams().height = 26;
         ((ViewGroup.MarginLayoutParams)btnCancel.getLayoutParams()).leftMargin = 20;
