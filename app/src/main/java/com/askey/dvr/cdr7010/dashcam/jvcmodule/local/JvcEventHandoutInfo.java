@@ -15,6 +15,7 @@ public class JvcEventHandoutInfo {
     private int result;
     private int type;
     private int code;
+    private int status;
 
     public JvcEventHandoutInfo(int eventType) {
         this.eventType = eventType;
@@ -60,6 +61,14 @@ public class JvcEventHandoutInfo {
 
     public void setCode(int code) {
         this.code = code;
+    }
+
+    public int getStatus(){
+        return status;
+    }
+
+    public void setStatus(int status){
+        this.status = status;
     }
 
 

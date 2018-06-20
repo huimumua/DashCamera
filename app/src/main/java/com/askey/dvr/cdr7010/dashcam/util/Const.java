@@ -14,4 +14,5 @@ public class Const {
     public static final int SDCARD_UPDATE = 2;
     public static final int UPDATE_SUCCESS = 0;
     public static final int UPDATE_FAIL = -1;
+    public static final int OOS_SUCCESS = 0;
 }

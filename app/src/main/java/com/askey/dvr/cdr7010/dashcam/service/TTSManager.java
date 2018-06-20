@@ -29,6 +29,11 @@ public class TTSManager{
         tts = new TTS();
         return;
     }
+    public void ttsNormalStart(int requestId,int[] voiceId){
+        if(instance != null && tts != null){
+            tts.voiceNotification(voiceId,requestId);
+        }
+    }
     public void ttsEventStart(int requestId,int priority,int[] voiceId){
         Logg.d(TAG,"ttsEventStart requestId="+requestId+",priority="+priority+",voiceId="+voiceId[0]);
         if(ttsIsSpeaking()){

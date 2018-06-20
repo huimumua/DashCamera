@@ -92,10 +92,10 @@ public class CommunicationReceiver extends BroadcastReceiver{
                     int codeInteger = Integer.parseInt(code,16);
                     Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
                     if(Event.contains(Event.weatherWarning,codeInteger)){
-                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(codeInteger);
+                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(code);
                         EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT);
                     }else if(Event.contains(Event.specialWeatherWarning,codeInteger)){
-                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT_SPECIAL).setVoiceGuidence(codeInteger);
+                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT_SPECIAL).setVoiceGuidence(code);
                         EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT_SPECIAL);
                     }
                 }
