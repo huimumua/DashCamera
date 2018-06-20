@@ -782,4 +782,30 @@
         <led>no</led>
         <speech>yes</speech>
     </event>
+    <event>
+        <id>61</id>
+        <priority>0</priority>
+        <event_type>125</event_type>
+        <dialog_type>2</dialog_type>
+        <name>download result</name>
+        <description>perform system update</description>
+        <voice_guidence>0A01</voice_guidence>
+        <popup>no</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event>
+        <id>62</id>
+        <priority>0</priority>
+        <event_type>126</event_type>
+        <dialog_type>2</dialog_type>
+        <name>SIM card error / unrecognizable</name>
+        <description>SIM card error</description>
+        <voice_guidence>010B</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
 </eventlist>

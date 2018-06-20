@@ -782,4 +782,30 @@
         <led>no</led>
         <speech>yes</speech>
     </event>
+    <event>
+        <id>61</id>
+        <priority>0</priority>
+        <event_type>125</event_type>
+        <dialog_type>2</dialog_type>
+        <name>ダウンロード結果</name>
+        <description>次回電源オン時に、システム更新を行ないます</description>
+        <voice_guidence>0A01</voice_guidence>
+        <popup>no</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event>
+        <id>62</id>
+        <priority>0</priority>
+        <event_type>126</event_type>
+        <dialog_type>2</dialog_type>
+        <name>SIMカード異常/認識不可</name>
+        <description>SIMカードエラーです</description>
+        <voice_guidence>010B</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
 </eventlist>

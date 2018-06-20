@@ -102,8 +102,8 @@ public class DialogManager{
         if(eventList != null && eventList.contains(Event.RECORDING_STOP)){
             eventList.remove(Event.RECORDING_STOP);
         }
-        if(Event.contains(Event.sdCardAbnormalEvent,lastEventType)
-                || Event.contains(Event.abnormalStopRecordingEvent,lastEventType)&&lastDisplay){
+        if((Event.contains(Event.sdCardAbnormalEvent,lastEventType)
+                || Event.contains(Event.abnormalStopRecordingEvent,lastEventType))&&lastDisplay){
             dialogLogic.setSdcardPulledOut(isSdcardPulledOut);
             dialogLogic.refreshDialogDisplay(lastDialogType,lastEventType);
         }
@@ -167,7 +167,8 @@ public class DialogManager{
         }
     }
     public void setSpeechCompleted(boolean isSpeechCompleted){
-        if(Event.contains(Event.noticeEvent,lastEventType)&&lastDisplay){
+        if((Event.contains(Event.noticeEvent,lastEventType)
+                || Event.contains(Event.simCardErroeEvent,lastEventType))&&lastDisplay){
             dialogLogic.setSpeechCompleted(isSpeechCompleted);
             dialogLogic.refreshDialogDisplay(lastDialogType,lastEventType);
         }

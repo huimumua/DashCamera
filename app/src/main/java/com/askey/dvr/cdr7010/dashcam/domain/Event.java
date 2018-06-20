@@ -53,6 +53,8 @@ public final class Event{
    public static final int EMERGENCY_CALL_USER = 120;
    public static final int EVENT_RECORDING_START = 123;
    public static final int EVENT_RECORDING_END =124;
+   public static final int EVENT_DOWNLOAD_RESULT = 125;
+   public static final int EVENT_SIMCARD_ERROR =126;
 
    public static final class EventCode {
        public static final int EVENT_RECORDING = 0x1;
@@ -91,6 +93,7 @@ public final class Event{
    public static final int[] abnormalStopRecordingEvent ={RECORDING_STOP};
    public static final int[] noticeEvent ={NOTICE_START,DRIVING_REPORT,MONTHLY_DRIVING_REPORT,
            AdDVICE_BEFORE_DRIVING};
+   public static final int[] simCardErroeEvent ={EVENT_SIMCARD_ERROR};
    public static final int[] limitRecordingEvent ={RECORDING_FAILED};
    public static final int[] weatherWarning ={0x0313,0x0314,0x0315,0x0316,0x0317,0x0318,0x0319,0x031A,0x031B,0x031C,
    0x031D,0x031E,0x031F,0x0320,0x0321,0x0322,0x0323,0x0324,0x0325,0x0326,0x0327,0x0328,0x0329,0x032A,0x032B,0x032C,

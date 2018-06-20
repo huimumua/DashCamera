@@ -435,6 +435,11 @@ public class CameraRecordFragment extends Fragment {
             if(simState == TelephonyManager.SIM_STATE_ABSENT){
                 GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
             }
+            if(simState != TelephonyManager.SIM_STATE_ABSENT
+                    && simState != TelephonyManager.SIM_STATE_READY
+                    && simState != TelephonyManager.SIM_STATE_UNKNOWN){
+                EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
+            }
         }
         osdView.invalidateView();
     }
