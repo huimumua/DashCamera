@@ -12,6 +12,7 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class MediaAudioEncoder extends MediaEncoder {
     private static final String LOG_TAG = "AudioEncoder";
@@ -21,7 +22,7 @@ public class MediaAudioEncoder extends MediaEncoder {
     private static final int SAMPLES_PER_FRAME = 1024;   // AAC, bytes/frame/channel
     private static final int FRAMES_PER_BUFFER = 25;     // AAC, frame/buffer/sec
     private AudioThread mAudioThread = null;
-    private volatile boolean mIsSampling = false;
+    private volatile boolean mIsMute = false;
 
     public MediaAudioEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener) {
         super(muxer, listener);
@@ -64,36 +65,30 @@ public class MediaAudioEncoder extends MediaEncoder {
     protected void startRecording() {
         super.startRecording();
         // create and execute audio capturing thread using internal mic
-        resume();
+        mAudioThread = new AudioThread();
+        mAudioThread.start();
     }
 
-    public synchronized void resume() {
-        if (mAudioThread == null && !mIsSampling) {
-            mIsSampling = true;
-            mAudioThread = new AudioThread();
-            mAudioThread.start();
-        }
+    public synchronized void demute() {
+        mIsMute = false;
     }
 
-    public synchronized void pause() {
-        if (mAudioThread != null && mIsSampling) {
-            mIsSampling = false;
-            try {
-                mAudioThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            mAudioThread = null;
-        }
+    public synchronized void mute() {
+        mIsMute = true;
     }
 
     @Override
     public boolean isSilent() {
-        return !mIsSampling;
+        return mIsMute;
     }
 
     @Override
     protected void release() {
+        try {
+            mAudioThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mAudioThread = null;
         super.release();
     }
@@ -143,7 +138,7 @@ public class MediaAudioEncoder extends MediaEncoder {
                             int readBytes;
                             audioRecord.startRecording();
                             try {
-                                for (;  mIsSampling && mIsCapturing && !mRequestStop && !mIsEOS ;) {
+                                for (; mIsCapturing && !mRequestStop && !mIsEOS ;) {
                                     // read audio data from internal mic
                                     buf.clear();
                                     readBytes = audioRecord.read(buf, SAMPLES_PER_FRAME);
@@ -151,6 +146,11 @@ public class MediaAudioEncoder extends MediaEncoder {
                                         // set audio data to encoder
                                         buf.position(readBytes);
                                         buf.flip();
+                                        if (mIsMute) {
+                                            Arrays.fill(buf.array(), (byte) 0xff);
+                                            buf.position(readBytes);
+                                            buf.flip();
+                                        }
                                         encode(buf, readBytes, getPTSUs());
                                         frameAvailableSoon();
                                     }
@@ -162,7 +162,6 @@ public class MediaAudioEncoder extends MediaEncoder {
                         }
                     } finally {
                         audioRecord.release();
-                        mIsSampling = false;
                     }
                 } else {
                     Logg.e(LOG_TAG, "failed to initialize AudioRecord");

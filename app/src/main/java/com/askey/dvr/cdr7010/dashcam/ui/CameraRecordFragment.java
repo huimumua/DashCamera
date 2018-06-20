@@ -172,6 +172,8 @@ public class CameraRecordFragment extends Fragment {
                     public void run() {
                         if (!getMicphoneEnable()) {
                             mMainCam.mute();
+                        } else {
+                            mMainCam.demute();
                         }
                     }
                 });

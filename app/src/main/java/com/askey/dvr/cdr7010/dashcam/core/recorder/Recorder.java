@@ -15,8 +15,6 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Recorder implements IFrameListener {
@@ -90,11 +88,11 @@ public class Recorder implements IFrameListener {
     }
 
     public void mute() {
-        mAudioEncoder.pause();
+        mAudioEncoder.mute();
     }
 
     public void demute() {
-        mAudioEncoder.resume();
+        mAudioEncoder.demute();
     }
 
     @Override
