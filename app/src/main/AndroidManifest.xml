@@ -3,6 +3,7 @@
     package="com.askey.dvr.cdr7010.dashcam"
     android:sharedUserId="android.uid.system">
 
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />

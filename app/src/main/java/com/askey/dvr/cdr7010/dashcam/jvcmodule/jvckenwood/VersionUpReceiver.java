@@ -21,18 +21,23 @@ public class VersionUpReceiver extends BroadcastReceiver{
     private static final String ACTION_EVENT_UPDATE_COMPLETED = "com.jvckenwood.versionup.UPDATE_COMPLETED";
     private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
 
+    public static final String ACTION_FOTA_STATUS = "action_fota_status";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if(action.equals(ACTION_EVENT_DOWNLOAD_RESULT)){
+            //status: 0:完了、-1:失敗(圏外時も失敗を返す)、-2:中断、-3:チェック異常
             int status = intent.getIntExtra("status", -1);
             int http = intent.getIntExtra("http", -1);
             int length = intent.getIntExtra("length", -1);
 
-//            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-//            if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
-
+            Intent broadcastIntent = new Intent(ACTION_FOTA_STATUS);
+            broadcastIntent.putExtra("status", status);
+            broadcastIntent.putExtra("http", http);
+            broadcastIntent.putExtra("length", length);
+            context.sendStickyBroadcastAsUser(broadcastIntent, android.os.Process.myUserHandle());
         }else if(action.equals(ACTION_EVENT_UPDATE_READY)){ //null params
 
 
@@ -81,5 +86,6 @@ public class VersionUpReceiver extends BroadcastReceiver{
             this.soundver = soundver;
         }
     }
+
 
 }
