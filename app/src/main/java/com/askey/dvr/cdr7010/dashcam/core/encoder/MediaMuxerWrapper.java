@@ -350,7 +350,7 @@ public class MediaMuxerWrapper {
         void terminate() {
             flagTerm = true;
             if (nmeaRecorder != null) {
-                if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                if (NmeaRecorder.RecorderState.STARTED == nmeaRecorder.getState()) {
                     nmeaRecorder.stop();
                 }
                 nmeaRecorder = null;
@@ -375,7 +375,7 @@ public class MediaMuxerWrapper {
                     }
                     muxer = null;
                     if (nmeaRecorder != null) {
-                        if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                        if (NmeaRecorder.RecorderState.STARTED == nmeaRecorder.getState()) {
                             nmeaRecorder.stop();
                         }
                         nmeaRecorder = null;
@@ -392,7 +392,7 @@ public class MediaMuxerWrapper {
                     parent.closeMuxer(muxer);
                     muxer = null;
                     if (nmeaRecorder != null) {
-                        if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                        if (NmeaRecorder.RecorderState.STARTED == nmeaRecorder.getState()) {
                             nmeaRecorder.stop();
                         }
                         nmeaRecorder = null;
@@ -417,7 +417,7 @@ public class MediaMuxerWrapper {
                         parent.closeMuxer(muxer);
                         muxer = null;
                         if (nmeaRecorder != null) {
-                            if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+                            if (NmeaRecorder.RecorderState.STARTED == nmeaRecorder.getState()) {
                                 nmeaRecorder.stop();
                             }
                             nmeaRecorder = null;
