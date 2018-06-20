@@ -55,13 +55,18 @@ public class VersionUpReceiver extends BroadcastReceiver{
             } catch (JSONException e) {
                 Logg.e(LOG_TAG, "Save UPDATE_COMPLETED information error: " + e.getMessage());
             }
+            UpdateCompleteInfo updateCompleteInfo = new UpdateCompleteInfo(type,result);
+            EventUtil.sendEvent(updateCompleteInfo);
         }else if(action.equals(ACTION_EVENT_STARTUP)){
+            Logg.i(LOG_TAG,"==ACTION_EVENT_STARTUP==");
             int bootinfo = intent.getIntExtra("bootinfo", -1);
             int updateInfo = intent.getIntExtra("updateInfo", -10);
             String farmver = intent.getStringExtra("farmver");
             String soundver = intent.getStringExtra("soundver");
-            StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
-            EventUtil.sendEvent(startUpInfo);
+            if(updateInfo == 0) {//None
+                StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
+                EventUtil.sendEvent(startUpInfo);
+            }
         }
     }
 
@@ -87,5 +92,14 @@ public class VersionUpReceiver extends BroadcastReceiver{
         }
     }
 
+    public class UpdateCompleteInfo{
+        public int type;
+        public int result;
+
+        public UpdateCompleteInfo(int type, int result) {
+            this.type = type;
+            this.result = result;
+        }
+    }
 
 }

@@ -31,7 +31,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.FullScreen">
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity"
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.VersionUpActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,6 +41,9 @@
                 <category android:name="android.intent.category.MONKEY" />
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
+        </activity>
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity"
+            android:exported="true">
         </activity>
         <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
             android:exported="true">

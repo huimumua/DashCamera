@@ -177,6 +177,10 @@ public abstract class DialogActivity extends AppCompatActivity {
             CommDialog sdCardDialog = (CommDialog) dialog;
             sdCardDialog.setMessage(args.getString("Message"));
         }
+        if(id == DIALOG_TYPE_UPDATE){
+            CommDialog sdCardDialog = (CommDialog) dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
     }
 
     public boolean isDialogShowing() {
