@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class ExifHelper {
     // TODO: all of parameters need to be confirmed
-    static void build(@NonNull String file, long time) {
+    public static void build(@NonNull String file, long time) {
         try {
             ExifInterface exif = new ExifInterface(file);
             exif.setAttribute(ExifInterface.TAG_MAKE, "JVC KENWOOD");

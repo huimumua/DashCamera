@@ -1,9 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.core.renderer;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.opengl.GLES20;
@@ -42,6 +39,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
     public interface OnSurfaceTextureListener {
         void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height);
+
         void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
@@ -253,11 +251,16 @@ public class EGLRenderer implements OnFrameAvailableListener {
                     GLES20.glViewport(0, 0, 1920, 1080);
                     mTextureController.draw();
                     mEncoderSurface.setPresentationTime(mInputSurface.getTimestamp());
-
                     if (mGroupOsd != null) {
                         mGroupOsd.draw();
                     }
-
+                    if (mSnapshotCallback != null) {
+                        final int width = mEncoderSurface.getWidth();
+                        final int height = mEncoderSurface.getHeight();
+                        final byte[] data = mEncoderSurface.snapshot().array();
+                        mSnapshotCallback.onSnapshotAvailable(data, width, height, mInputSurface.getTimestamp());
+                        mSnapshotCallback = null;
+                    }
                     if (mFrameListener != null) {
                         mFrameListener.frameAvailableSoon();
                     }
@@ -267,4 +270,15 @@ public class EGLRenderer implements OnFrameAvailableListener {
         }
     }
 
+    private SnapshotCallback mSnapshotCallback = null;
+
+    public void takeDisplaySnapshot(SnapshotCallback callback) {
+        if (mSnapshotCallback == null) {
+            mSnapshotCallback = callback;
+        }
+    }
+
+    public interface SnapshotCallback {
+        void onSnapshotAvailable(byte[] data, int width, int height, long timeStamp);
+    }
 }

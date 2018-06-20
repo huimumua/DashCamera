@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class DashCam implements DashCamControl{
+public class DashCam implements DashCamControl {
 
     private static final String TAG = "DashCam";
     private Context mContext;
@@ -36,9 +36,13 @@ public class DashCam implements DashCamControl{
 
     public interface StateCallback {
         void onStarted();
+
         void onStoped();
+
         void onError();
+
         void onEventStateChanged(boolean on);
+
         void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
     }
 
@@ -174,19 +178,25 @@ public class DashCam implements DashCamControl{
         mRenderer = new EGLRenderer(mContext,
                 mConfig.videoStampEnable(),
                 new EGLRenderer.OnSurfaceTextureListener() {
-            @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-                mSurfaceTexture = surfaceTexture;
-                mRenderer.createEncoderSurface(mRecorder.getInputSurface(), mRecorder);
-                startInternal();
-            }
+                    @Override
+                    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+                        mSurfaceTexture = surfaceTexture;
+                        mRenderer.createEncoderSurface(mRecorder.getInputSurface(), mRecorder);
+                        startInternal();
+                    }
 
-            @Override
-            public void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-                mSurfaceTexture = null;
-            }
-        });
+                    @Override
+                    public void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+                        mSurfaceTexture = null;
+                    }
+                });
         mRenderer.start();
+    }
+
+    public void takeAPicture(EGLRenderer.SnapshotCallback callback) {
+        if (mRenderer != null) {
+            mRenderer.takeDisplaySnapshot(callback);
+        }
     }
 
     private void startInternal() {
