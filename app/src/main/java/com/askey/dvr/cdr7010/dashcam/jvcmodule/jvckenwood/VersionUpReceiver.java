@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 
@@ -18,6 +19,7 @@ public class VersionUpReceiver extends BroadcastReceiver{
     private static final String ACTION_EVENT_DOWNLOAD_RESULT = "com.jvckenwood.versionup.DOWNLOAD_RESULT";
     private static final String ACTION_EVENT_UPDATE_READY = "com.jvckenwood.versionup.UPDATE_READY";
     private static final String ACTION_EVENT_UPDATE_COMPLETED = "com.jvckenwood.versionup.UPDATE_COMPLETED";
+    private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -48,6 +50,13 @@ public class VersionUpReceiver extends BroadcastReceiver{
             } catch (JSONException e) {
                 Logg.e(LOG_TAG, "Save UPDATE_COMPLETED information error: " + e.getMessage());
             }
+        }else if(action.equals(ACTION_EVENT_STARTUP)){
+            int bootinfo = intent.getIntExtra("bootinfo", -1);
+            int updateInfo = intent.getIntExtra("updateInfo", -10);
+            String farmver = intent.getStringExtra("farmver");
+            String soundver = intent.getStringExtra("soundver");
+            StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
+            EventUtil.sendEvent(startUpInfo);
         }
     }
 
@@ -57,6 +66,20 @@ public class VersionUpReceiver extends BroadcastReceiver{
             return false;
         }
         return true;
+    }
+
+    public class StartUpInfo{
+        public int bootinfo;
+        public int updateInfo;
+        public String farmver;
+        public String soundver;
+
+        public StartUpInfo(int bootinfo, int updateInfo, String farmver, String soundver) {
+            this.bootinfo = bootinfo;
+            this.updateInfo = updateInfo;
+            this.farmver = farmver;
+            this.soundver = soundver;
+        }
     }
 
 }
