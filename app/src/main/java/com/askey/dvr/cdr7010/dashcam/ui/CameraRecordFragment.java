@@ -432,12 +432,14 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
             int simState = SimCardManager.getInstant().getSimState();
             SimCardManager.getInstant().setSimState(simState);
-            if(simState == TelephonyManager.SIM_STATE_ABSENT){
+            if(simState == TelephonyManager.SIM_STATE_ABSENT
+                    || simState == SimCardManager.SIM_STATE_NOT_READY){
                 GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
             }
             if(simState != TelephonyManager.SIM_STATE_ABSENT
                     && simState != TelephonyManager.SIM_STATE_READY
-                    && simState != TelephonyManager.SIM_STATE_UNKNOWN){
+                    && simState != TelephonyManager.SIM_STATE_UNKNOWN
+                    && simState != SimCardManager.SIM_STATE_NOT_READY){
                 EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
             }
         }
