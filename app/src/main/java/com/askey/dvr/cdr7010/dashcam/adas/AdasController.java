@@ -131,10 +131,6 @@ public class AdasController implements Util.AdasCallback {
     }
 
     public void process(Image image) {
-        if (true) { // TODO: Remove this after fix the crash issue (adasDetect)
-            image.close();
-            return;
-        }
         if (DEBUG)
             Log.v(TAG, "process: image = " + image);
         mTpsc.update();
@@ -146,9 +142,14 @@ public class AdasController implements Util.AdasCallback {
             throw new RuntimeException("same capture time");
         }
         mProcessingImages.put(mFcInput.CaptureTime, image);
-        int result = Detection.adasDetect(image.getPlanes()[0].getBuffer(), mFcInput);
-        if (result != Constant.ADAS_SUCCESS) {
+
+        int result = Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
+        // result = Detection.adasDetect(image.getPlanes()[0].getBuffer(), mFcInput); // FIXME
+        if (result == Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
+            image.close();
+        } else if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "process: adasDetect() failed with return value = " + result);
+            image.close();
         }
     }
     public void stop() {

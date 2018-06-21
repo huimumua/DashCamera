@@ -21,7 +21,7 @@ import java.util.List;
 public class GnssOSD extends BaseOSD {
     private static int WIDTH = 225;
     private static int HEIGHT = 32;
-    private static int FONT_SIZE = 16;
+    private static int FONT_SIZE = 14;
     private static int TEXT_WIDTH = 225;
     private static int TEXT_HEIGHT = 32;
 

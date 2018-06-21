@@ -8,6 +8,7 @@ import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ILLEGAL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_NETWORK_LOCKED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PIN_REQUIRED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PUK_REQUIRED;
@@ -49,9 +50,11 @@ public class SimCardManager {
                 break;
             case TelephonyManager.SIM_STATE_READY:
                 GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_READY);
+                break;
             default:
-                return;
+                GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_ILLEGAL);
         }
+        return;
     }
 
 }

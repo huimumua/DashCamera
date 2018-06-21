@@ -183,7 +183,7 @@ public class EventMuxer implements Runnable{
         mFlagTerm = true;
         mInputQueue.add(new Slice(0, 0, null));
         if (nmeaRecorder != null) {
-            if (nmeaRecorder.state == NmeaRecorder.RecorderState.STARTED) {
+            if (nmeaRecorder.getState() == NmeaRecorder.RecorderState.STARTED) {
                 nmeaRecorder.stop();
             }
             nmeaRecorder = null;

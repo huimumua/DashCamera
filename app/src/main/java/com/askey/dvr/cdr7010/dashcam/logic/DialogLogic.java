@@ -113,7 +113,8 @@ public class DialogLogic{
           if(isSdcardPulledOut || isStartRecording){
               onDismiss(dialogType,eventType);
           }
-      } else if(Event.contains(Event.noticeEvent,eventType)){
+      } else if(Event.contains(Event.noticeEvent,eventType)
+              ||Event.contains(Event.simCardErroeEvent,eventType)){
           if(isSpeechCompleted){
               onDismiss(dialogType,eventType);
           }

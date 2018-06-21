@@ -268,6 +268,8 @@ public class CameraRecordFragment extends Fragment {
                     public void run() {
                         if (!getMicphoneEnable()) {
                             mMainCam.mute();
+                        } else {
+                            mMainCam.demute();
                         }
                     }
                 });
@@ -507,42 +509,38 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void handleMessageEvent(MessageEvent messageEvent) {
-        switch (messageEvent.getCode()) {
-            case Event.EventCode.EVENT_RECORDING:
-                GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType) messageEvent.getData());
-                if (messageEvent.getData() == RECORDING_EVENT) {
-                    osdView.startRecordingCountDown();
-                }
-                if (messageEvent.getData() == RECORDING_CONTINUOUS) {
-                    DialogManager.getIntance().setStartRecording(true);
-                }
-                break;
-            case Event.EventCode.EVENT_RECORDING_FILE_LIMIT:
-                GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType) messageEvent.getData());
-                break;
-            case Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT:
-                GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType) messageEvent.getData());
-                break;
-            case Event.EventCode.EVENT_GPS:
-                GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType) messageEvent.getData());
-                break;
-            case Event.EventCode.EVENT_SDCARD:
-                GlobalLogic.getInstance().setSDCardStatus((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
-                handleSdCardDialog((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
-                break;
-            case Event.EventCode.EVENT_MIC:
-                GlobalLogic.getInstance().setMicStatus(getMicphoneEnable() ? MIC_ON : MIC_OFF);
-                break;
-            case Event.EventCode.EVENT_FOTA_UPDATE:
-                GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus) messageEvent.getData());
-                break;
-            case Event.EventCode.EVENT_SIMCARD:
-                int simState = SimCardManager.getInstant().getSimState();
-                SimCardManager.getInstant().setSimState(simState);
-                if (simState == TelephonyManager.SIM_STATE_ABSENT) {
-                    GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
-                }
-                break;
+        if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING) {
+            GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType) messageEvent.getData());
+            if (messageEvent.getData() == RECORDING_EVENT) {
+                osdView.startRecordingCountDown();
+            }
+            if (messageEvent.getData() == RECORDING_CONTINUOUS) {
+                DialogManager.getIntance().setStartRecording(true);
+            }
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT) {
+            GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT) {
+            GlobalLogic.getInstance().setParkingRecordingLimitStatus((UIElementStatusEnum.ParkingRecordingLimitStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_GPS) {
+            GlobalLogic.getInstance().setGPSStatus((UIElementStatusEnum.GPSStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SDCARD) {
+            GlobalLogic.getInstance().setSDCardStatus((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
+            handleSdCardDialog((UIElementStatusEnum.SDcardStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_MIC) {
+            GlobalLogic.getInstance().setMicStatus(getMicphoneEnable() ? MIC_ON : MIC_OFF);
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_FOTA_UPDATE) {
+            GlobalLogic.getInstance().setFOTAFileStatus((UIElementStatusEnum.FOTAFileStatus) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
+            int simState = SimCardManager.getInstant().getSimState();
+            SimCardManager.getInstant().setSimState(simState);
+            if(simState == TelephonyManager.SIM_STATE_ABSENT){
+                GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
+            }
+            if(simState != TelephonyManager.SIM_STATE_ABSENT
+                    && simState != TelephonyManager.SIM_STATE_READY
+                    && simState != TelephonyManager.SIM_STATE_UNKNOWN){
+                EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
+            }
         }
         osdView.invalidateView();
     }

@@ -13,8 +13,6 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 public class JvcEventReceiver extends BroadcastReceiver{
     private static final String LOG_TAG = "JvcEventReceiver";
@@ -33,6 +31,9 @@ public class JvcEventReceiver extends BroadcastReceiver{
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
             if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+
+
+
         }else if(action.equals(ACTION_EVENT_RECORD_REQUEST)){
             int eventNo = intent.getIntExtra(EXTRA_EVENT_NO, -1);
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);

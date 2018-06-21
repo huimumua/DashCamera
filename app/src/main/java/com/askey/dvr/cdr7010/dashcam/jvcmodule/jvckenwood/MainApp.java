@@ -114,6 +114,7 @@ public class MainApp {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
+                    info.setStatus(status);
                     if(status == 0){
                         int result = jsonObject.getInt("result");
                         info.setResult(result);
@@ -136,6 +137,7 @@ public class MainApp {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
+                    info.setStatus(status);
                     if(status == 0){
                         int result = jsonObject.getInt("result");
                         info.setResult(result);
@@ -158,6 +160,7 @@ public class MainApp {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
+                    info.setStatus(status);
                     if(status == 0){
                         int type = jsonObject.getInt("type");
                         info.setType(type);
@@ -180,6 +183,7 @@ public class MainApp {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
+                    info.setStatus(status);
                     if(status == 0){
                         int code = jsonObject.getInt("code");
                         info.setCode(code);

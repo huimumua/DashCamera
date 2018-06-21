@@ -51,23 +51,23 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Override
     public void noticeJump() {
-        String updateResult = (String)SPUtils.get(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED, "");
-        updateInfo = parseJson(updateResult);
-        //updateInfo = parseFile("/cache/recovery_result");
-            if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
-                     ||(updateInfo.updateResultState == Const.UPDATE_FAIL))) {
-                SPUtils.remove(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED);
-                isUpdate = true;
-                updateFragment = new UpdateFragment();
-                Bundle bundle = new Bundle();
-                bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
-                updateFragment.setArguments(bundle);
-                ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
-                ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
-                        updateFragment, R.id.contentFrame);
-            } else{
+//        String updateResult = (String)SPUtils.get(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED, "");
+//        updateInfo = parseJson(updateResult);
+//        //updateInfo = parseFile("/cache/recovery_result");
+//            if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
+//                     ||(updateInfo.updateResultState == Const.UPDATE_FAIL))) {
+//                SPUtils.remove(DashCamApplication.getAppContext(), Const.PREFERENCE_KEY_UPDATE_COMPLETED);
+//                isUpdate = true;
+//                updateFragment = new UpdateFragment();
+//                Bundle bundle = new Bundle();
+//                bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
+//                updateFragment.setArguments(bundle);
+//                ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
+//                ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
+//                        updateFragment, R.id.contentFrame);
+//            } else{
                 startNextActivity();
-            }
+//            }
         }
 
     @Override
@@ -83,11 +83,11 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     }
     @Override
     public void displayTipInfo() {
-        if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_SUCCESS)) {
-            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_success), true);
-        }else if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_FAIL)){
-            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
-        }
+//        if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_SUCCESS)) {
+//            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_success), true);
+//        }else if(updateInfo != null &&(updateInfo.updateResultState == Const.UPDATE_FAIL)){
+//            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
+//        }
     }
 
     private UpdateInfo parseJson(String updateResult){

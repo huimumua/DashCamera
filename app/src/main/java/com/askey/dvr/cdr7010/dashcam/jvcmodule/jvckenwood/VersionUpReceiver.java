@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 
@@ -18,19 +19,25 @@ public class VersionUpReceiver extends BroadcastReceiver{
     private static final String ACTION_EVENT_DOWNLOAD_RESULT = "com.jvckenwood.versionup.DOWNLOAD_RESULT";
     private static final String ACTION_EVENT_UPDATE_READY = "com.jvckenwood.versionup.UPDATE_READY";
     private static final String ACTION_EVENT_UPDATE_COMPLETED = "com.jvckenwood.versionup.UPDATE_COMPLETED";
+    private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
+
+    public static final String ACTION_FOTA_STATUS = "action_fota_status";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if(action.equals(ACTION_EVENT_DOWNLOAD_RESULT)){
+            //status: 0:完了、-1:失敗(圏外時も失敗を返す)、-2:中断、-3:チェック異常
             int status = intent.getIntExtra("status", -1);
             int http = intent.getIntExtra("http", -1);
             int length = intent.getIntExtra("length", -1);
 
-//            EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-//            if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
-
+            Intent broadcastIntent = new Intent(ACTION_FOTA_STATUS);
+            broadcastIntent.putExtra("status", status);
+            broadcastIntent.putExtra("http", http);
+            broadcastIntent.putExtra("length", length);
+            context.sendStickyBroadcastAsUser(broadcastIntent, android.os.Process.myUserHandle());
         }else if(action.equals(ACTION_EVENT_UPDATE_READY)){ //null params
 
 
@@ -48,6 +55,18 @@ public class VersionUpReceiver extends BroadcastReceiver{
             } catch (JSONException e) {
                 Logg.e(LOG_TAG, "Save UPDATE_COMPLETED information error: " + e.getMessage());
             }
+            UpdateCompleteInfo updateCompleteInfo = new UpdateCompleteInfo(type,result);
+            EventUtil.sendEvent(updateCompleteInfo);
+        }else if(action.equals(ACTION_EVENT_STARTUP)){
+            Logg.i(LOG_TAG,"==ACTION_EVENT_STARTUP==");
+            int bootinfo = intent.getIntExtra("bootinfo", -1);
+            int updateInfo = intent.getIntExtra("updateInfo", -10);
+            String farmver = intent.getStringExtra("farmver");
+            String soundver = intent.getStringExtra("soundver");
+            if(updateInfo == 0) {//None
+                StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
+                EventUtil.sendEvent(startUpInfo);
+            }
         }
     }
 
@@ -57,6 +76,30 @@ public class VersionUpReceiver extends BroadcastReceiver{
             return false;
         }
         return true;
+    }
+
+    public class StartUpInfo{
+        public int bootinfo;
+        public int updateInfo;
+        public String farmver;
+        public String soundver;
+
+        public StartUpInfo(int bootinfo, int updateInfo, String farmver, String soundver) {
+            this.bootinfo = bootinfo;
+            this.updateInfo = updateInfo;
+            this.farmver = farmver;
+            this.soundver = soundver;
+        }
+    }
+
+    public class UpdateCompleteInfo{
+        public int type;
+        public int result;
+
+        public UpdateCompleteInfo(int type, int result) {
+            this.type = type;
+            this.result = result;
+        }
     }
 
 }

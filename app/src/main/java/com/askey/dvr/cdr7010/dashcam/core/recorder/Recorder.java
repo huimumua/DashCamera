@@ -15,8 +15,6 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Recorder implements IFrameListener {
@@ -34,9 +32,13 @@ public class Recorder implements IFrameListener {
 
     public interface StateCallback {
         void onStarted();
+
         void onStoped();
+
         void onInterrupted();
+
         void onEventStateChanged(boolean on);
+
         void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
     }
 
@@ -90,11 +92,11 @@ public class Recorder implements IFrameListener {
     }
 
     public void mute() {
-        mAudioEncoder.pause();
+        mAudioEncoder.mute();
     }
 
     public void demute() {
-        mAudioEncoder.resume();
+        mAudioEncoder.demute();
     }
 
     @Override
@@ -130,7 +132,7 @@ public class Recorder implements IFrameListener {
 
         @Override
         public void segmentStartAsync(int event, long startTimeMs) {
-            Logg.v(TAG, "segmentStartAsync: startTimeMs=" + startTimeMs +",event="+event);
+            Logg.v(TAG, "segmentStartAsync: startTimeMs=" + startTimeMs + ",event=" + event);
             if (mStateCallback != null) {
                 mStateCallback.onEventStateChanged(event != 0);
             }
@@ -140,16 +142,16 @@ public class Recorder implements IFrameListener {
         public void segmentCompletedAsync(int event, final long eventTimeMs, final String path, final long startTimeMs, long durationMs) {
             Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " " + path);
             if (event != 0) {
-                List<String> pictures = Snapshot.take3Pictures(path, startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext));
-                if (pictures != null) {
-                    for (String pic : pictures) {
-                        Logg.d(TAG, pic);
+                Snapshot.take3Pictures(path, startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
+                    if (pictures != null) {
+                        for (String pic : pictures) {
+                            Logg.d(TAG, pic);
+                        }
                     }
-                }
-
-                if (mStateCallback != null) {
-                    mStateCallback.onEventCompleted(event, startTimeMs, pictures, path);
-                }
+                    if (mStateCallback != null) {
+                        mStateCallback.onEventCompleted(event, startTimeMs, pictures, path);
+                    }
+                });
             }
         }
     };

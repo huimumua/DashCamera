@@ -6,13 +6,17 @@ import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.CommDialog;
@@ -20,6 +24,11 @@ import com.askey.dvr.cdr7010.dashcam.widget.WarningDialog;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.AdDVICE_BEFORE_DRIVING;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.DRIVING_REPORT;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.MONTHLY_DRIVING_REPORT;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.NOTICE_START;
 
 
 public abstract class DialogActivity extends AppCompatActivity {
@@ -41,8 +50,16 @@ public abstract class DialogActivity extends AppCompatActivity {
     private static EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback() {
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp) {
-            TTSManager.getInstance().ttsEventStart( eventInfo.getEventType(),
-                    eventInfo.getPriority(),new int[]{eventInfo.getVoiceGuidence()});
+            String voiceCode = eventInfo.getVoiceGuidence().trim();
+            if(!TextUtils.isEmpty(voiceCode)) {
+                String[] voiceArray = voiceCode.split(",");
+                int[] voiceId = new int[voiceArray.length];
+                for (int idx = 0; idx < voiceArray.length; idx++) {
+                    voiceId[idx] = Integer.parseInt(voiceArray[idx].trim(), 16);
+                }
+                TTSManager.getInstance().ttsEventStart(eventInfo.getEventType(),
+                        eventInfo.getPriority(), voiceId);
+            }
         }
     };
 
@@ -160,6 +177,10 @@ public abstract class DialogActivity extends AppCompatActivity {
             CommDialog sdCardDialog = (CommDialog) dialog;
             sdCardDialog.setMessage(args.getString("Message"));
         }
+        if(id == DIALOG_TYPE_UPDATE){
+            CommDialog sdCardDialog = (CommDialog) dialog;
+            sdCardDialog.setMessage(args.getString("Message"));
+        }
     }
 
     public boolean isDialogShowing() {
@@ -211,9 +232,45 @@ public abstract class DialogActivity extends AppCompatActivity {
         return true;
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onHandleEvent ( Integer eventType){
-        Logg.d(TAG,"onMessageEvent onHandleEvent,eventType="+eventType.intValue());
-        EventManager.getInstance().handOutEventInfo(eventType.intValue());
+    public void onHandleEvent ( JvcEventHandoutInfo jvcReportInfo){
+        if(jvcReportInfo != null && jvcReportInfo.getOos() == Const.OOS_SUCCESS && jvcReportInfo.getStatus() == 0) {
+            StringBuilder stringBuilder = new StringBuilder();
+            String voiceCode =null;
+            switch (jvcReportInfo.getEventType()) {
+                case NOTICE_START:
+                    if(jvcReportInfo.getType() == 1) {
+                        voiceCode = stringBuilder.append("0201").append(",").append("0202").toString();
+                        EventManager.getInstance().getEventInfoByEventType(NOTICE_START).setVoiceGuidence(voiceCode);
+                    }
+                    break;
+                case DRIVING_REPORT:
+                    if(jvcReportInfo.getResult() == 1){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0402").append(",").append("0405").toString();
+                    }else if(jvcReportInfo.getResult() == 2){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0403").append(",").append("0405").toString();
+                    }else if(jvcReportInfo.getResult() == 3){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0404").append(",").append("0405").toString();
+                    }
+                    EventManager.getInstance().getEventInfoByEventType(DRIVING_REPORT).setVoiceGuidence(voiceCode);
+                    break;
+                case MONTHLY_DRIVING_REPORT:
+                    if(jvcReportInfo.getResult() >= 0 && jvcReportInfo.getResult() <= 100){
+                        voiceCode = stringBuilder.append("0501").append(",").append("0502").toString();
+                        EventManager.getInstance().getEventInfoByEventType(MONTHLY_DRIVING_REPORT).setVoiceGuidence(voiceCode);
+                    }
+                    break;
+                case AdDVICE_BEFORE_DRIVING:
+                    EventManager.getInstance().getEventInfoByEventType(AdDVICE_BEFORE_DRIVING)
+                                        .setVoiceGuidence(String.valueOf(jvcReportInfo.getCode()));
+                    break;
+                default:
+            }
+            EventManager.getInstance().handOutEventInfo(jvcReportInfo.getEventType());
+        }
+
     }
 
     @Override

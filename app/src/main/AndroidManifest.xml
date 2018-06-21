@@ -3,6 +3,7 @@
     package="com.askey.dvr.cdr7010.dashcam"
     android:sharedUserId="android.uid.system">
 
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />
@@ -30,7 +31,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.FullScreen">
-        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity"
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.VersionUpActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,6 +41,9 @@
                 <category android:name="android.intent.category.MONKEY" />
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
+        </activity>
+        <activity android:name="com.askey.dvr.cdr7010.dashcam.activity.NoticeActivity"
+            android:exported="true">
         </activity>
         <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
             android:exported="true">
@@ -84,6 +89,7 @@
                 <action android:name="com.jvckenwood.versionup.DOWNLOAD_RESULT"/>
                 <action android:name="com.jvckenwood.versionup.UPDATE_READY"/>
                 <action android:name="com.jvckenwood.versionup.UPDATE_COMPLETED"/>
+                <action android:name="com.jvckenwood.versionup.STARTUP"/>
             </intent-filter>
         </receiver>
         <receiver android:name=".jvcmodule.jvckenwood.CommunicationReceiver">
