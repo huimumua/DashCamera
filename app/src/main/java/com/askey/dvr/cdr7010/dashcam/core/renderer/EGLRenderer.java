@@ -258,7 +258,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
                         final int width = mEncoderSurface.getWidth();
                         final int height = mEncoderSurface.getHeight();
                         final byte[] data = mEncoderSurface.snapshot().array();
-                        mSnapshotCallback.onSnapshotAvailable(data, width, height, mInputSurface.getTimestamp());
+                        mSnapshotCallback.onSnapshotAvailable(data, width, height, System.currentTimeMillis());
                         mSnapshotCallback = null;
                     }
                     if (mFrameListener != null) {
