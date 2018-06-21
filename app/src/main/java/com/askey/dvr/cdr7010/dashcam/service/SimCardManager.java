@@ -5,6 +5,7 @@ import android.telephony.TelephonyManager;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
@@ -18,6 +19,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCard
 public class SimCardManager {
     private static  SimCardManager instance;
     private TelephonyManager telephoneMgr;
+    public static final int SIM_STATE_NOT_READY = 6;
 
     private SimCardManager(){
         telephoneMgr = (TelephonyManager) DashCamApplication.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -50,6 +52,9 @@ public class SimCardManager {
                 break;
             case TelephonyManager.SIM_STATE_READY:
                 GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_READY);
+                break;
+            case SIM_STATE_NOT_READY:
+                GlobalLogic.getInstance().setSimCardStatus(UIElementStatusEnum.SimCardStatus.SIM_STATE_NOT_READY);
                 break;
             default:
                 GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_ILLEGAL);

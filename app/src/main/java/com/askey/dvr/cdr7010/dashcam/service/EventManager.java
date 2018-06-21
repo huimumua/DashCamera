@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class EventManager {
     private static final String LOG_TAG = "EventManager";
@@ -151,7 +150,7 @@ public class EventManager {
     public void handOutEventInfo(int eventType){
         long timeStamp = System.currentTimeMillis();
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        Logg.e(LOG_TAG, "handOutEventInfo: eventType=" + eventType);
+        Logg.d(LOG_TAG, "handOutEventInfo: eventType=" + eventType);
         if(eventInfo == null){
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
             return;

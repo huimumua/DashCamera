@@ -219,10 +219,8 @@ public class MainApp {
 
     public boolean bindJvcMainAppService() {
         Logg.d(LOG_TAG, "bindJvcMainAppService: ");
-        Intent intent = new Intent();
-//        intent.setAction("service.jkccomm.IMainApp");
-        intent.setAction("com.jvckenwood.communication.CommunicationService");
-        intent.setPackage("com.jvckenwood.communication");
+        Intent intent = new Intent("com.jvckenwood.communication.IMainApp");
+        intent.setClassName("com.jvckenwood.communication", "com.jvckenwood.communication.CommunicationService");
         return mAppContext.bindService(intent, mMainAppConn, Context.BIND_AUTO_CREATE);
     }
 
