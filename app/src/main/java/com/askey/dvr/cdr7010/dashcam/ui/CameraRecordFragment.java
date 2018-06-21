@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -36,7 +37,6 @@ import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.ExifHelper;
-import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
@@ -52,6 +52,8 @@ import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import com.askey.platform.AskeySettings;
+
+import net.sf.marineapi.nmea.util.Position;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -188,43 +190,42 @@ public class CameraRecordFragment extends Fragment {
                         break;
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
                         Log.i(TAG, "battery status is discharging");
-                        mMainCam.takeAPicture(new EGLRenderer.SnapshotCallback() {
-                            @Override
-                            public void onSnapshotAvailable(final byte[] data, final int width, final int height, final long timeStamp) {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Bitmap bmp = null;
-                                        BufferedOutputStream bos = null;
-                                        try {
-                                            String filePathForPicture = FileManager.getInstance(getActivity()).getFilePathForPicture(timeStamp);
-                                            ByteBuffer buf = ByteBuffer.wrap(data);
-                                            bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
-                                            bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                                            bmp.copyPixelsFromBuffer(buf);
-                                            bmp = convertBmp(bmp);
-                                            bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                                            ExifHelper.build(filePathForPicture, timeStamp);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        } finally {
-                                            if (bmp != null) {
-                                                bmp.recycle();
-                                            }
-                                            if (bos != null) {
-                                                try {
-                                                    bos.flush();
-                                                    bos.close();
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                            handler.sendEmptyMessage(0);
-                                        }
+                        mMainCam.takeAPicture((data, width, height, timeStamp) -> handler.post(() -> {
+                            Bitmap bmp = null;
+                            BufferedOutputStream bos = null;
+                            try {
+                                String filePathForPicture = FileManager.getInstance(getActivity()).getFilePathForPicture(timeStamp);
+                                ByteBuffer buf = ByteBuffer.wrap(data);
+                                bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
+                                bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                                bmp.copyPixelsFromBuffer(buf);
+                                bmp = convertBmp(bmp);
+                                bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                                Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+                                Position position = null;
+                                if (currentLocation != null) {
+                                    Logg.d(TAG,"currentLocation!=null,getLatitude=="+currentLocation.getLatitude()+",getLongitude=="+currentLocation.getLongitude());
+                                    position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
+                                }
+                                Logg.d(TAG, "timeStamp==" + timeStamp);
+                                ExifHelper.build(filePathForPicture, timeStamp, position);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                if (bmp != null) {
+                                    bmp.recycle();
+                                }
+                                if (bos != null) {
+                                    try {
+                                        bos.flush();
+                                        bos.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
-                                });
+                                }
+                                handler.sendEmptyMessage(0);
                             }
-                        });
+                        }));
                         break;
                 }
             }
@@ -533,12 +534,12 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
             int simState = SimCardManager.getInstant().getSimState();
             SimCardManager.getInstant().setSimState(simState);
-            if(simState == TelephonyManager.SIM_STATE_ABSENT){
+            if (simState == TelephonyManager.SIM_STATE_ABSENT) {
                 GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
             }
-            if(simState != TelephonyManager.SIM_STATE_ABSENT
+            if (simState != TelephonyManager.SIM_STATE_ABSENT
                     && simState != TelephonyManager.SIM_STATE_READY
-                    && simState != TelephonyManager.SIM_STATE_UNKNOWN){
+                    && simState != TelephonyManager.SIM_STATE_UNKNOWN) {
                 EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
             }
         }
