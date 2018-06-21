@@ -137,7 +137,8 @@ public class UIElementStatusEnum{
         SIM_STATE_PUK_REQUIRED(3),
         SIM_STATE_UNKNOWN(4),
         SIM_STATE_READY(5),
-        SIM_STATE_ILLEGAL(6);
+        SIM_STATE_NOT_READY(6),
+        SIM_STATE_ILLEGAL(7);
 
         public final int value;
         SimCardStatus(int value){
