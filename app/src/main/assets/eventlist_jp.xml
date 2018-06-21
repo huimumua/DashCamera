@@ -799,7 +799,7 @@
         <id>62</id>
         <priority>0</priority>
         <event_type>126</event_type>
-        <dialog_type>2</dialog_type>
+        <dialog_type>3</dialog_type>
         <name>SIMカード異常/認識不可</name>
         <description>SIMカードエラーです</description>
         <voice_guidence>010B</voice_guidence>

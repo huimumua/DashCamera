@@ -55,6 +55,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNRECOGNIZABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ILLEGAL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_NETWORK_LOCKED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PIN_REQUIRED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PUK_REQUIRED;
@@ -433,7 +434,8 @@ public class OSDView extends View {
         }
         if(osdProvider.getSimCardStatus() == SIM_STATE_NETWORK_LOCKED
                 || osdProvider.getSimCardStatus() ==  SIM_STATE_PIN_REQUIRED
-                || osdProvider.getSimCardStatus() ==  SIM_STATE_PUK_REQUIRED){
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_PUK_REQUIRED
+                || osdProvider.getSimCardStatus() ==  SIM_STATE_ILLEGAL){
             canvas.drawBitmap(simcard_error,null,simCardRectF,null);
         }
         if(osdProvider.getGpsStatus() == GPS_STRENGTH_FIXES){
