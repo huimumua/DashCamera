@@ -29,6 +29,7 @@ public class FOTAReceiver extends BroadcastReceiver{
         if(action.equals(ACTION_FOTA_STATUS)){
             int status = intent.getIntExtra("status",-1);
             if(status == UPDOWNLOAD_SUCCESS){
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.FOTAFileStatus>(Event.EventCode.EVENT_FOTA_UPDATE, FOTA_FILE_EXIST));
                 EventManager.getInstance().handOutEventInfo(Event.EVENT_DOWNLOAD_RESULT);
             }
         }
