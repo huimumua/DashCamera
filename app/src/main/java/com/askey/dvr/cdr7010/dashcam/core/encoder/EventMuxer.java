@@ -234,9 +234,6 @@ public class EventMuxer implements Runnable{
         try {
             fin = new RandomAccessFile(file, "r");
             int index = fin.readInt();
-            if (!isFirst) {
-                Logg.d(LOG_TAG, "index=" + index);
-            }
             if (!isFirst && (index - slice_index != 1)) {
                 Logg.e(LOG_TAG, "slice index error: prev=" + slice_index + "  current=" + index);
             }
