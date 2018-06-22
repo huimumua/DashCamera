@@ -126,6 +126,9 @@ public class DashCam implements DashCamControl {
     @Override
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
+        if (mIsRunning) {
+            return;
+        }
         mAdasController.start(mContext);
         ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -148,10 +151,6 @@ public class DashCam implements DashCamControl {
             throw new RuntimeException("sd card unavailable");
         }
 
-        if (mIsRunning) {
-            return;
-        }
-
         if (!mRecordLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
             if (mStateCallback != null) {
                 mStateCallback.onError();
@@ -169,11 +168,8 @@ public class DashCam implements DashCamControl {
         }
 
         mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mRecorder.prepare();
+
         NmeaRecorder.init(mContext);
         mRenderer = new EGLRenderer(mContext,
                 mConfig.videoStampEnable(),
@@ -182,7 +178,11 @@ public class DashCam implements DashCamControl {
                     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
                         mSurfaceTexture = surfaceTexture;
                         mRenderer.createEncoderSurface(mRecorder.getInputSurface(), mRecorder);
-                        startInternal();
+                        try {
+                            startInternal();
+                        } catch (Exception e) {
+                            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_ERROR, ""));
+                        }
                     }
 
                     @Override
@@ -199,7 +199,7 @@ public class DashCam implements DashCamControl {
         }
     }
 
-    private void startInternal() {
+    private void startInternal() throws Exception {
         Logg.d(TAG, "startInternal");
         if (mRecorder != null) {
             mRecorder.startRecording();
@@ -237,7 +237,7 @@ public class DashCam implements DashCamControl {
                 mRecorder = null;
             }
             NmeaRecorder.deinit(mContext);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

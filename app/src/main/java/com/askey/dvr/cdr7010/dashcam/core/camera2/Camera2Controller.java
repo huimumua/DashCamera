@@ -117,20 +117,13 @@ public class Camera2Controller {
         }
     };
 
-    public void open(CAMERA camera) {
+    public void open(CAMERA camera) throws Exception {
         Log.v(TAG, "open()");
+        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            throw new RuntimeException("Camera permission fail.");
+        }
         try {
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
-                    != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
             Log.d(TAG, "tryAcquire");
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -138,14 +131,12 @@ public class Camera2Controller {
             String cameraId = getCameraId(camera);
             Log.d(TAG, "camera id: " + cameraId);
             mCameraManager.openCamera(cameraId, mDeviceStateCallback, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera opening.");
         }
     }
 
-    public void closeCamera() {
+    public void closeCamera() throws Exception {
         Log.d(TAG, "closeCamera");
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -162,48 +153,45 @@ public class Camera2Controller {
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.");
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
         } finally {
             mCameraOpenCloseLock.release();
         }
-
     }
 
-    public void startRecordingVideo(@NonNull SurfaceTexture surfaceTexture) {
-        if (mIsRecordingVideo || null == mCameraDevice) {
+    public void startRecordingVideo(@NonNull SurfaceTexture surfaceTexture) throws CameraAccessException {
+        if (mIsRecordingVideo) {
             return;
         }
 
-        try {
-            Surface surface = new Surface(surfaceTexture);
-            mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-            mCaptureBuilder.addTarget(surface);
-            List<Surface> listSurface = new ArrayList<>();
-            listSurface.add(surface);
-            if (mImageReader != null) {
-                listSurface.add(mImageReader.getSurface());
-            }
-            mCameraDevice.createCaptureSession(listSurface,
-                    new CameraCaptureSession.StateCallback() {
-
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-                    mCaptureSession = cameraCaptureSession;
-                    updatePreview();
-                    mIsRecordingVideo = true;
-                    // TODO:
-                    // notify ui
-                }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-
-                }
-            }, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
+        if (null == mCameraDevice) {
+            throw new RuntimeException("null CameraDevice.");
         }
+
+        Surface surface = new Surface(surfaceTexture);
+        mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+        mCaptureBuilder.addTarget(surface);
+        List<Surface> listSurface = new ArrayList<>();
+        listSurface.add(surface);
+        if (mImageReader != null) {
+            listSurface.add(mImageReader.getSurface());
+        }
+        mCameraDevice.createCaptureSession(listSurface,
+                new CameraCaptureSession.StateCallback() {
+
+            @Override
+            public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                mCaptureSession = cameraCaptureSession;
+                updatePreview();
+                mIsRecordingVideo = true;
+                // TODO:
+                // notify ui
+            }
+
+            @Override
+            public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+
+            }
+        }, mBackgroundHandler);
     }
 
     public void stopRecordingVideo() {
