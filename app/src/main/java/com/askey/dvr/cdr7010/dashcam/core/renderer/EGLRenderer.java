@@ -32,6 +32,8 @@ public class EGLRenderer implements OnFrameAvailableListener {
     private final static int MSG_UPDATE_FRAME = 6;
 
     private Context mContext;
+    private final int mWidth;
+    private final int mHeight;
     private boolean mVideoStamp;
     private RenderHandler mRenderHandler;
     private HandlerThread mRenderThread;
@@ -43,8 +45,11 @@ public class EGLRenderer implements OnFrameAvailableListener {
         void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture);
     }
 
-    public EGLRenderer(Context context, boolean videoStamp, OnSurfaceTextureListener listener) {
+    public EGLRenderer(Context context, int width, int height, boolean videoStamp,
+                       OnSurfaceTextureListener listener) {
         mContext = context.getApplicationContext();
+        mWidth = width;
+        mHeight = height;
         mVideoStamp = videoStamp;
         mRenderThread = new HandlerThread("EGLRenderThread");
         mRenderThread.start();
@@ -139,11 +144,11 @@ public class EGLRenderer implements OnFrameAvailableListener {
             }
 
             mInputSurface = new SurfaceTexture(mTextureController.getTexture());
-            mInputSurface.setDefaultBufferSize(1920, 1080);
+            mInputSurface.setDefaultBufferSize(mWidth, mHeight);
             mInputSurface.setOnFrameAvailableListener(EGLRenderer.this);
 
             if (mSurfaceTextureListener != null) {
-                mSurfaceTextureListener.onSurfaceTextureAvailable(mInputSurface, 1920, 1080);
+                mSurfaceTextureListener.onSurfaceTextureAvailable(mInputSurface, mWidth, mHeight);
             }
         }
 
@@ -248,7 +253,7 @@ public class EGLRenderer implements OnFrameAvailableListener {
             synchronized (mEncSync) {
                 if (mEncoderSurface != null) {
                     mEncoderSurface.makeCurrent();
-                    GLES20.glViewport(0, 0, 1920, 1080);
+                    GLES20.glViewport(0, 0, mWidth, mHeight);
                     mTextureController.draw();
                     mEncoderSurface.setPresentationTime(mInputSurface.getTimestamp());
                     if (mGroupOsd != null) {

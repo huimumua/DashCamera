@@ -172,6 +172,8 @@ public class DashCam implements DashCamControl {
 
         NmeaRecorder.init(mContext);
         mRenderer = new EGLRenderer(mContext,
+                mConfig.videoWidth(),
+                mConfig.videoHeight(),
                 mConfig.videoStampEnable(),
                 new EGLRenderer.OnSurfaceTextureListener() {
                     @Override

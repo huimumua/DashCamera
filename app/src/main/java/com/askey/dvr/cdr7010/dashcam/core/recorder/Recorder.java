@@ -61,7 +61,9 @@ public class Recorder implements IFrameListener {
         mVideoEncoder = new MediaVideoEncoder(mMuxer,
                 mMediaEncoderListener,
                 mConfig.videoWidth(),
-                mConfig.videoHeight());
+                mConfig.videoHeight(),
+                mConfig.videoFPS(),
+                mConfig.videoBitRate());
         mAudioEncoder = new MediaAudioEncoder(mMuxer, mMediaEncoderListener);
 
         try {

@@ -425,6 +425,8 @@ public class CameraRecordFragment extends Fragment {
                 .cameraId(0)
                 .videoWidth(1920)
                 .videoHeight(1080)
+                .videoFPS(27)
+                .videoBitRate((int)(9.6 * 1024 * 1024)) // 10Mbps
                 .videoStampEnable(stamp)
                 .audioRecordEnable(audio)
                 .build();

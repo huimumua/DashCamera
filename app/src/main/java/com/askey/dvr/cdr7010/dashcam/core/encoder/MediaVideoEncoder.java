@@ -13,18 +13,22 @@ import java.io.IOException;
 public class MediaVideoEncoder extends MediaEncoder {
     private static final String LOG_TAG = "MediaVideoEncoder";
     private static final String MIME_TYPE = "video/avc";
-    // parameters for recording
-    private static final int FRAME_RATE = 27;
-    private static final float BPP = 0.25f;
     private final int mWidth;
     private final int mHeight;
+    private final int mFPS;
+    private final int mBitRate;
     private Surface mSurface;
 
-    public MediaVideoEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener, final int width, final int height) {
+    public MediaVideoEncoder(final MediaMuxerWrapper muxer,
+                             final MediaEncoderListener listener,
+                             final int width, final int height,
+                             int fps, int bitRate) {
         super(muxer, listener);
          Logg.i(LOG_TAG, "MediaVideoEncoder: width="+width + ", height="+height);
         mWidth = width;
         mHeight = height;
+        mFPS = fps;
+        mBitRate = bitRate;
     }
 
     @Override
@@ -40,9 +44,9 @@ public class MediaVideoEncoder extends MediaEncoder {
 
         final MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);  // API >= 18
-        format.setInteger(MediaFormat.KEY_BIT_RATE, calcBitRate());
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, mFPS);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 0);
         Logg.i(LOG_TAG, "format: " + format);
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
@@ -73,12 +77,6 @@ public class MediaVideoEncoder extends MediaEncoder {
             mSurface = null;
         }
         super.release();
-    }
-
-    private int calcBitRate() {
-        final int bitrate = (int)(BPP * FRAME_RATE * mWidth * mHeight);
-        Logg.i(LOG_TAG, String.format("bitrate=%5.2f[Mbps]", bitrate / 1024f / 1024f));
-        return bitrate;
     }
 
     /**
