@@ -271,19 +271,13 @@ public class MainApp {
         }
     }
 
-    /**
-     * @param cancel
-     *      0:中断
-     *      1:再開
-     *      2:キャンセル
-     */
-    public void manualUploadCancel(int cancel){
-        Logg.d(LOG_TAG, "manualUploadCancel: cancel=" + cancel);
+    public void manualUploadCancel(){
+        Logg.d(LOG_TAG, "manualUploadCancel: ");
         if(!checkConnection())
             return;
 
         try {
-            mMainAppInterface.manualUploadCancel(cancel);
+            mMainAppInterface.manualUploadCancel();
         } catch (RemoteException e) {
             e.printStackTrace();
         }

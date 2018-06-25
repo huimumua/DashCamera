@@ -8,7 +8,7 @@ import com.jvckenwood.communication.IMainAppCallback;
  * MainAPP からの通知を受けるIF
  * </p>
  *
- * @author FSI
+ * @author JVCKENWOOD
  * @version 0.1 WIP
  */
 interface IMainApp {
@@ -40,12 +40,11 @@ interface IMainApp {
     /**
      * 手動アップロードキャンセル
      * <p>
-     * 手動アップロードのキャンセル操作を通知する
+     * 手動アップロードのキャンセルを通知する
      * </p>
-     * @param cancel 0:中断 1:再開 2:キャンセル
      * @since 0.1 WIP
      */
-    void manualUploadCancel(int cancel);
+    void manualUploadCancel();
 
 
     /**

@@ -33,8 +33,8 @@ public class ManualUploadService extends Service {
         }
 
         @Override
-        public void manualUploadCancel(int cancel) throws RemoteException {
-            MainApp.getInstance().manualUploadCancel(cancel);
+        public void manualUploadCancel() throws RemoteException {
+            MainApp.getInstance().manualUploadCancel();
         }
 
         @Override

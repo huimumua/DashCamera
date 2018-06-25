@@ -7,7 +7,7 @@ package com.jvckenwood.communication;
  * MainAppへのコールバックIF
  * </p>
  *
- * @author FSI
+ * @author JVCKENWOOD
  * @version 0.1 WIP
  */
 interface IMainAppCallback {

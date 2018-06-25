@@ -7,6 +7,7 @@ import android.content.Intent;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallService;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -32,12 +33,7 @@ public class CommunicationReceiver extends BroadcastReceiver{
              * 2:VoIP指示
              */
             int order = intent.getIntExtra("order", -1);
-
-//            int xxx_userID = 1000;
-//            MainApp.getInstance().voipInfomationRequest(xxx_userID, 2);
-
-
-
+            EcallUtils.startVoipActivity(order);
         } else if (action.equals(ACTION_VOIP_INFORMATION_RESULT)) {
             int requestID = intent.getIntExtra("requestID", -1);
             int status = intent.getIntExtra("status", -1);
