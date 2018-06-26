@@ -217,11 +217,11 @@ public class GPSStatusManager {
             switch (event) {
                 // 第一次定位
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
-                    Logg.i(TAG, " gpsStatusListener GPS_EVENT_FIRST_FIX.");
+                   //Logg.i(TAG, " gpsStatusListener GPS_EVENT_FIRST_FIX.");
                     break;
                 // 卫星状态改变
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                    Logg.i(TAG, " gpsStatusListener GPS_EVENT_SATELLITE_STATUS.");
+                    //Logg.i(TAG, " gpsStatusListener GPS_EVENT_SATELLITE_STATUS.");
                     if (ActivityCompat.checkSelfPermission(DashCamApplication.getAppContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
                         //    ActivityCompat#requestPermissions
@@ -258,18 +258,18 @@ public class GPSStatusManager {
                             gpsStatusList.add(gpsSvInfo);
                         }
                     }
-                    Logg.d(TAG, "GpsStatus: onGpsStatusChanged: gpsCount=" + gpsCount);
+                    //Logg.d(TAG, "GpsStatus: onGpsStatusChanged: gpsCount=" + gpsCount);
                     mLocationListeners[0].setHaveSatelUsedInFix(gpsCount > 3);
                     mGpsUsedInFix = gpsCount;
                     setGpsStatusList(gpsStatusList);
                     break;
                 // 定位启动
                 case GpsStatus.GPS_EVENT_STARTED:
-                    Logg.i(TAG, " gpsStatusListener GPS_EVENT_STARTED.");
+                   // Logg.i(TAG, " gpsStatusListener GPS_EVENT_STARTED.");
                     break;
                 // 定位结束
                 case GpsStatus.GPS_EVENT_STOPPED:
-                    Logg.i(TAG, " gpsStatusListener GPS_EVENT_STOPPED.");
+                    //Logg.i(TAG, " gpsStatusListener GPS_EVENT_STOPPED.");
                     break;
             }
         }
@@ -329,7 +329,7 @@ public class GPSStatusManager {
         @Override
         public void onStatusChanged(
                 String provider, int status, Bundle extras) {
-            Logg.d(TAG, "LocationListener: onStatusChanged: provider=" + mProvider + ", " + provider + ", status=" + status);
+            //Logg.d(TAG, "LocationListener: onStatusChanged: provider=" + mProvider + ", " + provider + ", status=" + status);
             switch(status) {
                 case LocationProvider.OUT_OF_SERVICE:
                 case LocationProvider.TEMPORARILY_UNAVAILABLE: {

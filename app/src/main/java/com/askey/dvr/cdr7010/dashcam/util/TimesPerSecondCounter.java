@@ -44,7 +44,7 @@ public class TimesPerSecondCounter {
         }
     }
     public void show(long period) {
-        Log.v(mTag, String.format("%d/%d, %.2f per second", mCount, period, (float) mCount * 1000 / period));
+        //Log.v(mTag, String.format("%d/%d, %.2f per second", mCount, period, (float) mCount * 1000 / period));
     }
 
     public void setListener(TpscListener listener) {
