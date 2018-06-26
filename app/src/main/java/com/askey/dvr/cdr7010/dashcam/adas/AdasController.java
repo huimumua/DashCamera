@@ -1,21 +1,23 @@
 package com.askey.dvr.cdr7010.dashcam.adas;
 
 import android.content.Context;
-import android.location.LocationManager;
 import android.media.Image;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.util.TimesPerSecondCounter;
 import com.askey.platform.AskeySettings;
+import com.jvckenwood.adas.detection.Detection;
 import com.jvckenwood.adas.detection.FC_INPUT;
 import com.jvckenwood.adas.util.Constant;
 import com.jvckenwood.adas.util.FC_PARAMETER;
 import com.jvckenwood.adas.util.Util;
-import com.jvckenwood.adas.detection.Detection;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
 public class AdasController implements Util.AdasCallback {
     private static final String TAG = AdasController.class.getSimpleName();
@@ -24,16 +26,24 @@ public class AdasController implements Util.AdasCallback {
     private static final int[] VEHICLE_WIDTHS = new int[] {148, 148, 170, 170, 180, 190, 200};
     private static final int[] VEHICLE_POINT_DISTANCES = new int[] {130, 90, 180, 190, 180, 190, 50};
     private static final boolean DEBUG = false;
+    private boolean DEBUG_FPS = false;
+    private boolean ADAS_DISABLED = false;
+    /* Handler Messages */
+    private static final int MSG_PROCESS = 0;
+    private static final int MSG_DID_ADAS_DETECT = 1;
+    private static final String PROP_DEBUG_FPS = "persist.dvr.adas.debug_fps";
+    private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
 
     private static AdasController sInstance;
+
     private Util mAdasImpl;
     private GlobalLogic mGlobalSetting;
-    private LocationManager mLocationManager;
-    private TimesPerSecondCounter mTpsc;
-    private int yscale;
+    private final TimesPerSecondCounter mTpsc;
+    private final TimesPerSecondCounter mTpscDidAdas;
+    private final TimesPerSecondCounter mTpscFrameDrop;
     private FC_INPUT mFcInput;
-    private Map<Long, Image> mProcessingImages;
-
+    private Image mProcessingImage;
+    private Handler mHandler;
     private AdasController() {
         if (sInstance != null) {
             throw new RuntimeException("Singleton instance is already created!");
@@ -41,8 +51,17 @@ public class AdasController implements Util.AdasCallback {
         mAdasImpl = Util.getInstance();
         mGlobalSetting = GlobalLogic.getInstance();
         mTpsc = new TimesPerSecondCounter(TAG);
+        mTpscDidAdas = new TimesPerSecondCounter(TAG + "_didAdas");
+        mTpscFrameDrop = new TimesPerSecondCounter(TAG + "_frameDrop");
         mFcInput = new FC_INPUT();
-        mProcessingImages = new HashMap<>();
+        mProcessingImage = null;
+        HandlerThread handlerThread = new HandlerThread(TAG);
+        handlerThread.start();
+        mHandler = new AdasHandler(handlerThread.getLooper());
+        ADAS_DISABLED = SystemPropertiesProxy.getBoolean(PROP_ADAS_DISABLED, true);
+        Log.v(TAG, "AdasController: ADAS_DISABLED = " + ADAS_DISABLED);
+        DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, false);
+        Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
     }
 
     public static AdasController getsInstance() {
@@ -57,7 +76,9 @@ public class AdasController implements Util.AdasCallback {
     }
 
     public void start(Context context) {
-
+        if (ADAS_DISABLED) {
+            return;
+        }
         if (INSTALLATION_HEIGHTS.length != CAR_TYPE_NUM) {
             throw new RuntimeException("INSTALLATION_HEIGHTS not defined well");
         }
@@ -131,28 +152,50 @@ public class AdasController implements Util.AdasCallback {
     }
 
     public void process(Image image) {
-        if (DEBUG)
+        if (ADAS_DISABLED) {
+            image.close();
+            return;
+        }
+
+        Message msg = mHandler.obtainMessage(MSG_PROCESS, 0, 0, image);
+        msg.sendToTarget();
+    }
+
+    private void process_internal(Image image) {
+        if (DEBUG) {
             Log.v(TAG, "process: image = " + image);
-        mTpsc.update();
+        }
+        if (DEBUG_FPS) mTpsc.update();
+
+        if (mProcessingImage != null) {
+            if (DEBUG_FPS) mTpscFrameDrop.update();
+            image.close();
+            return;
+        }
+
         mFcInput.VehicleSpeed = 70; // TODO: get real value
         mFcInput.CaptureMilliSec = System.currentTimeMillis(); // TODO: confirm the parameter
         mFcInput.CaptureTime = System.currentTimeMillis(); // TODO: confirm the parameter
-        if (mProcessingImages.containsKey(mFcInput.CaptureTime)) {
-            image.close();
-            throw new RuntimeException("same capture time");
-        }
-        mProcessingImages.put(mFcInput.CaptureTime, image);
 
-        int result = Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
-        // result = Detection.adasDetect(image.getPlanes()[0].getBuffer(), mFcInput); // FIXME
+        ByteBuffer y = image.getPlanes()[0].getBuffer();
+        ByteBuffer u = image.getPlanes()[1].getBuffer();
+        ByteBuffer v = image.getPlanes()[2].getBuffer();
+        int result = Detection.adasDetect(y, u, v, mFcInput);
+
         if (result == Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
             image.close();
         } else if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "process: adasDetect() failed with return value = " + result);
             image.close();
+        } else {
+            assert result == Constant.ADAS_SUCCESS;
+            mProcessingImage = image;
         }
     }
     public void stop() {
+        if (ADAS_DISABLED) {
+            return;
+        }
         int result = mAdasImpl.finishAdas();
         if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "start: finishAdas() failed with return value = " + result);
@@ -166,13 +209,21 @@ public class AdasController implements Util.AdasCallback {
 
     @Override
     public void didAdasDetect(long captureTime) {
-        Log.v(TAG, "didAdasDetect: captureTime" + captureTime);
-        if (!mProcessingImages.containsKey(captureTime)) {
-            Log.e(TAG, "didAdasDetect: captureTime" + captureTime);
-            throw new RuntimeException("captureTime: " + captureTime + " is not in the mProcessingImages");
+        if (DEBUG_FPS) mTpscDidAdas.update();
+        Message msg = mHandler.obtainMessage(MSG_DID_ADAS_DETECT, 0, 0, captureTime);
+        msg.sendToTarget();
+    }
+    
+    private void didAdasDetect_internal(long captureTime) {
+        if (DEBUG) {
+            Log.v(TAG, "didAdasDetect: captureTime = " + captureTime);
         }
-        Image image = mProcessingImages.remove(captureTime);
-        image.close();
+        assert mProcessingImage != null;
+        if (DEBUG) {
+            Log.v(TAG, "didAdasDetect: close image = " + mProcessingImage);
+        }
+        mProcessingImage.close();
+        mProcessingImage = null;
     }
 
     public float getXscale() {
@@ -181,5 +232,26 @@ public class AdasController implements Util.AdasCallback {
 
     public float getYscale() {
         return 4.5f; // TODO: calculate the scale according to the ADAS image size & LCD resolution
+    }
+
+    private class AdasHandler extends Handler {
+        public AdasHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case MSG_PROCESS:
+                    Image image = (Image) msg.obj;
+                    process_internal(image);
+                    break;
+                case MSG_DID_ADAS_DETECT:
+                    long captureTime = (long) msg.obj;
+                    didAdasDetect_internal(captureTime);
+                    break;
+            }
+        }
     }
 }

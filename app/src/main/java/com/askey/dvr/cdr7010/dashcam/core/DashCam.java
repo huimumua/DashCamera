@@ -137,7 +137,6 @@ public class DashCam implements DashCamControl {
                 Image image = reader.acquireLatestImage();
                 if (image != null) {
                     mAdasController.process(image);
-                    image.close();
                 }
             }
         }, null);
