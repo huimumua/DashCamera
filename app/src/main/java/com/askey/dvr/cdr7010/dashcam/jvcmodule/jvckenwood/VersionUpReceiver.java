@@ -58,11 +58,11 @@ public class VersionUpReceiver extends BroadcastReceiver{
             UpdateCompleteInfo updateCompleteInfo = new UpdateCompleteInfo(type,result);
             EventUtil.sendEvent(updateCompleteInfo);
         }else if(action.equals(ACTION_EVENT_STARTUP)){
-            Logg.i(LOG_TAG,"==ACTION_EVENT_STARTUP==");
             int bootinfo = intent.getIntExtra("bootinfo", -1);
             int updateInfo = intent.getIntExtra("updateInfo", -10);
             String farmver = intent.getStringExtra("farmver");
             String soundver = intent.getStringExtra("soundver");
+            Logg.i(LOG_TAG,"==ACTION_EVENT_STARTUP=bootinfo=" + bootinfo + "=updateInfo=" + updateInfo);
             if(updateInfo == 0) {//None
                 StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
                 EventUtil.sendEvent(startUpInfo);

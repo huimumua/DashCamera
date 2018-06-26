@@ -27,6 +27,7 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
 
     public interface NoticeListener {
         void noticeJump();
+        void noticeTimerFinish();
     }
 
     public static NoticeFragment newInstance(String param) {
@@ -109,11 +110,14 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
 
         @Override
         public void onTick(long millisUntilFinished) {
+
         }
 
         @Override
         public void onFinish() {
+            Logg.i("NoticeFragment","=onFinish==");
             noticeListener.noticeJump();
+            noticeListener.noticeTimerFinish();
         }
     };
 
