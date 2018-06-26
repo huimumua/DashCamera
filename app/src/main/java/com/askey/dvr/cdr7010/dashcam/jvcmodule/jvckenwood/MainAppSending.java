@@ -21,9 +21,11 @@ public class MainAppSending {
 
     private static final String LOG_TAG = "MainAppSending";
 
-    public static void startupNotify(){
-        Logg.d(LOG_TAG, "startupNotify: ");
+    public static void startupNotify(int startUp, int rtcInfo){
+        Logg.d(LOG_TAG, "startupNotify: startUp=" + startUp + ", rtcInfo=" + rtcInfo);
         Intent intent = new Intent(ACTION_STARTUP_NOTIFY);
+        intent.putExtra("startUp", startUp);
+        intent.putExtra("rtcInfo", rtcInfo);
         sendOutBroadcast(intent);
     }
 
