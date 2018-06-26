@@ -12,6 +12,8 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.SystemSettingManager;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.UserSettingManager;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.jvckenwood.communication.IMainApp;
@@ -81,27 +83,40 @@ public class MainApp {
         public void reportUserList(int oos, int defaultUser, int selectUser, int userList, String response) {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
 
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            UserSettingManager.getUserList(enumMap);
         }
 
         @Override
         public void reportSystemSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportSystemSettings: oos=" + oos + ", response=" + response);
 
-
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            SystemSettingManager.systemSetting(enumMap);
         }
 
         @Override
         public void reportUserSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
 
-
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            UserSettingManager.userSettings(enumMap);
         }
 
         @Override
         public void reportSettingsUpdate(int oos, String response) {
             Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
 
-
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            SystemSettingManager.settingsUpdate(enumMap);
         }
 
         @Override
