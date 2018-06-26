@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.EnumMap;
+import java.util.List;
 
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
@@ -196,11 +197,11 @@ public class MainApp {
         }
 
         @Override
-        public void reportTxEventProgress(int eventNo, int mainPicture, int mainMovie, int secondPicture, int secondMovie) {
+        public void reportTxEventProgress(List<String> path, int result) {
             /**
              * MainApp无需应对
              */
-            Logg.d(LOG_TAG, "reportTxEventProgress: eventNo=" + eventNo);
+            Logg.d(LOG_TAG, "reportTxEventProgress: ");
         }
 
         @Override

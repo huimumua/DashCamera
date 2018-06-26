@@ -135,7 +135,7 @@ interface IMainAppCallback {
     /**
      * イベントデータ登録のアップロード進捗報告
      * <p>
-     * WaaSサーバーへのイベントデータアップロードの進捗を各ファイルの送信完了ごとにMainAPPに通知する。<br>
+     * WaaSサーバーへのイベントデータアップロードの進捗を各zipファイルの送信完了ごとにMainAPPに通知する。<br>
      * サーバーからのレスポンスは下記の値になる<br>
      * 0:正常 -1:想定外の例外 -100:トリップIDが未入力、シーケンス番号が未入力<br>
      * -300:デコード失敗<br>
@@ -143,14 +143,11 @@ interface IMainAppCallback {
      *      デコード用ディレクトリ作成失敗、入出力エラー、ファイルが見つからない<br>
      * -700:ユーザ情報が未登録<br>
      * </p>
-     * @param eventNo イベント番号
-     * @param mainPicture メインカメラ静止画送信状態 2:未送信 1:圏外 他:サーバーからのレスポンス
-     * @param mainMovie   メインカメラ動画送信状態 2:未送信 1:圏外 他:サーバーからのレスポンス
-     * @param 2ndPicture  2ndカメラ静止画送信状態 2:未送信 1:圏外 他:サーバーからのレスポンス
-     * @param 2ndMovie    2ndカメラ動画送信状態 2:未送信 1:圏外 他:サーバーからのレスポンス
+     * @param path イベントデータ登録を行ったファイルのパス(動画1ファイル、静止画最大3ファイル))
+     * @param result 送信結果
      * @since 0.1 WIP
      */
-    void reportTxEventProgress(int eventNo, int mainPicture, int mainMovie, int secondPicture, int secondMovie);
+    void reportTxEventProgress(inout List<String> path, int result);
 
 
     /**
