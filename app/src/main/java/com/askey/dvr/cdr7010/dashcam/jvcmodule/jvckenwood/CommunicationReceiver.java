@@ -11,11 +11,12 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.NetUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class CommunicationReceiver extends BroadcastReceiver{
+public class CommunicationReceiver extends BroadcastReceiver {
     private static final String LOG_TAG = "CommunicationReceiver";
     private static final String ACTION_VOIP_CALL = "com.jvckenwood.communication.VOIP_CALL";
     private static final String ACTION_VOIP_INFORMATION_RESULT = "com.jvckenwood.communication.VOIP_INFORMATION_RESULT";
@@ -28,12 +29,14 @@ public class CommunicationReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_VOIP_CALL)) {
-            /**
+            /*
              * 1:事故発生画面表示指示
              * 2:VoIP指示
              */
             int order = intent.getIntExtra("order", -1);
-            EcallUtils.startVoipActivity(order);
+            if (NetUtil.isNetworkAvailable()) {
+                EcallUtils.startVoipActivity(order);
+            }
         } else if (action.equals(ACTION_VOIP_INFORMATION_RESULT)) {
             int requestID = intent.getIntExtra("requestID", -1);
             int status = intent.getIntExtra("status", -1);
@@ -64,33 +67,32 @@ public class CommunicationReceiver extends BroadcastReceiver{
             int logupload = intent.getIntExtra("logupload", -1);
 
 
-
         }
 
     }
 
-    private boolean checkEventInfo(EventInfo eventInfo, int eventType){
-        if(eventInfo == null){
+    private boolean checkEventInfo(EventInfo eventInfo, int eventType) {
+        if (eventInfo == null) {
             Logg.e(LOG_TAG, "checkEventInfo: can't find EventInfo, eventType=" + eventType);
             return false;
         }
         return true;
     }
 
-    private void speakWeather(String response){
+    private void speakWeather(String response) {
         try {
             Logg.d(LOG_TAG, "speakWeather: response=" + response);
             JSONObject jsonObject = new JSONObject(response);
             int status = jsonObject.getInt("status");
-            if(status == 0){
+            if (status == 0) {
                 String code = jsonObject.getString("code");
-                if(code != null && !code.equals("00")){
-                    int codeInteger = Integer.parseInt(code,16);
+                if (code != null && !code.equals("00")) {
+                    int codeInteger = Integer.parseInt(code, 16);
                     Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
-                    if(Event.contains(Event.weatherWarning,codeInteger)){
+                    if (Event.contains(Event.weatherWarning, codeInteger)) {
                         EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(code);
                         EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT);
-                    }else if(Event.contains(Event.specialWeatherWarning,codeInteger)){
+                    } else if (Event.contains(Event.specialWeatherWarning, codeInteger)) {
                         EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT_SPECIAL).setVoiceGuidence(code);
                         EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT_SPECIAL);
                     }

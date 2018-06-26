@@ -3,6 +3,7 @@
     package="com.askey.dvr.cdr7010.dashcam"
     android:sharedUserId="android.uid.system">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
@@ -19,7 +20,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
-    <uses-permission android:name="android.permission.SHUTDOWN"/>
+    <uses-permission android:name="android.permission.SHUTDOWN" />
 
     <uses-feature android:name="android.hardware.camera2" android:required="true"/>
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
@@ -53,49 +54,51 @@
                 <action android:name="service.TTSSevice" />
             </intent-filter>
         </service>
+
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
-            <intent-filter android:priority="1000" >
-                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
                 <action android:name="android.intent.action.MEDIA_EJECT" />
-                <data android:scheme="file"/>
+
+                <data android:scheme="file" />
             </intent-filter>
-            <intent-filter android:priority="1000" >
-                <action android:name="com.askey.dvr.cdr7010.dashcam.limit"/>
-                <action android:name="action_sdcard_status"/>
+            <intent-filter android:priority="1000">
+                <action android:name="com.askey.dvr.cdr7010.dashcam.limit" />
+                <action android:name="action_sdcard_status" />
             </intent-filter>
         </receiver>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.GPSReceiver">
             <intent-filter>
-                <action android:name="android.location.GPS_FIX_CHANGE"/>
-                <action android:name="android.location.GPS_ENABLED_CHANGE"/>
+                <action android:name="android.location.GPS_FIX_CHANGE" />
+                <action android:name="android.location.GPS_ENABLED_CHANGE" />
             </intent-filter>
         </receiver>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.FOTAReceiver">
             <intent-filter>
-                <action android:name="action_fota_status"/>
+                <action android:name="action_fota_status" />
             </intent-filter>
         </receiver>
         <receiver android:name=".jvcmodule.jvckenwood.JvcEventReceiver">
             <intent-filter>
-                <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT"/>
-                <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST"/>
+                <action android:name="com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT" />
+                <action android:name="com.jvckenwood.eventsending.EVENT_RECORD_REQUEST" />
             </intent-filter>
         </receiver>
         <receiver android:name=".jvcmodule.jvckenwood.VersionUpReceiver">
             <intent-filter>
-                <action android:name="com.jvckenwood.versionup.DOWNLOAD_RESULT"/>
-                <action android:name="com.jvckenwood.versionup.UPDATE_READY"/>
-                <action android:name="com.jvckenwood.versionup.UPDATE_COMPLETED"/>
-                <action android:name="com.jvckenwood.versionup.STARTUP"/>
+                <action android:name="com.jvckenwood.versionup.DOWNLOAD_RESULT" />
+                <action android:name="com.jvckenwood.versionup.UPDATE_READY" />
+                <action android:name="com.jvckenwood.versionup.UPDATE_COMPLETED" />
+                <action android:name="com.jvckenwood.versionup.STARTUP" />
             </intent-filter>
         </receiver>
         <receiver android:name=".jvcmodule.jvckenwood.CommunicationReceiver">
             <intent-filter>
-                <action android:name="com.jvckenwood.communication.VOIP_CALL"/>
-                <action android:name="com.jvckenwood.communication.VOIP_INFORMATION_RESULT"/>
-                <action android:name="com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE"/>
-                <action android:name="com.jvckenwood.communication.WEATHER_ALERT_RESPONSE"/>
-                <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE"/>
+                <action android:name="com.jvckenwood.communication.VOIP_CALL" />
+                <action android:name="com.jvckenwood.communication.VOIP_INFORMATION_RESULT" />
+                <action android:name="com.jvckenwood.communication.MANUAL_UPLOAD_COMPLETE" />
+                <action android:name="com.jvckenwood.communication.WEATHER_ALERT_RESPONSE" />
+                <action android:name="com.jvckenwood.communication.TRIPID_LOG_UPLOAD_RESPONSE" />
             </intent-filter>
         </receiver>
         <receiver
@@ -103,9 +106,10 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.LOCALE_CHANGED"/>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".jvcmodule.local.ManualUploadService"
             android:exported="true">
@@ -114,15 +118,17 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".jvcmodule.local.EcallButtonReceiver">
+        <receiver
+            android:name=".jvcmodule.local.EcallButtonReceiver"
+            android:exported="true">
             <intent-filter>
-                <action android:name="action_ecall_button"/>
+                <action android:name="android.intent.action.ECALL_PRESS" />
             </intent-filter>
         </receiver>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.TTSReceiver">
             <intent-filter>
-                <action android:name="com.jvckenwood.tts.VOICE_CANCEL_RESPONSE"/>
-                <action android:name="com.jvckenwood.tts.VOICE_END_RESPONSE"/>
+                <action android:name="com.jvckenwood.tts.VOICE_CANCEL_RESPONSE" />
+                <action android:name="com.jvckenwood.tts.VOICE_END_RESPONSE" />
             </intent-filter>
         </receiver>
 
