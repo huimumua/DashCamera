@@ -1,7 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -15,6 +14,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainAppSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -66,7 +66,7 @@ public class MainActivity extends DialogActivity {
     protected void onResume() {
         super.onResume();
         if(isFromOtherApp) {
-            menuTransition(TO_MAINAPP);
+            MainAppSending.menuTransition(TO_MAINAPP);
             isFromOtherApp =false;
         }
     }
@@ -244,7 +244,7 @@ public class MainActivity extends DialogActivity {
                 break;
             case KeyAdapter.KEY_MENU:
                 isFromOtherApp = true;
-                menuTransition(FROM_MAINAPP);
+                MainAppSending.menuTransition(FROM_MAINAPP);
                 ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
         }
     }
@@ -267,13 +267,5 @@ public class MainActivity extends DialogActivity {
                 break;
         }
     }
-    public void menuTransition(int status){
-        try {
-            Intent intent = new Intent("android.intent.action.MENU_TRANSITION");
-            intent.putExtra("status", status);
-            this.sendBroadcast(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 }
