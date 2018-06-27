@@ -103,10 +103,11 @@ public class EventMuxer implements Runnable{
                             mMuxer = createMuxer(path, eventId, eventTime);
                             isNewFile = true;
                             String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("EVENT", "SYSTEM/NMEA/EVENT");
-//                            Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
+                           // Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
                             nmeaRecorder = NmeaRecorder.create(nmeaPath);
-                            nmeaRecorder.eventStart(eventTime);
-
+                            if (nmeaRecorder != null) {
+                                nmeaRecorder.eventStart(eventTime);
+                            }
                         } catch (RemoteException e) {
                             Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
                                     + e.getMessage());
@@ -187,7 +188,7 @@ public class EventMuxer implements Runnable{
                 nmeaRecorder.stop();
             }
             nmeaRecorder = null;
-//            Logg.i(LOG_TAG,"terminate: nmeaRecorder stop");
+           // Logg.i(LOG_TAG,"terminate: nmeaRecorder stop");
         }
     }
 

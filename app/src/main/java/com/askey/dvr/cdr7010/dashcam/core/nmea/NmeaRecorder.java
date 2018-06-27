@@ -85,13 +85,13 @@ public class NmeaRecorder {
         try {
             acquire.mOutputStream = new FileOutputStream(file);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            return null;
         }
         Logg.i(LOG_TAG, "Create file done");
         return acquire;
     }
 
-    public void eventStart(final long startTimeStamp) {
+    public boolean eventStart(final long startTimeStamp) {
         if (mState != RecorderState.CREATED)
             throw new RuntimeException("The NmeaRecorder state is not CREATED.");
         Log.i(LOG_TAG, "Event NMEARecord start");
@@ -111,8 +111,10 @@ public class NmeaRecorder {
             }
             nmeaRecorderListener.add(this);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
+            return false;
         }
+        return true;
     }
 
 
@@ -130,7 +132,8 @@ public class NmeaRecorder {
             mOutputStream.write(newLineSymbol.getBytes());
             nmeaRecorderListener.add(this);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
+            return false;
         }
         return true;
     }
@@ -148,7 +151,8 @@ public class NmeaRecorder {
             removeNmeaRecorders.add(this);
             nmeaRecorderPool.release(this);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
+            return false;
         }
         return true;
     }
@@ -178,7 +182,7 @@ public class NmeaRecorder {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
         }
     }
 
@@ -251,7 +255,7 @@ public class NmeaRecorder {
         if (location != null) {
             mLatitude = location.getLatitude();
             mLongitude = location.getLongitude();
-//            Log.i(LOG_TAG, "init: Latitude = " + mLatitude + ", Longitude = " + mLongitude);
+            // Log.i(LOG_TAG, "init: Latitude = " + mLatitude + ", Longitude = " + mLongitude);
         }
 
         locationManager.requestLocationUpdates(locationProvider, 500, 0, locationListener);
@@ -262,16 +266,16 @@ public class NmeaRecorder {
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle arg2) {
-//            Log.d("GPS-NMEA", provider + "");
+            // Log.d("GPS-NMEA", provider + "");
             switch (status) {
                 case LocationProvider.OUT_OF_SERVICE:
-//                    Log.d("GPS-NMEA", "OUT_OF_SERVICE");
+                    // Log.d("GPS-NMEA", "OUT_OF_SERVICE");
                     break;
                 case LocationProvider.TEMPORARILY_UNAVAILABLE:
-//                    Log.d("GPS-NMEA", " TEMPORARILY_UNAVAILABLE");
+                    // Log.d("GPS-NMEA", " TEMPORARILY_UNAVAILABLE");
                     break;
                 case LocationProvider.AVAILABLE:
-//                    Log.d("GPS-NMEA", "" + provider + "");
+                    // Log.d("GPS-NMEA", "" + provider + "");
                     break;
             }
         }
@@ -493,20 +497,20 @@ public class NmeaRecorder {
             Log.i(LOG_TAG, "mkdir = " + dir.getPath());
         }
 
-        dir = new File(path + "/SYSTEM/NMEA/PARKING");
-        if (!dir.exists()) {
-            Log.d(LOG_TAG, "mkdir = " + dir.getPath());
-            dir.mkdir();
-        } else {
-            Log.i(LOG_TAG, "mkdir = " + dir.getPath());
-        }
-
-        dir = new File(path + "/SYSTEM/NMEA/MANUAL");
-        if (!dir.exists()) {
-            Log.d(LOG_TAG, "mkdir = " + dir.getPath());
-            dir.mkdir();
-        } else {
-            Log.i(LOG_TAG, "mkdir = " + dir.getPath());
-        }
+        // dir = new File(path + "/SYSTEM/NMEA/PARKING");
+        // if (!dir.exists()) {
+        //     Log.d(LOG_TAG, "mkdir = " + dir.getPath());
+        //     dir.mkdir();
+        // } else {
+        //     Log.i(LOG_TAG, "mkdir = " + dir.getPath());
+        // }
+        //
+        // dir = new File(path + "/SYSTEM/NMEA/MANUAL");
+        // if (!dir.exists()) {
+        //     Log.d(LOG_TAG, "mkdir = " + dir.getPath());
+        //     dir.mkdir();
+        // } else {
+        //     Log.i(LOG_TAG, "mkdir = " + dir.getPath());
+        // }
     }
 }
