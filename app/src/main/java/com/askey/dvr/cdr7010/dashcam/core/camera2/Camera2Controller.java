@@ -218,5 +218,6 @@ public class Camera2Controller {
             builder.addTarget(mImageReader.getSurface());
         }
         builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        builder.set(CaptureRequest.CONTROL_SCENE_MODE, CameraMetadata.CONTROL_SCENE_MODE_DISABLED);
     }
 }
