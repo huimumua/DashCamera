@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.content.Context;
+import android.location.Location;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -20,6 +21,7 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
@@ -243,9 +245,15 @@ public class MainActivity extends DialogActivity {
                 EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
                 break;
             case KeyAdapter.KEY_MENU:
-                isFromOtherApp = true;
-                MainAppSending.menuTransition(FROM_MAINAPP);
-                ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
+                Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+                if(currentLocation != null && currentLocation.hasSpeed()){ //有GPS信号，且速度大于0
+                    //
+                }else {
+                    isFromOtherApp = true;
+                    MainAppSending.menuTransition(FROM_MAINAPP);
+                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
+                }
+
         }
     }
     @Override
