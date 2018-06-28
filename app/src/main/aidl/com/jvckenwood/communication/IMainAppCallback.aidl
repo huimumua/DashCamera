@@ -38,7 +38,7 @@ interface IMainAppCallback {
      * @param response サーバーからのレスポンスのJSON
      * @since 0.1 WIP
      */
-    void reportUserList(int oos, int defaultUser, int selectUser, int userList, String response);
+    void reportUserList(int oos, String response);
 
 
     /**

@@ -80,7 +80,7 @@ public class MainApp {
         }
 
         @Override
-        public void reportUserList(int oos, int defaultUser, int selectUser, int userList, String response) {
+        public void reportUserList(int oos, String response) {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
 
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
