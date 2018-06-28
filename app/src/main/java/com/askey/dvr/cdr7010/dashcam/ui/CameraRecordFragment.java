@@ -343,10 +343,11 @@ public class CameraRecordFragment extends Fragment {
 
         @Override
         public void onEventStateChanged(final boolean on) {
+            // 注意：禁止在这里进行耗时操作
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT : RECORDING_CONTINUOUS));
-            isEventRecording = on;
+            final boolean event = isEventRecording;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -354,11 +355,14 @@ public class CameraRecordFragment extends Fragment {
                         EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
                         EventManager.getInstance().handOutEventInfo(123); // Event Recording start
                     } else { // Continuous recording
-                        EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+                        if (event) {
+                            EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+                        }
                         EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
                     }
                 }
             });
+            isEventRecording = on;
         }
 
         @Override

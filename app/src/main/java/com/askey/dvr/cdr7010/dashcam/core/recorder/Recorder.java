@@ -129,15 +129,15 @@ public class Recorder implements IFrameListener {
         public boolean segmentStartPrepareSync(int event, String path) {
             Logg.v(TAG, "segmentStartPrepareSync: event=" + event + " " + path);
             // 注意：禁止在这里进行耗时操作
+            if (mStateCallback != null) {
+                mStateCallback.onEventStateChanged(event != 0);
+            }
             return true;
         }
 
         @Override
         public void segmentStartAsync(int event, long startTimeMs) {
             Logg.v(TAG, "segmentStartAsync: startTimeMs=" + startTimeMs + ",event=" + event);
-            if (mStateCallback != null) {
-                mStateCallback.onEventStateChanged(event != 0);
-            }
         }
 
         @Override
