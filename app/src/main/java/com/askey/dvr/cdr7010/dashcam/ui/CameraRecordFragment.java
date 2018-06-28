@@ -725,6 +725,8 @@ public class CameraRecordFragment extends Fragment {
                     Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
                     false,
                     mMicphoneSettingsObserver);
+        }else{
+            throw new RuntimeException("startVideoRecord fail reason="+reason);
         }
     }
 
