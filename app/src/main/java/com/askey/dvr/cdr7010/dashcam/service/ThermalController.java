@@ -28,6 +28,7 @@ public class ThermalController{
     private Handler mThermalMonitorHandler;
     private ThermalListener thermalListener;
     private boolean isCloseLcd;
+    private boolean isFirstStart;
     public interface ThermalListener{
         void startRecording();
         void closeRecording();
@@ -38,10 +39,13 @@ public class ThermalController{
         EventUtil.register(this);
     }
     public void startThermalMonitor(){
-        mThermalMonitorThread = new HandlerThread("ThermalMonitor");
-        mThermalMonitorThread.start();
-        mThermalMonitorHandler = new Handler(mThermalMonitorThread.getLooper());
-        mThermalMonitorHandler.postDelayed(new ThermalMonitorRunnable(),0);
+        if(!isFirstStart) {
+            mThermalMonitorThread = new HandlerThread("ThermalMonitor");
+            mThermalMonitorThread.start();
+            mThermalMonitorHandler = new Handler(mThermalMonitorThread.getLooper());
+            mThermalMonitorHandler.postDelayed(new ThermalMonitorRunnable(), 0);
+        }
+        isFirstStart = true;
     }
     public void stopThermalMonitor(){
         mThermalMonitorThread.quit();

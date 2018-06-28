@@ -133,12 +133,12 @@ public class CameraRecordFragment extends Fragment {
                 final String ex = intent.getStringExtra("data");
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
+                    LedMananger.getInstance().setLedRecStatus(true, false, 0);
                     try {
                         mRecordingFlags |=FLAG_SDCARD_AVAILABLE;
                         startVideoRecord("SD become available");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
-                        mRecordingFlags  &= (~FLAG_SDCARD_AVAILABLE);
                     }
                 }
             } else if (ACTION_SDCARD_LIMT.equals(intent.getAction())) {
@@ -154,7 +154,6 @@ public class CameraRecordFragment extends Fragment {
                         startVideoRecord("SDCARD_FULL_LIMIT_EXIT");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
-                        mRecordingFlags  &= (~FLAG_SDCARD_SPACE_NOT_FULL);
                     }
                 }
             }
@@ -202,7 +201,6 @@ public class CameraRecordFragment extends Fragment {
                             mRecordingFlags |= FLAG_BATTERY_CHARGING;
                             startVideoRecord("Intent.BATTERY_STATUS_CHARGING");
                         } catch (Exception e) {
-                            mRecordingFlags &=(~FLAG_BATTERY_CHARGING);
                             e.printStackTrace();
                         }
                         break;
@@ -383,7 +381,6 @@ public class CameraRecordFragment extends Fragment {
                    startVideoRecord("cpu low temperature");
                }catch(Exception e){
                    e.printStackTrace();
-                   mRecordingFlags &=(~FLAG_LOW_TEMPERATURE);
                }
            }
 
@@ -622,7 +619,6 @@ public class CameraRecordFragment extends Fragment {
                 break;
             case SDCARD_INIT_SUCCESS:
                 DialogManager.getIntance().setSdcardInitSuccess(true);
-                LedMananger.getInstance().setLedRecStatus(true, false, 0);
                 break;
             default:
         }
