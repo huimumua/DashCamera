@@ -49,7 +49,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onKeyShortPressed(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_ENTER:
-                if (updateInfo != null && (updateInfo.updateType == Const.SDCARD_UPDATE) && isUpdate) {
+                if (updateInfo != null && /*(updateInfo.updateType == Const.SDCARD_UPDATE) && */isUpdate) {
                     startNextActivity();
                 }
         }
@@ -87,9 +87,9 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
             Logg.i(TAG, "=noticeJump=UpdateFragment=startNextActivity");
             isUpdate = true;
             updateFragment = new UpdateFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
-            updateFragment.setArguments(bundle);
+//            Bundle bundle = new Bundle();
+//            bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
+//            updateFragment.setArguments(bundle);
             ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                     updateFragment, R.id.contentFrame);
@@ -106,26 +106,33 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
                 Logg.i(TAG, "=system_update=None=");
                 updateInfo.updateType = Const.NONE_UPDATE;
             } else if (eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
-                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
-                    updateInfo.updateType = Const.OTA_UPDATE;
-                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
                         updateInfo.updateResultState = Const.UPDATE_SUCCESS;
-                        Logg.i(TAG, "=system_update_success=OTA_UPDATE=");
+                        Logg.i(TAG, "=system_update_success==");
                     } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
                         updateInfo.updateResultState = Const.UPDATE_FAIL;
-                        Logg.i(TAG, "=system_update_fail=OTA_UPDATE=");
+                        Logg.i(TAG, "=system_update_fail==");
                     }
-
-                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 2) {//SDカード
-                    updateInfo.updateType = Const.SDCARD_UPDATE;
-                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
-                        Logg.i(TAG, "=system_update_success=SDCARD_UPDATE=");
-                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-                        updateInfo.updateResultState = Const.UPDATE_FAIL;
-                        Logg.i(TAG, "=system_update_fail=SDCARD_UPDATE=");
-                    }
-                }
+//                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
+////                    updateInfo.updateType = Const.OTA_UPDATE;
+//                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+//                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+//                        Logg.i(TAG, "=system_update_success=OTA_UPDATE=");
+//                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+//                        updateInfo.updateResultState = Const.UPDATE_FAIL;
+//                        Logg.i(TAG, "=system_update_fail=OTA_UPDATE=");
+//                    }
+//
+//                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 2) {//SDカード
+////                    updateInfo.updateType = Const.SDCARD_UPDATE;
+//                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+//                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+//                        Logg.i(TAG, "=system_update_success=SDCARD_UPDATE=");
+//                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+//                        updateInfo.updateResultState = Const.UPDATE_FAIL;
+//                        Logg.i(TAG, "=system_update_fail=SDCARD_UPDATE=");
+//                    }
+//                }
             }
             Logg.i(TAG, "=onHandleEvent=isNoticeFinish=" + isNoticeFinish);
             if (isNoticeFinish) {

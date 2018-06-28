@@ -15,7 +15,7 @@ import com.askey.dvr.cdr7010.dashcam.util.Const;
 
 public class UpdateFragment extends Fragment {
     private ImageView btn_ok;
-    private int updateType ;
+//    private int updateType ;
     private UpdateListener updateListener;
 
     public interface UpdateListener {
@@ -25,9 +25,9 @@ public class UpdateFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if (getArguments() != null) {
-            updateType = getArguments().getInt("updateType");
-        }
+//        if (getArguments() != null) {
+//            updateType = getArguments().getInt("updateType");
+//        }
         super.onCreate(savedInstanceState);
     }
     @Override
@@ -44,10 +44,10 @@ public class UpdateFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_upgrade_succ, null);
-        if(updateType == Const.SDCARD_UPDATE){
+//        if(updateType == Const.SDCARD_UPDATE){
             btn_ok =(ImageView) root.findViewById(R.id.btn_ok);
             btn_ok.setVisibility(View.VISIBLE);
-        }
+//        }
         return root;
     }
     @Override
