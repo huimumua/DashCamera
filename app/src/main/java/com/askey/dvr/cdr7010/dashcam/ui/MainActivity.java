@@ -37,11 +37,9 @@ import java.util.EnumMap;
 public class MainActivity extends DialogActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int FROM_MAINAPP =0;
-    private static final int TO_MAINAPP = 1;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
     private CameraRecordFragment fragment;
-    private boolean isFromOtherApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,21 +55,13 @@ public class MainActivity extends DialogActivity {
         if (audioManager != null) {
             maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
         }
-        isFromOtherApp =false;
         EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
         EventManager.getInstance().registIconEventCallback(iconEventCallback);
         EventManager.getInstance().registLedEventCallback(ledEventCallback);
 
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(isFromOtherApp) {
-            MainAppSending.menuTransition(TO_MAINAPP);
-            isFromOtherApp =false;
-        }
-    }
+
 
     @Override
     public void onDestroy() {
@@ -249,7 +239,6 @@ public class MainActivity extends DialogActivity {
                 if(currentLocation != null && currentLocation.hasSpeed()){ //有GPS信号，且速度大于0
                     //
                 }else {
-                    isFromOtherApp = true;
                     MainAppSending.menuTransition(FROM_MAINAPP);
                     ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
                 }
