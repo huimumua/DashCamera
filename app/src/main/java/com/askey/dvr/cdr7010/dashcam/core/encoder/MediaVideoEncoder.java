@@ -46,7 +46,7 @@ public class MediaVideoEncoder extends MediaEncoder {
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);  // API >= 18
         format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
         format.setInteger(MediaFormat.KEY_FRAME_RATE, mFPS);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 0);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
         Logg.i(LOG_TAG, "format: " + format);
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
