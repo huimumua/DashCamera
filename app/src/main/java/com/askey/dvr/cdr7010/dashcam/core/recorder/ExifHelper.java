@@ -71,4 +71,24 @@ public class ExifHelper {
             e.printStackTrace();
         }
     }
+
+    public static void build(@NonNull String file, Position location) {
+        try {
+            ExifInterface exif = new ExifInterface(file);
+
+            //GPS信息
+            exif.setAttribute(ExifInterface.TAG_GPS_VERSION_ID, "2200");
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                // 写入纬度信息
+                // 写入经度信息
+                exif.setLatLong(latitude, longitude);
+            }
+            //other
+            exif.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
