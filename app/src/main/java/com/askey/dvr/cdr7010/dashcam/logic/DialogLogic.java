@@ -9,6 +9,7 @@ import android.os.Looper;
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.CancelableRunnable;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 
 
 public class DialogLogic{
@@ -172,14 +173,17 @@ public class DialogLogic{
             protected void doRun() {
                 showTime = 0;
                 onDismiss(dialogType,eventType);
+                if(eventType == Event.HIGH_TEMPERATURE_THRESHOLD_LV1){
+                    EventUtil.sendEvent(Integer.valueOf(eventType));
+                }
             }
         };
         handler.postDelayed(mCancelableRunnable,waitTime);
     }
     public interface DialogCallBack{
-        void onSave(int dialogType,int eventType,int priority,long beginTime,String message);
-        void onShow(int priority,int eventType,int dialogType,boolean display);
-        void onDismiss(int priority,int eventType,int dialogType,boolean display);
+        void onSave(int dialogType, int eventType, int priority, long beginTime, String message);
+        void onShow(int priority, int eventType, int dialogType, boolean display);
+        void onDismiss(int priority, int eventType, int dialogType, boolean display);
     }
     public void setDialogCallBack(DialogCallBack dialogCallBack){
         this.dialogCallBack = dialogCallBack;

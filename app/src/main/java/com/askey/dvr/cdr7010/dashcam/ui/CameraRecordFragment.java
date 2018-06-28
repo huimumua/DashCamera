@@ -47,7 +47,9 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
+import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
+import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
@@ -85,15 +87,23 @@ import static com.askey.dvr.cdr7010.dashcam.util.SDCardUtils.isSDCardAvailable;
 
 public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
+    private static final String ACTIVITY_CLASSNAME ="com.askey.dvr.cdr7010.dashcam.ui.MainActivity";
     private DashCam mMainCam;
     private OSDView osdView;
     private TextView tvContent;
     private Handler mHandler;
+    private ThermalController thermalController;
     private TelephonyManager mTelephonyManager;
+    private int mRecordingFlags;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private boolean hasStopped;
     private boolean isEventRecording;
+
+    private static final int FLAG_SDCARD_AVAILABLE =1;
+    private static final int FLAG_SDCARD_SPACE_NOT_FULL = 1 << 1;
+    private static final int FLAG_BATTERY_CHARGING = 1 << 2;
+    private static final int FLAG_LOW_TEMPERATURE = 1 << 3;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
@@ -124,22 +134,27 @@ public class CameraRecordFragment extends Fragment {
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {
+                        mRecordingFlags |=FLAG_SDCARD_AVAILABLE;
                         startVideoRecord("SD become available");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+                        mRecordingFlags  &= (~FLAG_SDCARD_AVAILABLE);
                     }
                 }
             } else if (ACTION_SDCARD_LIMT.equals(intent.getAction())) {
                 final String ex = intent.getStringExtra("cmd_ex");
                 if (SDCARD_FULL_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_FULL_LIMIT");
+                    mRecordingFlags  &= (~FLAG_SDCARD_SPACE_NOT_FULL);
                     stopVideoRecord("SDCARD_FULL_LIMIT");
                 } else if (SDCARD_FULL_LIMIT_EXIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_FULL_LIMIT_EXIT");
                     try {
+                        mRecordingFlags |= FLAG_SDCARD_SPACE_NOT_FULL;
                         startVideoRecord("SDCARD_FULL_LIMIT_EXIT");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+                        mRecordingFlags  &= (~FLAG_SDCARD_SPACE_NOT_FULL);
                     }
                 }
             }
@@ -151,6 +166,7 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
+                mRecordingFlags &=(~FLAG_SDCARD_AVAILABLE);
                 stopVideoRecord("SD MEDIA_BAD_REMOVAL");
             }
         }
@@ -183,8 +199,10 @@ public class CameraRecordFragment extends Fragment {
                     case BatteryManager.BATTERY_STATUS_CHARGING:
                         Log.i(TAG, "battery status is charging");
                         try {
+                            mRecordingFlags |= FLAG_BATTERY_CHARGING;
                             startVideoRecord("Intent.BATTERY_STATUS_CHARGING");
                         } catch (Exception e) {
+                            mRecordingFlags &=(~FLAG_BATTERY_CHARGING);
                             e.printStackTrace();
                         }
                         break;
@@ -236,6 +254,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
+                mRecordingFlags &=(~FLAG_BATTERY_CHARGING);
                 stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
             }
             return true;
@@ -354,6 +373,42 @@ public class CameraRecordFragment extends Fragment {
             JvcEventSending.recordResponse(eventId, results, files);
         }
     };
+    private ThermalController.ThermalListener thermalListener = new ThermalController.ThermalListener(){
+        @Override
+        public void startRecording(){
+           if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
+               Logg.d(TAG,"ThermalController startRecording");
+               try {
+                   mRecordingFlags |= FLAG_LOW_TEMPERATURE;
+                   startVideoRecord("cpu low temperature");
+               }catch(Exception e){
+                   e.printStackTrace();
+                   mRecordingFlags &=(~FLAG_LOW_TEMPERATURE);
+               }
+           }
+
+        }
+        @Override
+        public void closeRecording(){
+            if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
+                if((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
+                        && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
+                        && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) >0
+                        && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
+                    Logg.d(TAG,"ThermalController closeRecording");
+                    stopVideoRecord("CPU reach high temperature");
+                    mRecordingFlags &=(~FLAG_LOW_TEMPERATURE);
+                }
+            }
+        }
+        @Override
+        public void closeLcdPanel(){
+            if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
+                Logg.d(TAG,"ThermalController closeLcdPanel");
+            }
+
+        }
+    };
 
     public static CameraRecordFragment newInstance() {
         return new CameraRecordFragment();
@@ -365,6 +420,9 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG, "onCreate");
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
+        thermalController = new ThermalController(thermalListener);
+        mRecordingFlags = FLAG_BATTERY_CHARGING |FLAG_SDCARD_AVAILABLE |FLAG_SDCARD_SPACE_NOT_FULL
+                           |FLAG_LOW_TEMPERATURE;
         EventUtil.register(this);
     }
 
@@ -437,6 +495,7 @@ public class CameraRecordFragment extends Fragment {
         } catch (Exception e) {
             Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
         }
+        thermalController.startThermalMonitor();
     }
 
     @Override
@@ -460,6 +519,7 @@ public class CameraRecordFragment extends Fragment {
         if (!hasStopped) {
             EventUtil.unregister(this);
             osdView.unInit();
+            thermalController.stopThermalMonitor();
             GPSStatusManager.getInstance().recordLocation(false);
             getActivity().unregisterReceiver(simCardReceiver);
         }
@@ -516,9 +576,11 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setRecordingStatus((UIElementStatusEnum.RecordingStatusType) messageEvent.getData());
             if (messageEvent.getData() == RECORDING_EVENT) {
                 osdView.startRecordingCountDown();
+                DialogManager.getIntance().setResumeRecording(true);
             }
             if (messageEvent.getData() == RECORDING_CONTINUOUS) {
                 DialogManager.getIntance().setStartRecording(true);
+                DialogManager.getIntance().setResumeRecording(true);
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_RECORDING_FILE_LIMIT) {
             GlobalLogic.getInstance().setEventRecordingLimitStatus((UIElementStatusEnum.EventRecordingLimitStatusType) messageEvent.getData());
@@ -642,22 +704,28 @@ public class CameraRecordFragment extends Fragment {
                 sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
                         equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
+            mRecordingFlags &=(~FLAG_SDCARD_AVAILABLE);
             throw new RuntimeException("sd card unavailable");
         }
         if (mMainCam == null) {
             throw new RuntimeException("camera unavailable");
         }
+        if((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
+                && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
+                && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) >0
+                && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
 
-        mMainCam.startVideoRecord(reason);
-        if (!getMicphoneEnable()) {
-            mMainCam.mute();
+            mMainCam.startVideoRecord(reason);
+            if (!getMicphoneEnable()) {
+                mMainCam.mute();
+            }
+
+            ContentResolver contentResolver = getActivity().getContentResolver();
+            contentResolver.registerContentObserver(
+                    Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
+                    false,
+                    mMicphoneSettingsObserver);
         }
-
-        ContentResolver contentResolver = getActivity().getContentResolver();
-        contentResolver.registerContentObserver(
-                Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
-                false,
-                mMicphoneSettingsObserver);
     }
 
     private void stopVideoRecord(String reason) {
