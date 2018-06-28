@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -19,7 +20,7 @@ import android.view.View;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.provider.OSDProvider;
-import com.askey.dvr.cdr7010.dashcam.service.EventManager;
+import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.DisplayUtils;
 
 import java.util.Calendar;
@@ -59,7 +60,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCard
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_NETWORK_LOCKED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PIN_REQUIRED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_PUK_REQUIRED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_UNKNOWN;
 
 public class OSDView extends View {
     private static final int REFRESH_PREVIEW_TIME_TIMER = 0x500;
@@ -102,6 +102,7 @@ public class OSDView extends View {
     private Bitmap volume_up;
     private Bitmap volume_down;
     private Bitmap menu;
+    private Bitmap menuDisabled;
     private Bitmap parking_recording_limit;
     private Bitmap event_recording_limit;
     private Bitmap sdcard_error;
@@ -177,6 +178,7 @@ public class OSDView extends View {
 
         menuRectF = new RectF(292,94,320,146);
         menu = decodeResource(getResources(), R.drawable.menu);
+        menuDisabled = decodeResource(getResources(), R.drawable.menu_disabled);
 
         countTimeRectF = new RectF(62,8,77,24);
         countDownPaint =  new Paint();
@@ -448,7 +450,12 @@ public class OSDView extends View {
 
 
         canvas.drawBitmap(volume_up,null, volumeUpRectF, null);
-        canvas.drawBitmap(menu,null, menuRectF, null);
+        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+        if(currentLocation != null && currentLocation.hasSpeed()){ //有GPS信号，且速度大于0
+            canvas.drawBitmap(menuDisabled,null, menuRectF, null);
+        }else {
+            canvas.drawBitmap(menu,null, menuRectF, null);
+        }
         canvas.drawBitmap(volume_down,null, volumeDownRectF, null);
         String userInfo = osdProvider.getUserInfo();
         if(!TextUtils.isEmpty(userInfo)) {
