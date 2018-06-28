@@ -39,8 +39,10 @@ public class VersionUpReceiver extends BroadcastReceiver{
             broadcastIntent.putExtra("length", length);
             context.sendStickyBroadcastAsUser(broadcastIntent, android.os.Process.myUserHandle());
         }else if(action.equals(ACTION_EVENT_UPDATE_READY)){ //null params
-
-
+            Logg.i(LOG_TAG,"==ACTION_EVENT_UPDATE_READY===");
+            UpdateReadyInfo updateReadyInfo = new UpdateReadyInfo();
+            EventUtil.sendEvent(updateReadyInfo);
+            MainAppSending.updateReadyCompleted();
         }else if(action.equals(ACTION_EVENT_UPDATE_COMPLETED)){
             int type = intent.getIntExtra("type", -1);
             int result = intent.getIntExtra("result", -10); //-1被正常使用
@@ -99,6 +101,12 @@ public class VersionUpReceiver extends BroadcastReceiver{
         public UpdateCompleteInfo(int type, int result) {
             this.type = type;
             this.result = result;
+        }
+    }
+
+    public class UpdateReadyInfo{
+        public UpdateReadyInfo(){
+
         }
     }
 

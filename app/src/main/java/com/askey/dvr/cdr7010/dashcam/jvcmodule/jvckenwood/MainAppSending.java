@@ -18,6 +18,7 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 public class MainAppSending {
     public static final String ACTION_STARTUP_NOTIFY = "android.intent.action.STARTUP_NOTIFY";
     public static final String ACTION_MENU_TRANSITION = "android.intent.action.MENU_TRANSITION";
+    public static final String ACTION_UPDATE_READY_COMPLETED = "android.intent.action.UPDATE_READY_COMPLETED";
 
     private static final String LOG_TAG = "MainAppSending";
 
@@ -33,6 +34,12 @@ public class MainAppSending {
         Logg.d(LOG_TAG, "menuTransition: status=" + status);
         Intent intent = new Intent(ACTION_MENU_TRANSITION);
         intent.putExtra("status", status);
+        sendOutBroadcast(intent);
+    }
+
+    public static void updateReadyCompleted(){
+        Logg.d(LOG_TAG, "updateReadyCompleted:====" );
+        Intent intent = new Intent(ACTION_UPDATE_READY_COMPLETED);
         sendOutBroadcast(intent);
     }
 

@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.VersionUpReceiver;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -49,7 +48,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onKeyShortPressed(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_ENTER:
-                if (updateInfo != null && /*(updateInfo.updateType == Const.SDCARD_UPDATE) && */isUpdate) {
+                if (updateInfo != null && (updateInfo.updateResultState != Const.UPDATE_READY) && isUpdate) {
                     startNextActivity();
                 }
         }
@@ -83,13 +82,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
             Logg.i(TAG, "=noticeJump=None=startNextActivity");
             startNextActivity();
         } else if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
-                || (updateInfo.updateResultState == Const.UPDATE_FAIL))) {
+                || (updateInfo.updateResultState == Const.UPDATE_FAIL) || updateInfo.updateResultState == Const.UPDATE_READY)) {
             Logg.i(TAG, "=noticeJump=UpdateFragment=startNextActivity");
             isUpdate = true;
             updateFragment = new UpdateFragment();
-//            Bundle bundle = new Bundle();
-//            bundle.putInt("updateType", (updateInfo.updateType == Const.OTA_UPDATE) ? Const.OTA_UPDATE : Const.SDCARD_UPDATE);
-//            updateFragment.setArguments(bundle);
+            Bundle bundle = new Bundle();
+            bundle.putInt("updateResultState", updateInfo.updateResultState);
+            updateFragment.setArguments(bundle);
             ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                     updateFragment, R.id.contentFrame);
@@ -100,19 +99,20 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onHandleEvent(Object eventType) {
-        if (eventType instanceof VersionUpReceiver.StartUpInfo || eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
+        if (eventType instanceof VersionUpReceiver.StartUpInfo || eventType instanceof VersionUpReceiver.UpdateCompleteInfo
+                || eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
             updateInfo = new UpdateInfo();
             if (eventType instanceof VersionUpReceiver.StartUpInfo && ((VersionUpReceiver.StartUpInfo) eventType).updateInfo == 0) {//None
                 Logg.i(TAG, "=system_update=None=");
                 updateInfo.updateType = Const.NONE_UPDATE;
             } else if (eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
                 if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
-                        Logg.i(TAG, "=system_update_success==");
-                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-                        updateInfo.updateResultState = Const.UPDATE_FAIL;
-                        Logg.i(TAG, "=system_update_fail==");
-                    }
+                    updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+                    Logg.i(TAG, "=system_update_success==");
+                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+                    updateInfo.updateResultState = Const.UPDATE_FAIL;
+                    Logg.i(TAG, "=system_update_fail==");
+                }
 //                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
 ////                    updateInfo.updateType = Const.OTA_UPDATE;
 //                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
@@ -133,6 +133,8 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //                        Logg.i(TAG, "=system_update_fail=SDCARD_UPDATE=");
 //                    }
 //                }
+            } else if (eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
+                updateInfo.updateResultState = Const.UPDATE_READY;
             }
             Logg.i(TAG, "=onHandleEvent=isNoticeFinish=" + isNoticeFinish);
             if (isNoticeFinish) {
@@ -164,10 +166,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         } else if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_FAIL)) {
             DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
             TTSManager.getInstance().ttsNormalStart(200, new int[]{0x0A04});
+        } else if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_READY)) {
+            DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_ready), true);
+            TTSManager.getInstance().ttsNormalStart(202, new int[]{0x0A02});
         }
     }
 
-//        private UpdateInfo parseJson(String updateResult){
+    //        private UpdateInfo parseJson(String updateResult){
 //        if(TextUtils.isEmpty(updateResult)){
 //            return null;
 //        }
@@ -212,10 +217,12 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //        return updateInfo;
 //    }
     public void startNextActivity() {
-        if (GlobalLogic.getInstance().getInt(AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 1) == Const.FIRST_INIT_SUCCESS) {
-            ActivityUtils.startActivity(this, this.getPackageName(), "com.askey.dvr.cdr7010.dashcam.ui.MainActivity", true);
-        } else {
-            ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, true);
+        if (updateInfo.updateResultState != Const.UPDATE_READY) {//update ready 界面时不跳转
+            if (GlobalLogic.getInstance().getInt(AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 1) == Const.FIRST_INIT_SUCCESS) {
+                ActivityUtils.startActivity(this, this.getPackageName(), "com.askey.dvr.cdr7010.dashcam.ui.MainActivity", true);
+            } else {
+                ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, true);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">DashCam</string>
+    <string name="system_update_ready">Start system update</string>
     <string name="system_update_success">System update completed</string>
     <string name="system_update_fail">System update fail</string>
     <string name="warning_title">warning</string>
