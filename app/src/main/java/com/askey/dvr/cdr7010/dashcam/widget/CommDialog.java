@@ -173,14 +173,14 @@ public class CommDialog extends Dialog{
                 return true;
         }
         if(type == (TYPE_BUTTON_OK|TYPE_BUTTON_CANCEL)){
-            if(btnOk.hasFocus()){
+            if(btnCancel.hasFocus()){
                 if(event.getKeyCode() == KeyAdapter.KEY_VOLUME_UP){
-                    btnCancel.requestFocusFromTouch();
+                    btnOk.requestFocusFromTouch();
                 }
             }
-            if(btnCancel.hasFocus()){
+            if(btnOk.hasFocus()){
                 if(event.getKeyCode() == KeyAdapter.KEY_VOLUME_DOWN){
-                    btnOk.requestFocusFromTouch();
+                    btnCancel.requestFocusFromTouch();
                 }
             }
         }
