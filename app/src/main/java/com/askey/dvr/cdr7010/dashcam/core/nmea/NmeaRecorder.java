@@ -376,7 +376,7 @@ public class NmeaRecorder {
                     Log.i(LOG_TAG, "nnmeaNode not get node");
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                // Log.i(LOG_TAG, "error = " + e);
             }
         }
     };
