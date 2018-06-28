@@ -51,10 +51,14 @@ public final class Event{
    public static final int HIGH_TEMPERATURE_THRESHOLD_LV2 = 118;
    public static final int HIGH_TEMPERATURE_THRESHOLD_LV3 = 119;
    public static final int EMERGENCY_CALL_USER = 120;
+   public static final int USER_SWITCH_BY_USER = 121;
+   public static final int CHANGE_SETTINGS_BY_USER = 122;
    public static final int EVENT_RECORDING_START = 123;
    public static final int EVENT_RECORDING_END =124;
    public static final int EVENT_DOWNLOAD_RESULT = 125;
    public static final int EVENT_SIMCARD_ERROR =126;
+   public static final int USER_SWITCH_BY_SERVER =127;
+   public static final int CHANGE_SETTINGS_BY_SERVER =128;
 
    public static final class EventCode {
        public static final int EVENT_RECORDING = 0x1;

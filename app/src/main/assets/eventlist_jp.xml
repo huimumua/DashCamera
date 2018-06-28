@@ -705,7 +705,7 @@
     <event>
         <id>55</id>
         <priority>1</priority>
-        <event_type></event_type>
+        <event_type>127</event_type>
         <dialog_type>3</dialog_type>
         <name>ユーザー切り替え_サーバー要求</name>
         <description>ユーザー切り替え_サーバー要求</description>
@@ -731,7 +731,7 @@
     <event>
         <id>57</id>
         <priority></priority>
-        <event_type></event_type>
+        <event_type>128</event_type>
         <dialog_type></dialog_type>
         <name>設定変更_サーバー要求</name>
         <description>設定変更_サーバー要求</description>

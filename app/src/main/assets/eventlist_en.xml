@@ -705,7 +705,7 @@
     <event>
         <id>55</id>
         <priority>1</priority>
-        <event_type></event_type>
+        <event_type>127</event_type>
         <dialog_type>3</dialog_type>
         <name>User switching server request</name>
         <description></description>
@@ -730,7 +730,7 @@
     </event>
     <event>
         <id>57</id>
-        <priority></priority>
+        <priority>128</priority>
         <event_type></event_type>
         <dialog_type></dialog_type>
         <name>Change setting server request</name>
