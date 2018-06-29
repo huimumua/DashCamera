@@ -295,18 +295,6 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onStarted() {
             Logg.d(TAG, "DashState: onStarted");
-            if (mExecutor != null) {
-                mExecutor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!getMicphoneEnable()) {
-                            mMainCam.mute();
-                        } else {
-                            mMainCam.demute();
-                        }
-                    }
-                });
-            }
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     RECORDING_CONTINUOUS));
             isEventRecording = false;
@@ -733,9 +721,6 @@ public class CameraRecordFragment extends Fragment {
                 && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
 
             mMainCam.startVideoRecord(reason);
-            if (!getMicphoneEnable()) {
-                mMainCam.mute();
-            }
 
             ContentResolver contentResolver = getActivity().getContentResolver();
             contentResolver.registerContentObserver(

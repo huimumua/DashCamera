@@ -24,8 +24,9 @@ public class MediaAudioEncoder extends MediaEncoder {
     private AudioThread mAudioThread = null;
     private volatile boolean mIsMute = false;
 
-    public MediaAudioEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener) {
+    public MediaAudioEncoder(final MediaMuxerWrapper muxer, boolean recordAudio, final MediaEncoderListener listener) {
         super(muxer, listener);
+        mIsMute = !recordAudio;
     }
 
     @Override
