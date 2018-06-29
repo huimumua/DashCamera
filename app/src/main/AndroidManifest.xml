@@ -89,6 +89,7 @@
                 <action android:name="com.jvckenwood.versionup.DOWNLOAD_RESULT" />
                 <action android:name="com.jvckenwood.versionup.UPDATE_READY" />
                 <action android:name="com.jvckenwood.versionup.UPDATE_COMPLETED" />
+                <action android:name="com.jvckenwood.versionup.UPDATE_CHECK" />
                 <action android:name="com.jvckenwood.versionup.STARTUP" />
             </intent-filter>
         </receiver>

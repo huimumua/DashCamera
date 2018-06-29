@@ -19,9 +19,11 @@ public class VersionUpReceiver extends BroadcastReceiver{
     private static final String ACTION_EVENT_DOWNLOAD_RESULT = "com.jvckenwood.versionup.DOWNLOAD_RESULT";
     private static final String ACTION_EVENT_UPDATE_READY = "com.jvckenwood.versionup.UPDATE_READY";
     private static final String ACTION_EVENT_UPDATE_COMPLETED = "com.jvckenwood.versionup.UPDATE_COMPLETED";
+    private static final String ACTION_EVENT_UPDATE_CHECK = "com.jvckenwood.versionup.UPDATE_CHECK";
     private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
 
     public static final String ACTION_FOTA_STATUS = "action_fota_status";
+    public static final String ACTION_UPDATE_CHECK = "action_update_check";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -69,6 +71,11 @@ public class VersionUpReceiver extends BroadcastReceiver{
                 StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
                 EventUtil.sendEvent(startUpInfo);
             }
+        }else if(action.equals(ACTION_EVENT_UPDATE_CHECK)){
+            int result = intent.getIntExtra("result", 1);
+            Intent broadcastIntent = new Intent(ACTION_UPDATE_CHECK);
+            broadcastIntent.putExtra("result", result);
+            context.sendBroadcastAsUser(broadcastIntent, android.os.Process.myUserHandle());
         }
     }
 
