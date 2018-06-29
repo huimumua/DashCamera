@@ -53,6 +53,7 @@ import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
+import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
 
 import net.sf.marineapi.nmea.util.Position;
@@ -87,7 +88,7 @@ import static com.askey.dvr.cdr7010.dashcam.util.SDCardUtils.isSDCardAvailable;
 
 public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
-    private static final String ACTIVITY_CLASSNAME ="com.askey.dvr.cdr7010.dashcam.ui.MainActivity";
+    private static final String ACTIVITY_CLASSNAME = "com.askey.dvr.cdr7010.dashcam.ui.MainActivity";
     private DashCam mMainCam;
     private OSDView osdView;
     private TextView tvContent;
@@ -99,8 +100,9 @@ public class CameraRecordFragment extends Fragment {
 
     private boolean hasStopped;
     private boolean isEventRecording;
+    private boolean isChargeDisconnect = false;//电源状态，默认是连接的
 
-    private static final int FLAG_SDCARD_AVAILABLE =1;
+    private static final int FLAG_SDCARD_AVAILABLE = 1;
     private static final int FLAG_SDCARD_SPACE_NOT_FULL = 1 << 1;
     private static final int FLAG_BATTERY_CHARGING = 1 << 2;
     private static final int FLAG_LOW_TEMPERATURE = 1 << 3;
@@ -135,7 +137,7 @@ public class CameraRecordFragment extends Fragment {
                     Logg.d(TAG, "SD Card available");
                     LedMananger.getInstance().setLedRecStatus(true, false, 0);
                     try {
-                        mRecordingFlags |=FLAG_SDCARD_AVAILABLE;
+                        mRecordingFlags |= FLAG_SDCARD_AVAILABLE;
                         startVideoRecord("SD become available");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
@@ -145,7 +147,7 @@ public class CameraRecordFragment extends Fragment {
                 final String ex = intent.getStringExtra("cmd_ex");
                 if (SDCARD_FULL_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_FULL_LIMIT");
-                    mRecordingFlags  &= (~FLAG_SDCARD_SPACE_NOT_FULL);
+                    mRecordingFlags &= (~FLAG_SDCARD_SPACE_NOT_FULL);
                     stopVideoRecord("SDCARD_FULL_LIMIT");
                 } else if (SDCARD_FULL_LIMIT_EXIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_FULL_LIMIT_EXIT");
@@ -165,7 +167,7 @@ public class CameraRecordFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
-                mRecordingFlags &=(~FLAG_SDCARD_AVAILABLE);
+                mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
                 stopVideoRecord("SD MEDIA_BAD_REMOVAL");
             }
         }
@@ -196,15 +198,20 @@ public class CameraRecordFragment extends Fragment {
                 int status = intent.getIntExtra("status", 0);
                 switch (status) {
                     case BatteryManager.BATTERY_STATUS_CHARGING:
+                    case BatteryManager.BATTERY_STATUS_FULL:
                         Log.i(TAG, "battery status is charging");
-                        try {
-                            mRecordingFlags |= FLAG_BATTERY_CHARGING;
-                            startVideoRecord("Intent.BATTERY_STATUS_CHARGING");
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        if(isChargeDisconnect){
+                            try {
+                                mRecordingFlags |= FLAG_BATTERY_CHARGING;
+                                startVideoRecord("Intent.BATTERY_STATUS_CHARGING");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
+                        isChargeDisconnect = false;
                         break;
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                        isChargeDisconnect = true;
                         Log.i(TAG, "battery status is discharging");
                         mMainCam.takeAPicture((data, width, height, timeStamp) -> handler.post(() -> {
                             Bitmap bmp = null;
@@ -220,11 +227,12 @@ public class CameraRecordFragment extends Fragment {
                                 Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
                                 Position position = null;
                                 if (currentLocation != null) {
-                                    Logg.d(TAG,"currentLocation!=null,getLatitude=="+currentLocation.getLatitude()+",getLongitude=="+currentLocation.getLongitude());
+                                    Logg.d(TAG, "currentLocation!=null,getLatitude==" + currentLocation.getLatitude() + ",getLongitude==" + currentLocation.getLongitude());
                                     position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
                                 }
                                 Logg.d(TAG, "timeStamp==" + timeStamp);
                                 ExifHelper.build(filePathForPicture, timeStamp, position);
+                                // TODO: 2018/6/28 上傳文件
                             } catch (Exception e) {
                                 e.printStackTrace();
                             } finally {
@@ -252,8 +260,15 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
-                mRecordingFlags &=(~FLAG_BATTERY_CHARGING);
-                stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
+                if (isChargeDisconnect) {
+                    mRecordingFlags &= (~FLAG_BATTERY_CHARGING);
+                    stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
+                    //关机
+                    Logg.d(TAG, "SHUT DOWN...");
+                    Intent intentShutDown = new Intent();
+                    intentShutDown.setAction(AskeyIntent.ACTION_DVR_SHUTDOWN);
+                    getContext().sendBroadcast(intentShutDown);
+                }
             }
             return true;
         }
@@ -375,37 +390,39 @@ public class CameraRecordFragment extends Fragment {
             JvcEventSending.recordResponse(eventId, results, files);
         }
     };
-    private ThermalController.ThermalListener thermalListener = new ThermalController.ThermalListener(){
+    private ThermalController.ThermalListener thermalListener = new ThermalController.ThermalListener() {
         @Override
-        public void startRecording(){
-           if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
-               Logg.d(TAG,"ThermalController startRecording");
-               try {
-                   mRecordingFlags |= FLAG_LOW_TEMPERATURE;
-                   startVideoRecord("cpu low temperature");
-               }catch(Exception e){
-                   e.printStackTrace();
-               }
-           }
+        public void startRecording() {
+            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
+                Logg.d(TAG, "ThermalController startRecording");
+                try {
+                    mRecordingFlags |= FLAG_LOW_TEMPERATURE;
+                    startVideoRecord("cpu low temperature");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
         }
+
         @Override
-        public void closeRecording(){
-            if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
-                if((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
+        public void closeRecording() {
+            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
+                if ((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
                         && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
-                        && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) >0
+                        && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) > 0
                         && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
-                    Logg.d(TAG,"ThermalController closeRecording");
+                    Logg.d(TAG, "ThermalController closeRecording");
                     stopVideoRecord("CPU reach high temperature");
-                    mRecordingFlags &=(~FLAG_LOW_TEMPERATURE);
+                    mRecordingFlags &= (~FLAG_LOW_TEMPERATURE);
                 }
             }
         }
+
         @Override
-        public void closeLcdPanel(){
-            if(AppUtils.isActivityTop(getActivity(),ACTIVITY_CLASSNAME)){
-                Logg.d(TAG,"ThermalController closeLcdPanel");
+        public void closeLcdPanel() {
+            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
+                Logg.d(TAG, "ThermalController closeLcdPanel");
             }
 
         }
@@ -422,8 +439,8 @@ public class CameraRecordFragment extends Fragment {
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
         thermalController = new ThermalController(thermalListener);
-        mRecordingFlags = FLAG_BATTERY_CHARGING |FLAG_SDCARD_AVAILABLE |FLAG_SDCARD_SPACE_NOT_FULL
-                           |FLAG_LOW_TEMPERATURE;
+        mRecordingFlags = FLAG_BATTERY_CHARGING | FLAG_SDCARD_AVAILABLE | FLAG_SDCARD_SPACE_NOT_FULL
+                | FLAG_LOW_TEMPERATURE;
         EventUtil.register(this);
     }
 
@@ -485,7 +502,7 @@ public class CameraRecordFragment extends Fragment {
                 .videoWidth(1920)
                 .videoHeight(1080)
                 .videoFPS(27)
-                .videoBitRate((int)(9.6 * 1024 * 1024)) // 10Mbps
+                .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
                 .videoStampEnable(stamp)
                 .audioRecordEnable(audio)
                 .build();
@@ -599,14 +616,14 @@ public class CameraRecordFragment extends Fragment {
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SIMCARD) {
             int simState = SimCardManager.getInstant().getSimState();
             SimCardManager.getInstant().setSimState(simState);
-            if(simState == TelephonyManager.SIM_STATE_ABSENT
-                    || simState == SimCardManager.SIM_STATE_NOT_READY){
+            if (simState == TelephonyManager.SIM_STATE_ABSENT
+                    || simState == SimCardManager.SIM_STATE_NOT_READY) {
                 GlobalLogic.getInstance().setLTEStatus(LTE_NONE);
             }
-            if(simState != TelephonyManager.SIM_STATE_ABSENT
+            if (simState != TelephonyManager.SIM_STATE_ABSENT
                     && simState != TelephonyManager.SIM_STATE_READY
                     && simState != TelephonyManager.SIM_STATE_UNKNOWN
-                    && simState != SimCardManager.SIM_STATE_NOT_READY){
+                    && simState != SimCardManager.SIM_STATE_NOT_READY) {
                 EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
             }
         }
@@ -704,15 +721,15 @@ public class CameraRecordFragment extends Fragment {
                 sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
                         equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
-            mRecordingFlags &=(~FLAG_SDCARD_AVAILABLE);
+            mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
             throw new RuntimeException("sd card unavailable");
         }
         if (mMainCam == null) {
             throw new RuntimeException("camera unavailable");
         }
-        if((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
+        if ((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
                 && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
-                && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) >0
+                && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) > 0
                 && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
 
             mMainCam.startVideoRecord(reason);
