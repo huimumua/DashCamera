@@ -4,8 +4,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
-import com.askey.dvr.cdr7010.dashcam.domain.Event;
-import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import org.json.JSONException;
@@ -58,17 +56,17 @@ public class SystemSettingManager {
                 JSONObject jsonObject = new JSONObject(response);
                 int status = jsonObject.getInt("status");
                 if(status == 0) { // 0:成功
-                    //0:更新なし 1:更新あり
-                    int updateSetting = jsonObject.getInt("updateSetting");
-                    int updateUser = jsonObject.getInt("updateUser");
-                    int updateUserDef = jsonObject.getInt("updateUserDef");
-                    int updateUserSelect = jsonObject.getInt("updateUserSelect");
-                    if(updateSetting == 1){
-                        EventManager.getInstance().handOutEventInfo(Event.CHANGE_SETTINGS_BY_SERVER);
-                    }
-                    if(updateUserSelect == 1){
-                        EventManager.getInstance().handOutEventInfo(Event.USER_SWITCH_BY_SERVER);
-                    }
+//                    //0:更新なし 1:更新あり
+//                    int updateSetting = jsonObject.getInt("updateSetting");
+//                    int updateUser = jsonObject.getInt("updateUser");
+//                    int updateUserDef = jsonObject.getInt("updateUserDef");
+//                    int updateUserSelect = jsonObject.getInt("updateUserSelect");
+//                    if(updateSetting == 1){
+//                        EventManager.getInstance().handOutEventInfo(Event.CHANGE_SETTINGS_BY_SERVER);
+//                    }
+//                    if(updateUserSelect == 1){
+//                        EventManager.getInstance().handOutEventInfo(Event.USER_SWITCH_BY_SERVER);
+//                    }
 
                 }
             } catch (JSONException e) {

@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
@@ -112,6 +113,7 @@ public class MainApp {
         @Override
         public void reportSettingsUpdate(int oos, String response) {
             Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
+            CommunicationService.reportSettingsUpdate(oos, response);
 
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);

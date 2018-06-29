@@ -67,6 +67,21 @@ public class CommunicationService extends Service {
         mCommunicationCallbackList.finishBroadcast();
     }
 
+    public static void reportSettingsUpdate(int oos, String response){
+        if(mCommunicationCallbackList == null)
+            return;
+
+        int num = mCommunicationCallbackList.beginBroadcast();
+        try {
+            for (int i = 0; i < num; i++) {
+                mCommunicationCallbackList.getBroadcastItem(i).reportSettingsUpdate(oos, response);
+            }
+        } catch (RemoteException e) {
+            Logg.e(LOG_TAG, "reportSettingsUpdate: " + e.getMessage());
+        }
+        mCommunicationCallbackList.finishBroadcast();
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
