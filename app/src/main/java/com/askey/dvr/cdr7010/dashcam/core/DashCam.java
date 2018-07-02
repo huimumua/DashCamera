@@ -104,6 +104,10 @@ public class DashCam implements DashCamControl {
         mAdasController = AdasController.getsInstance();
     }
 
+    public boolean isBusy() {
+        return !mStateMachine.getCurrentState().equals(StateMachine.STATE_CLOSE);
+    }
+
     public void startVideoRecord(String reason) {
         Logg.d(TAG, "startVideoRecord " + reason);
         mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_OPEN, reason));

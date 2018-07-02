@@ -9,6 +9,11 @@ import java.util.List;
 public class StateMachine {
     private static final String TAG = "StateMachine";
 
+    public static final String STATE_CLOSE = "closeState";
+    public static final String STATE_OPEN = "openState";
+    public static final String STATE_PREPARE_CLOSE = "prepareCloseState";
+    public static final String STATE_PREPARE_OPEN = "prepareOpenState";
+
     public static final int EVENT_OPEN = 1;
     public static final int EVENT_CLOSE = 2;
     public static final int EVENT_ERROR = 3;
@@ -42,16 +47,22 @@ public class StateMachine {
     }
 
     private interface IState {
+        String getName();
         void enter();
         void exit();
         void processEvent(Event event);
     }
 
-    public class State implements IState {
-        String name;
+    private class State implements IState {
+        private final String name;
 
-        protected State(String name) {
+        State(String name) {
             this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
 
         @Override
@@ -87,7 +98,7 @@ public class StateMachine {
 
     public StateMachine(DashCamControl dashCam) {
         mDashCamControl = dashCam;
-        State prepareOpenState = new State("prepareOpenState") {
+        State prepareOpenState = new State(STATE_PREPARE_OPEN) {
             @Override
             public void enter() {
                 super.enter();
@@ -107,7 +118,7 @@ public class StateMachine {
             }
         };
 
-        State prepareCloseState = new State("prepareCloseState") {
+        State prepareCloseState = new State(STATE_PREPARE_CLOSE) {
             @Override
             public void enter() {
                 super.enter();
@@ -122,7 +133,7 @@ public class StateMachine {
             }
         };
 
-        State openState = new State("openState") {
+        State openState = new State(STATE_OPEN) {
             @Override
             public void enter() {
                 super.enter();
@@ -147,7 +158,7 @@ public class StateMachine {
             }
         };
 
-        State closeState = new State("closeState") {
+        State closeState = new State(STATE_CLOSE) {
             @Override
             public void enter() {
                 super.enter();
@@ -171,6 +182,10 @@ public class StateMachine {
         addTransition(Transition.create(prepareCloseState, EVENT_ERROR, closeState));
 
         initialState(closeState);
+    }
+
+    public String getCurrentState() {
+        return currState.getName();
     }
 
     public void initialState(State state) {

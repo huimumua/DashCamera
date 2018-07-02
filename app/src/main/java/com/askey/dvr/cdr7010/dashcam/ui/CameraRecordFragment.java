@@ -746,7 +746,10 @@ public class CameraRecordFragment extends Fragment {
         }
 
         if (mMainCam == null) {
-            throw new RuntimeException("camera unavailable");
+            throw new RuntimeException("dashcam unavailable");
+        }
+        if (mMainCam.isBusy()) {
+            throw new RuntimeException("dashcam is busy");
         }
         if (RecordHelper.isRecodingEnable()) {
 
