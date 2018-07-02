@@ -20,9 +20,9 @@ public class EcallButtonReceiver extends BroadcastReceiver {
         if (ACTION_ECALL_BUTTON.equals(action)) {
             boolean isAppTop = AppUtils.isAppTop(context);
             Logg.d(LOG_TAG, "onReceive: isAppTop=" + isAppTop);
-            if (isAppTop) {
+//            if (isAppTop) {
                 EcallUtils.startVoipActivity(1);
-            }
+//            }
         }
     }
 }
