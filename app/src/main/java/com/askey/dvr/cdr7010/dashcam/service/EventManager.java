@@ -8,6 +8,7 @@ import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.parser.sax.GetEventInfoSAXParser;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
@@ -154,6 +155,12 @@ public class EventManager {
         if(eventInfo == null){
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
             return;
+        }
+        if(GlobalLogic.getInstance().isStartSwitchUser()){
+            if(eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()){
+                Logg.d(LOG_TAG, "handOutEventInfo: start switch user, eventType=" + eventType);
+                return ;
+            }
         }
         handOutEventInfo(eventInfo, timeStamp);
     }

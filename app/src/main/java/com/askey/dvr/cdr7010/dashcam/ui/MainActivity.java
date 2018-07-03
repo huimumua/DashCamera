@@ -205,6 +205,9 @@ public class MainActivity extends DialogActivity {
 
     @Override
     protected boolean handleKeyEvent(KeyEvent event) {
+        if(GlobalLogic.getInstance().isStartSwitchUser()){
+            return true;
+        }
         return false;
     }
     @Override

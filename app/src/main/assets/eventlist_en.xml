@@ -708,8 +708,8 @@
         <event_type>127</event_type>
         <dialog_type>3</dialog_type>
         <name>User switching server request</name>
-        <description></description>
-        <voice_guidence></voice_guidence>
+        <description>I changed the driver</description>
+        <voice_guidence>0109</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>no</led>

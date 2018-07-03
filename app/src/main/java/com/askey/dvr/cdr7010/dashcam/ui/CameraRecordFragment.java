@@ -84,6 +84,9 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START;
 import static com.askey.dvr.cdr7010.dashcam.util.SDCardUtils.isSDCardAvailable;
 
 public class CameraRecordFragment extends Fragment {
@@ -106,6 +109,7 @@ public class CameraRecordFragment extends Fragment {
     private static final int FLAG_SDCARD_SPACE_NOT_FULL = 1 << 1;
     private static final int FLAG_BATTERY_CHARGING = 1 << 2;
     private static final int FLAG_LOW_TEMPERATURE = 1 << 3;
+    private static final int FLAG_SWITCH_USER = 1 << 4;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
@@ -428,7 +432,7 @@ public class CameraRecordFragment extends Fragment {
         mHandler = new Handler(Looper.getMainLooper());
         thermalController = new ThermalController(thermalListener);
         mRecordingFlags = FLAG_BATTERY_CHARGING | FLAG_SDCARD_AVAILABLE | FLAG_SDCARD_SPACE_NOT_FULL
-                | FLAG_LOW_TEMPERATURE;
+                | FLAG_LOW_TEMPERATURE |FLAG_SWITCH_USER;
         EventUtil.register(this);
     }
 
@@ -614,6 +618,14 @@ public class CameraRecordFragment extends Fragment {
                     && simState != SimCardManager.SIM_STATE_NOT_READY) {
                 EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
             }
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_SWITCH_USER){
+            if(messageEvent.getData() == SWITCH_USER_PREPARE){
+                onSwitchUserPrepare();
+            }else if(messageEvent.getData() == SWITCH_USER_START){
+                onSwitchUserStart();
+            }else if(messageEvent.getData() == SWITCH_USER_COMPLETE){
+                onSwitchUserComplete();
+            }
         }
         osdView.invalidateView();
     }
@@ -718,7 +730,8 @@ public class CameraRecordFragment extends Fragment {
         if ((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
                 && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
                 && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) > 0
-                && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0) {
+                && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0
+                && (mRecordingFlags & FLAG_SWITCH_USER) > 0) {
 
             mMainCam.startVideoRecord(reason);
 
@@ -815,5 +828,26 @@ public class CameraRecordFragment extends Fragment {
                 releaseAll();
             }
         });
+    }
+    private void onSwitchUserPrepare(){
+        GlobalLogic.getInstance().setStartSwitchUser(true);
+        DialogManager.getIntance().dismissDialog();
+        DialogManager.getIntance().reset();
+    }
+    private void onSwitchUserStart(){
+        Logg.d(TAG, "onSwitchUserStart closeRecording");
+        mRecordingFlags  &= (~FLAG_SWITCH_USER);
+        stopVideoRecord("switch user start");
+    }
+    private void onSwitchUserComplete(){
+        GlobalLogic.getInstance().setStartSwitchUser(false);
+        try {
+            mRecordingFlags |= FLAG_SWITCH_USER;
+            startVideoRecord("switch user complete");
+        } catch (Exception e) {
+            Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+        }
+        EventManager.getInstance().handOutEventInfo(127);
+
     }
 }

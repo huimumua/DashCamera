@@ -141,6 +141,26 @@ public class DialogLogic{
         lastDialogType = -1;
         display =false;
     }
+    public void reset(){
+        lastMessage = "";
+        lastPriority = Integer.MAX_VALUE;
+        lastEventType =-1;
+        lastDialogType = -1;
+        display =false;
+        showTime = 0;
+        isSdcardPulledOut =false;
+        isSdcardInserted =false;
+        isPowerOFF =false;
+        isStartRecording =false;
+        isResumeRecording = false;
+        isSpeechCompleted =false;
+        isSdcardInitSuccess = false;
+        if(mCancelableRunnable != null){
+            mCancelableRunnable._cancel();
+            mCancelableRunnable = null;
+        }
+
+    }
 
     public void setSdcardPulledOut(boolean isSdcardPulledOut){
         this.isSdcardPulledOut = isSdcardPulledOut;

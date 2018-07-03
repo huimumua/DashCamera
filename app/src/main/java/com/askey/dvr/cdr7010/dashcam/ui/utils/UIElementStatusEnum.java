@@ -150,4 +150,18 @@ public class UIElementStatusEnum{
         }
 
     }
+    public enum SwitchUserEvent{
+        SWITCH_USER_PREPARE(0),
+        SWITCH_USER_START(1),
+        SWITCH_USER_COMPLETE(2);
+
+        public final int value;
+        SwitchUserEvent(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
 }

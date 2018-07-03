@@ -86,6 +86,12 @@ public class DialogManager{
             }
         }
     }
+    public void dismissDialog(){
+        if(mContext != null && (mContext instanceof Activity)){
+            ((DialogActivity) mContext).dismissDialog();
+            ((DialogActivity) mContext).resetDialogType();
+        }
+    }
     public void setSdcardPulledOut(boolean isSdcardPulledOut){
         if(eventList != null && eventList.contains(Event.SDCARD_UNFORMATTED)){
             eventList.remove(Event.SDCARD_UNFORMATTED);
@@ -225,9 +231,22 @@ public class DialogManager{
             }
             if(eventItem != null){
                 DialogManager.getIntance().showDialog(eventItem.eventType,eventItem.beginTime);
+                eventItem = null;
             }
         }
     };
+    public void reset(){
+        if(eventList != null ){
+            eventList.clear();
+        }
+        if(dialogLogic != null){
+            dialogLogic.reset();
+        }
+        lastPriority = Integer.MAX_VALUE;
+        lastDialogType =-1;
+        lastEventType = -1;
+        lastDisplay =false;
+    }
 
 
 }

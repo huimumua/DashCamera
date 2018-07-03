@@ -708,8 +708,8 @@
         <event_type>127</event_type>
         <dialog_type>3</dialog_type>
         <name>ユーザー切り替え_サーバー要求</name>
-        <description>ユーザー切り替え_サーバー要求</description>
-        <voice_guidence></voice_guidence>
+        <description>運転者を変更しました</description>
+        <voice_guidence>0109</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>no</led>

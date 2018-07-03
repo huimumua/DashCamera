@@ -199,6 +199,9 @@ public abstract class DialogActivity extends AppCompatActivity {
     public int getDialogType() {
         return dialogType;
     }
+    public void resetDialogType(){
+        dialogType = 0;
+    }
 
     public boolean onHandleCommDialogEvent(Dialog dialog, int event, int dialogMode) {
         if (event == 0) {

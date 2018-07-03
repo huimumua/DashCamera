@@ -23,6 +23,7 @@ public class GlobalLogic{
     private Context mContext;
     private boolean isInRecording;
     private String userInfo;
+    private volatile boolean isStartSwitchUser = false;
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_NONE;
@@ -135,6 +136,12 @@ public class GlobalLogic{
     }
     public boolean isInRecording(){
         return isInRecording;
+    }
+    public synchronized  void setStartSwitchUser(boolean startSwitchUserFlag){
+        this.isStartSwitchUser = startSwitchUserFlag;
+    }
+    public synchronized boolean isStartSwitchUser(){
+        return isStartSwitchUser;
     }
 
 }

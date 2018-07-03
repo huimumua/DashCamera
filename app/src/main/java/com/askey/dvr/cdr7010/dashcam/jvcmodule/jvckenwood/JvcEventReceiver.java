@@ -7,6 +7,7 @@ import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -61,6 +62,11 @@ public class JvcEventReceiver extends BroadcastReceiver{
         if(eventInfo == null){
             Logg.e(LOG_TAG, "checkEventInfo: can't find EventInfo, eventType=" + eventType);
             return false;
+        }
+        if(GlobalLogic.getInstance().isStartSwitchUser()){
+            if(eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()){
+                return false;
+            }
         }
         return true;
     }
