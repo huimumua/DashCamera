@@ -8,6 +8,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EcallUtils;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcLogUploadTask;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -66,7 +67,7 @@ public class CommunicationReceiver extends BroadcastReceiver {
         } else if (action.equals(ACTION_TRIPID_LOG_UPLOAD_RESPONSE)) {
             int logupload = intent.getIntExtra("logupload", -1);
 
-
+            new JvcLogUploadTask().execute();
         }
 
     }

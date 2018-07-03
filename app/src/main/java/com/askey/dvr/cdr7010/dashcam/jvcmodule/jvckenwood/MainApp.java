@@ -23,6 +23,7 @@ import com.jvckenwood.communication.IMainAppCallback;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -231,7 +232,9 @@ public class MainApp {
         public void logUploadResult(int oos, String result) {
             Logg.d(LOG_TAG, "logUploadResult: oos=" + oos + ", result=" + result);
 
-
+            String outputFilePath = DashCamApplication.getAppContext().getFilesDir().getAbsolutePath() + "/log.zip";
+            File outputFile = new File(outputFilePath);
+            outputFile.delete();
         }
     };
 
