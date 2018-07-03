@@ -1,10 +1,15 @@
 package com.askey.dvr.cdr7010.dashcam.core.gles;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -26,6 +31,17 @@ public class GlUtil {
 
 
     private GlUtil() {}     // do not instantiate
+
+    public static int createProgram(Context context, String vertexAssetFile, String fragmentAssetFile) {
+        try {
+            String vertexSource  = getStringFromFileInAssets(context, vertexAssetFile);
+            String fragmentSource = getStringFromFileInAssets(context, fragmentAssetFile);
+            return createProgram(vertexSource, fragmentSource);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     /**
      * Creates a new program from the supplied vertex and fragment shaders.
@@ -175,5 +191,17 @@ public class GlUtil {
                 Log.i(TAG, "iversion: " + majorVersion + "." + minorVersion);
             }
         }
+    }
+
+    private static String getStringFromFileInAssets(Context ctx, String filename) throws IOException {
+        InputStream is = ctx.getAssets().open(filename);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder builder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line).append("\n");
+        }
+        is.close();
+        return builder.toString();
     }
 }

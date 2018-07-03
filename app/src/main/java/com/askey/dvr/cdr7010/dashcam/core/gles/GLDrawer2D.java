@@ -4,6 +4,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.nio.ByteBuffer;
@@ -65,7 +66,8 @@ public class GLDrawer2D {
 		pTexCoord.put(TEXCOORD);
 		pTexCoord.flip();
 
-		hProgram = loadShader(vss, fss);
+		hProgram = GlUtil.createProgram(DashCamApplication.getAppContext(), "vertex.glvs", "fragment.glfs");
+		//hProgram = loadShader(vss, fss);
 		GLES20.glUseProgram(hProgram);
         maPositionLoc = GLES20.glGetAttribLocation(hProgram, "aPosition");
         maTextureCoordLoc = GLES20.glGetAttribLocation(hProgram, "aTextureCoord");

@@ -1,0 +1,36 @@
+#extension GL_OES_EGL_image_external : require
+precision highp   float;
+uniform samplerExternalOES sTexture;
+varying highp vec2 vTextureCoord;
+
+vec2 GLCoord2TextureCoord(vec2 glCoord) {
+    return glCoord * vec2(1.0, -1.0) / 2.0 + vec2(0.5, 0.5);
+}
+
+void main() {
+      vec2 coord;
+      coord.x =  vTextureCoord.x;
+      coord.y =  1.0 - vTextureCoord.y;
+      vec3 uLensS;
+      uLensS.x = 1.0001;
+      uLensS.y = 1.0001;
+      uLensS.z = 0.0;
+      float Fx = 0.07;
+      float Fy = 0.4;
+      float scale = 0.54;
+      vec2 vPos  = coord;
+      vPos.x = vPos.x - 0.5;
+      vPos.y = vPos.y - 0.5;
+      vec2 vMapping = vPos.xy;
+      vMapping.x = vMapping.x + ((pow(vPos.y, 2.0) / scale) * vPos.x / scale) * -Fx;
+      vMapping.y = vMapping.y + ((pow(vPos.x, 2.0) / scale) * vPos.y / scale) * -Fy;
+      vMapping = vMapping * uLensS.xy;
+      vMapping = GLCoord2TextureCoord(vMapping / scale);
+      vMapping.x = vMapping.x - 0.01;
+      vMapping.y = vMapping.y + 0.01 ;
+      vec4 texture = texture2D(sTexture, vMapping);
+      if(vMapping.x > 0.99 || vMapping.x < 0.01 || vMapping.y > 0.99 || vMapping.y < 0.01){
+          texture = vec4(0.0, 0.0, 0.0, 1.0);
+      }
+      gl_FragColor = texture;
+}
