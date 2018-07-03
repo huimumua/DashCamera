@@ -10,7 +10,7 @@ import com.askey.dvr.cdr7010.dashcam.mvp.model.NoticeModel;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
 
 public class NoticePresenter extends BasePresenter<NoticeContract.View> implements NoticeContract.InteractionListener<NoticeItem>, NoticeContract.Presenter {
-    private static final String DESCRIPTION = "本製品の操作は、必ず安全場所に停車してからおこなってください。" + "\r\n" + "運転中のに操作をおこなうと、思わめ事故の原因になります。";
+    private static final String DESCRIPTION = "本製品の操作は、必ず安全な場所に停車してからおこなってください。" + "\r\n" + "運転中に操作をおこなうと、思わぬ事故の原因になります。";
     private NoticeContract.View mView;
     private NoticeContract.Model mModel;
 
