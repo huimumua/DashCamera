@@ -729,13 +729,15 @@ public class CameraRecordFragment extends Fragment {
         if (!sdcardAvailable) {
             mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
             throw new RuntimeException("sd card unavailable");
+        } else {
+            mRecordingFlags |= FLAG_SDCARD_AVAILABLE;
         }
+
         if (mMainCam == null) {
             throw new RuntimeException("camera unavailable");
         }
         if ((mRecordingFlags & FLAG_SDCARD_SPACE_NOT_FULL) > 0
                 && (mRecordingFlags & FLAG_BATTERY_CHARGING) > 0
-                && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) > 0
                 && (mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0
                 && (mRecordingFlags & FLAG_SWITCH_USER) > 0) {
 
@@ -746,8 +748,8 @@ public class CameraRecordFragment extends Fragment {
                     Settings.Global.getUriFor(AskeySettings.Global.RECSET_VOICE_RECORD),
                     false,
                     mMicphoneSettingsObserver);
-        }else{
-            throw new RuntimeException("startVideoRecord fail reason="+reason);
+        } else {
+            throw new RuntimeException("startVideoRecord because: " + reason + " with excption: flags=" + mRecordingFlags);
         }
     }
 
