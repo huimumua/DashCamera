@@ -79,6 +79,7 @@ public class CommDialog extends Dialog{
         messageText.setText(msg);
         messageText.setTextColor(Color.BLACK);
         messageText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+        messageText.setPadding(10,0,10,0);
         messageText.setGravity(Gravity.CENTER);
 
         btnOk = (Button) findViewById(R.id.ib_ok);

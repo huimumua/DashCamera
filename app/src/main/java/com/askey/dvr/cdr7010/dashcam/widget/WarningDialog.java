@@ -66,6 +66,7 @@ public class WarningDialog extends Dialog {
         messageText.setTextColor(Color.BLACK);
         messageText.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
         messageText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+        messageText.setPadding(10,0,10,0);
         messageText.setLayoutParams(messageParam);
     }
     public void setMessage(int resId){
