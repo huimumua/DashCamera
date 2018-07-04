@@ -29,6 +29,8 @@ public final class Event{
    public static final int WEATHER_ALERT = 26;
    public static final int EMERGENCY_CALL_BUTTON = 27;
    public static final int PEDESTRIAN_COLLISION_WARNING =28;
+   public static final int ABRUPT_HANDLE_LEFT = 29;
+   public static final int ABRUPT_HANDLE_RIGHT = 30;
 
    public static final int NOTICE_START = 100;
    public static final int DRIVING_REPORT =101;

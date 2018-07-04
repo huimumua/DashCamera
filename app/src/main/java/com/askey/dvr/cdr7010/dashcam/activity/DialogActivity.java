@@ -10,8 +10,8 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
-import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.EventTyeTtsOnOffCheck;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -50,6 +50,12 @@ public abstract class DialogActivity extends AppCompatActivity {
     private static EventManager.EventCallback ttsEventCallback = new EventManager.EventCallback() {
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp) {
+            int eventType = eventInfo.getEventType();
+            if(!EventTyeTtsOnOffCheck.checkTtsOnOff(eventType)){
+                Logg.i(TAG, "ttsEventCallback: onEvent: eventType=" + eventType + ", tts user set OFF.");
+                return;
+            }
+
             String voiceCode = eventInfo.getVoiceGuidence().trim();
             if(!TextUtils.isEmpty(voiceCode)) {
                 String[] voiceArray = voiceCode.split(",");
