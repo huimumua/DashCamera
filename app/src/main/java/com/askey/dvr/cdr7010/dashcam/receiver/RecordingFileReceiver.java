@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
@@ -16,6 +17,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRe
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
@@ -67,6 +69,7 @@ public class RecordingFileReceiver extends BroadcastReceiver{
             }else if(CMD_SHOW_UNREACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.ParkingRecordingLimitStatusType>(Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION));
             }else if(CMD_SHOW_SDCARD_FULL_LIMIT.equals(cmd_ex)){
+                GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_FULL_LIMIT);
                 handOutEventInfo(116); // defined to 116 in assets
             }
         }else if(action.equals(ACTION_SDCARD_STATUS)){
@@ -74,26 +77,33 @@ public class RecordingFileReceiver extends BroadcastReceiver{
             Logg.d(LOG_TAG, "action=" + action+",data="+data);
             if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
                 if (data.equals(CMD_SHOW_SDCARD_NOT_SUPPORTED)) {
+                    GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_UNSUPPORTED);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_UNSUPPORTED));
                     handOutEventInfo(112); // defined to 112 in assets
                 } else if (data.equals(CMD_SHOW_SDCARD_SUPPORTED)) {
+                    GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_SUPPORTED);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_SUPPORTED));
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_FAIL)) {
+                    GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_INIT_FAIL);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_FAIL));
                     handOutEventInfo(111); // defined to 111 in assets
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_SUCC)) {
+                    GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_INIT_SUCCESS);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_SUCCESS));
                 } else if (data.equals(CMD_SHOW_SDCARD_UNRECOGNIZABLE)) {
+                    GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_UNRECOGNIZABLE);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_UNRECOGNIZABLE));
                     handOutEventInfo(113); // defined to 113 in assets
                 }
             }
         }else if(action.equals("android.intent.action.MEDIA_MOUNTED")){
             if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_MOUNTED);
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
             }
         }else if(action.equals("android.intent.action.MEDIA_EJECT")){
             if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_REMOVED);
                 handOutEventInfo(110);
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
             }

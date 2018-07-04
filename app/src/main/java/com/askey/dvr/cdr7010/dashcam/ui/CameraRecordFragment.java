@@ -84,6 +84,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardAndSimCardCheckStatus.CHECK_START;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START;
@@ -626,6 +627,10 @@ public class CameraRecordFragment extends Fragment {
             }else if(messageEvent.getData() == SWITCH_USER_COMPLETE){
                 onSwitchUserComplete();
             }
+        }else if(messageEvent.getCode() == Event.EventCode.EVENT_CHECK_SDCARD_AND_SIMCARD){
+            if(messageEvent.getData() == CHECK_START){
+                checkSdcardAndSimcardStatus();
+            }
         }
         osdView.invalidateView();
     }
@@ -848,6 +853,35 @@ public class CameraRecordFragment extends Fragment {
             Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
         }
         EventManager.getInstance().handOutEventInfo(127);
+
+    }
+    private void checkSdcardAndSimcardStatus(){
+        UIElementStatusEnum.SDcardStatusType sdcardStatus = GlobalLogic.getInstance().getSDCardCurrentStatus();
+        switch(sdcardStatus){
+            case SDCARD_UNSUPPORTED:
+                EventManager.getInstance().handOutEventInfo(112);
+                break;
+            case SDCARD_INIT_FAIL:
+                EventManager.getInstance().handOutEventInfo(111);
+                break;
+            case SDCARD_UNRECOGNIZABLE:
+                EventManager.getInstance().handOutEventInfo(113);
+                break;
+            case SDCARD_REMOVED:
+                EventManager.getInstance().handOutEventInfo(110);
+                break;
+            case SDCARD_FULL_LIMIT:
+                EventManager.getInstance().handOutEventInfo(116);
+                break;
+           default:
+        }
+        int simState = SimCardManager.getInstant().getSimState();
+        if (simState != TelephonyManager.SIM_STATE_ABSENT
+                && simState != TelephonyManager.SIM_STATE_READY
+                && simState != TelephonyManager.SIM_STATE_UNKNOWN
+                && simState != SimCardManager.SIM_STATE_NOT_READY) {
+            EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
+        }
 
     }
 }

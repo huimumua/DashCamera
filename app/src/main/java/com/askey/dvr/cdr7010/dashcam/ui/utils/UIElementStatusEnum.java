@@ -79,7 +79,8 @@ public class UIElementStatusEnum{
         SDCARD_UNSUPPORTED(4),
         SDCARD_INIT_FAIL(5),
         SDCARD_UNRECOGNIZABLE(6),
-        SDCARD_UNMOUNTED(7);
+        SDCARD_UNMOUNTED(7),
+        SDCARD_FULL_LIMIT(8);
 
         public final int value;
         SDcardStatusType(int value){
@@ -164,4 +165,18 @@ public class UIElementStatusEnum{
             return String.valueOf(value);
         }
     }
+    public enum SdCardAndSimCardCheckStatus{
+        CHECK_START(0),
+        CHECK_STOP(1),
+        CHECK_COMPLETE(2);
+        public final int value;
+        SdCardAndSimCardCheckStatus(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
+
 }

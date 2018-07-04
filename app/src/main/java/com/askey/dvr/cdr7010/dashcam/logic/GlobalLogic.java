@@ -34,6 +34,7 @@ public class GlobalLogic{
     private UIElementStatusEnum.SDcardStatusType sdCardStatus = SDCARD_REMOVED;
     private UIElementStatusEnum.FOTAFileStatus fotaFileStatus = FOTA_FILE_NOT_EXIST;
     private UIElementStatusEnum.SimCardStatus simCardStatus = SIM_STATE_ABSENT;
+    private UIElementStatusEnum.SDcardStatusType sdCardCurrentStatus = SDCARD_REMOVED;
     private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
 
     public static GlobalLogic getInstance(){
@@ -89,6 +90,12 @@ public class GlobalLogic{
     }
     public UIElementStatusEnum.SDcardStatusType getSDCardStatus(){
         return sdCardStatus;
+    }
+    public void setSDCardCurrentStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus){
+        this.sdCardCurrentStatus = sdCardStatus;
+    }
+    public UIElementStatusEnum.SDcardStatusType getSDCardCurrentStatus(){
+        return sdCardCurrentStatus;
     }
     public void setFOTAFileStatus(UIElementStatusEnum.FOTAFileStatus fotaFileStatus){
         this.fotaFileStatus = fotaFileStatus;

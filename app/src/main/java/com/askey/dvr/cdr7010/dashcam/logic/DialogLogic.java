@@ -8,8 +8,12 @@ import android.os.Looper;
 
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.CancelableRunnable;
+import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardAndSimCardCheckStatus.CHECK_START;
 
 
 public class DialogLogic{
@@ -195,6 +199,8 @@ public class DialogLogic{
                 onDismiss(dialogType,eventType);
                 if(eventType == Event.HIGH_TEMPERATURE_THRESHOLD_LV1){
                     EventUtil.sendEvent(Integer.valueOf(eventType));
+                }else if(eventType == Event.USER_SWITCH_BY_SERVER){
+                    EventUtil.sendEvent((new MessageEvent<UIElementStatusEnum.SdCardAndSimCardCheckStatus>(Event.EventCode.EVENT_CHECK_SDCARD_AND_SIMCARD,CHECK_START)));
                 }
             }
         };
