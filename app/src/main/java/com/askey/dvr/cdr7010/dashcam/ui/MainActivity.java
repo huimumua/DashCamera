@@ -239,7 +239,7 @@ public class MainActivity extends DialogActivity {
                 break;
             case KeyAdapter.KEY_MENU:
                 Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-                if(currentLocation != null && currentLocation.hasSpeed()){ //有GPS信号，且速度大于0
+                if(currentLocation != null && currentLocation.getSpeed() > 0.0f){ //有GPS信号，且速度大于0
                     //
                 }else {
                     MainAppSending.menuTransition(FROM_MAINAPP);

@@ -451,7 +451,7 @@ public class OSDView extends View {
 
         canvas.drawBitmap(volume_up,null, volumeUpRectF, null);
         Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-        if(currentLocation != null && currentLocation.hasSpeed()){ //有GPS信号，且速度大于0
+        if(currentLocation != null && currentLocation.getSpeed() > 0.0f){ //有GPS信号，且速度大于0
             canvas.drawBitmap(menuDisabled,null, menuRectF, null);
         }else {
             canvas.drawBitmap(menu,null, menuRectF, null);
