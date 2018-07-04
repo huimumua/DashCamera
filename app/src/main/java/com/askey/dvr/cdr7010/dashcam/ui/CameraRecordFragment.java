@@ -27,6 +27,7 @@ import android.support.v4.app.ActivityCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -852,6 +853,7 @@ public class CameraRecordFragment extends Fragment {
         } catch (Exception e) {
             Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
         }
+        refreshUserInfo();
         EventManager.getInstance().handOutEventInfo(127);
 
     }
@@ -882,6 +884,12 @@ public class CameraRecordFragment extends Fragment {
                 && simState != SimCardManager.SIM_STATE_NOT_READY) {
             EventManager.getInstance().handOutEventInfo(Event.EVENT_SIMCARD_ERROR);
         }
-
+    }
+    public void refreshUserInfo(){
+        String userName = GlobalLogic.getInstance().getString(AskeySettings.Global.SYSSET_USER_NAME,"");
+        if(!TextUtils.isEmpty(userName)){
+            GlobalLogic.getInstance().setUserInfo(userName);
+            osdView.invalidateView();
+        }
     }
 }

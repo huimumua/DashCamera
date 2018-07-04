@@ -138,6 +138,18 @@ public class GlobalLogic{
         }
         return value;
     }
+    public boolean putString(String key, String value){
+        return Settings.Global.putString(contentResolver , key,value);
+    }
+    public String getString(String key,String def){
+        String value = def;
+        try{
+            value =  Settings.Global.getString(contentResolver, key);
+        }catch(Exception e){
+            value = def;
+        }
+        return value;
+    }
     public void setIsInRecording(boolean isInRecording){
         this.isInRecording = isInRecording;
     }

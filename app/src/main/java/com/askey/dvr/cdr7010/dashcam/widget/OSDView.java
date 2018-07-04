@@ -347,19 +347,19 @@ public class OSDView extends View {
             float baseline = (rcItem.height() - rect.height() - txtMaxHeight) * 3/4;
             baseY = (int)(rcItem.bottom- fontMetrics.bottom - baseline) ;
         }
-        if (isOutSide) {
-            if (startDrawX < -textWidth) {
-                startDrawX = spacing;
-            }
-            int outSide = startDrawX;
-            if (outSide < -(textWidth - rcItem.width())) {
-                canvas.drawText(userInfo, textWidth + outSide + spacing, baseY, drawPaint);
-            }
-            canvas.drawText(userInfo, startDrawX, baseY, drawPaint);
-            startDrawX -= 5;
-        } else {
+//        if (isOutSide) {
+//            if (startDrawX < -textWidth) {
+//                startDrawX = spacing;
+//            }
+//            int outSide = startDrawX;
+//            if (outSide < -(textWidth - rcItem.width())) {
+//                canvas.drawText(userInfo, textWidth + outSide + spacing, baseY, drawPaint);
+//            }
+//            canvas.drawText(userInfo, startDrawX, baseY, drawPaint);
+//            startDrawX -= 5;
+//        } else {
            canvas.drawText(userInfo,  (int)userInfoRectF.left, baseY, drawPaint);
-        }
+//        }
        // postInvalidateDelayed(scrollingSpeed);
         canvas.restore();
     }
