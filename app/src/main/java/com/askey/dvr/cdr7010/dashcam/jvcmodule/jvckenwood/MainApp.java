@@ -18,6 +18,7 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.SystemSettingManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.UserSettingManager;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
 
@@ -25,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -46,6 +48,9 @@ public class MainApp {
     private IMainApp mMainAppInterface;
     private static Context mAppContext;
     private static CountDownLatch countDownLatch;
+    private static int startUp;
+    private static int rtcInfo;
+    private static final String PREFER_KEY_CONTRACT_FLG = "ContractFlg";
 
     private MainApp() {
         mAppContext = DashCamApplication.getAppContext();
@@ -352,8 +357,14 @@ public class MainApp {
     }
     private static void sendStatUpNotify(){
         Log.d(LOG_TAG,"sendStatUpNotify~~~~!");
-        Intent intent = new Intent();
-        intent.setAction("android.intent.action.STARTUP_NOTIFY");
-        mAppContext.sendBroadcast(intent);
+        startUp = (int) SPUtils.get(mAppContext, PREFER_KEY_CONTRACT_FLG, 0);
+        Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        if (year<2018){
+            rtcInfo = 0;
+        }else {
+            rtcInfo = 1;
+        }
+        MainAppSending.startupNotify(startUp,rtcInfo);
     }
 }
