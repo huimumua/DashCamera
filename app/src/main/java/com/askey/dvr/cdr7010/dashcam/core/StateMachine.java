@@ -168,7 +168,7 @@ public class StateMachine {
         addTransition(Transition.create(prepareOpenState, EVENT_ERROR, closeState));
         addTransition(Transition.create(openState, EVENT_CLOSE, prepareCloseState));
         addTransition(Transition.create(prepareCloseState, EVENT_CLOSE_SUCCESS, closeState));
-        addTransition(Transition.create(prepareCloseState, EVENT_ERROR, openState));
+        addTransition(Transition.create(prepareCloseState, EVENT_ERROR, closeState));
 
         initialState(closeState);
     }
