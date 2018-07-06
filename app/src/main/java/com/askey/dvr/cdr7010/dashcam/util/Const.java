@@ -4,6 +4,8 @@ public class Const {
     public static final String PREFERENCE_KEY_UPDATE_COMPLETED = "updateCompleted";
     public static final String PACKAGE_NAME = "com.askey.dvr.cdr7010.setting";
     public static final String CLASS_NAME = "com.askey.dvr.cdr7010.setting.SettingsActivity";
+    public static final String LCD_POWER_STATUS_PATH ="/sys/class/graphics/fb0/askey_lcd_power_on_state";
+    public static final String LCD_THERMAL_STATUS_PATH="/sys/class/graphics/fb0/askey_lcd_thermal_protection_state";
     public static final String STR_BUTTON_CONFIRM = "OK";
     public static final String STR_BUTTON_CANCEL = "X";
 

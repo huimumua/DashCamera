@@ -574,7 +574,7 @@
     </event>
     <event>
         <id>45</id>
-        <priority>6</priority>
+        <priority>0</priority>
         <event_type>117</event_type>
         <dialog_type>3</dialog_type>
         <name>高温閾値Lv1に達した場合</name>

@@ -10,6 +10,8 @@ import android.text.TextUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -133,20 +135,23 @@ public class FileUtils {
      * @throws RuntimeException if an error occurs while operator FileWriter
      */
     public static boolean writeFile(String filePath, String content, boolean append) {
-        if(filePath ==null || content ==null){
-            return false;
-        }
-        if (content.isEmpty()) {
-            return false;
-        }
+//        if(filePath ==null || content ==null){
+//            return false;
+//        }
+//        if (content.isEmpty()) {
+//            return false;
+//        }
         boolean ret = true;
         OutputStreamWriter out = null;
+        Logg.d("FileUtils","content1="+content);
         try {
-            makeDirs(filePath);
+       //     makeDirs(filePath);
             out = new OutputStreamWriter(new FileOutputStream(filePath, append),"UTF-8");
+            Logg.d("FileUtils","content="+content);
             out.write(content);
             ret = true;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             ret = false;
         } finally {
             try {
@@ -981,5 +986,94 @@ public class FileUtils {
             }
         }
         return files;
+    }
+    public static void writeSysFile(String sys_path,String value){
+
+        Process p = null;
+        DataOutputStream os = null;
+        try {
+            p = Runtime.getRuntime().exec("sh");
+            os = new DataOutputStream(p.getOutputStream());
+            os.writeBytes("echo 0 > "+sys_path + "\n");
+            os.writeBytes("exit\n");
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Logg.e("FileUtils", " can't write " + sys_path+e.getMessage());
+        } finally {
+            if(p != null){
+                p.destroy();
+            }
+            if(os != null){
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public static boolean upgradeRootPermission(String pkgCodePath) {
+        Process process = null;
+        DataOutputStream os = null;
+        try {
+            String cmd = "chmod 777 " + pkgCodePath;
+            process = Runtime.getRuntime().exec("su"); // 切换到root帐号
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes(cmd + "\n");
+            os.writeBytes("exit\n");
+            os.flush();
+            process.waitFor();
+        } catch (Exception e) {
+            return false;
+        } finally {
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                process.destroy();
+            } catch (Exception e) {
+            }
+        }
+        return true;
+    }
+    public static String execRootCmd(String cmd) {
+        String result = "";
+        DataOutputStream dos = null;
+        DataInputStream dis = null;
+
+        try {
+            Process p = Runtime.getRuntime().exec("su");
+            dos = new DataOutputStream(p.getOutputStream());
+            dis = new DataInputStream(p.getInputStream());
+
+            dos.writeBytes(cmd + "\n");
+            dos.flush();
+            dos.writeBytes("exit\n");
+            dos.flush();
+            String line = null;
+            while ((line = dis.readLine()) != null) {
+                result += line+"\r\n";
+            }
+            p.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
     }
 }

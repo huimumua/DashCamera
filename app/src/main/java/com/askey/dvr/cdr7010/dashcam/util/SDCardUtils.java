@@ -54,15 +54,7 @@ public class SDCardUtils
     {
         return Environment.getRootDirectory().getAbsolutePath() + File.separator;
     }
-    public static boolean isSDCardAvailable(){
-        String status = Environment.getExternalStorageState();
-        if (status.equalsIgnoreCase(Environment.MEDIA_REMOVED)
-                || status.equalsIgnoreCase(Environment.MEDIA_BAD_REMOVAL)
-                || status.equalsIgnoreCase(Environment.MEDIA_UNMOUNTED)) {
-            return false;
-        }
-        return true;
-    }
+
 
 
 }

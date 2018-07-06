@@ -52,8 +52,11 @@ import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.FileUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
@@ -91,7 +94,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardA
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START;
-import static com.askey.dvr.cdr7010.dashcam.util.SDCardUtils.isSDCardAvailable;
 
 public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
@@ -145,7 +147,6 @@ public class CameraRecordFragment extends Fragment {
                 Logg.d(TAG, "mSdStatusListener,ex==" + ex);
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
-                    LedMananger.getInstance().setLedRecStatus(true, false, 0);
                     try {
                         mRecordingFlags |= FLAG_SDCARD_AVAILABLE;
                         startVideoRecord("SD become available");
@@ -355,7 +356,7 @@ public class CameraRecordFragment extends Fragment {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    EventManager.getInstance().handOutEventInfo(114);
+              //      EventManager.getInstance().handOutEventInfo(114);
                 }
             });
 
@@ -431,6 +432,12 @@ public class CameraRecordFragment extends Fragment {
             }
 
         }
+        @Override
+        public void startLcdPanel() {
+            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
+                Logg.d(TAG, "ThermalController startLcdPanel");
+            }
+        }
     };
 
     public static CameraRecordFragment newInstance() {
@@ -469,7 +476,6 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        checkSdCardExist();
         IntentFilter simCardFilter = new IntentFilter();
         simCardFilter.addAction("android.intent.action.PHONE_STATE");
         simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
@@ -664,12 +670,6 @@ public class CameraRecordFragment extends Fragment {
                 DialogManager.getIntance().setSdcardInitSuccess(true);
                 break;
             default:
-        }
-    }
-
-    private void checkSdCardExist() {
-        if (!isSDCardAvailable()) {
-            EventManager.getInstance().handOutEventInfo(110);
         }
     }
 
@@ -880,25 +880,7 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void checkSdcardAndSimcardStatus() {
-        UIElementStatusEnum.SDcardStatusType sdcardStatus = GlobalLogic.getInstance().getSDCardCurrentStatus();
-        switch (sdcardStatus) {
-            case SDCARD_UNSUPPORTED:
-                EventManager.getInstance().handOutEventInfo(112);
-                break;
-            case SDCARD_INIT_FAIL:
-                EventManager.getInstance().handOutEventInfo(111);
-                break;
-            case SDCARD_UNRECOGNIZABLE:
-                EventManager.getInstance().handOutEventInfo(113);
-                break;
-            case SDCARD_REMOVED:
-                EventManager.getInstance().handOutEventInfo(110);
-                break;
-            case SDCARD_FULL_LIMIT:
-                EventManager.getInstance().handOutEventInfo(116);
-                break;
-            default:
-        }
+        SDcardHelper.handleSdcardAbnormalEvent();
         int simState = SimCardManager.getInstant().getSimState();
         if (simState != TelephonyManager.SIM_STATE_ABSENT
                 && simState != TelephonyManager.SIM_STATE_READY
