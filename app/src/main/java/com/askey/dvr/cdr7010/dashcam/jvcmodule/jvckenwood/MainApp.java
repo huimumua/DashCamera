@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.CommunicationService;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
@@ -42,7 +44,8 @@ public class MainApp {
     private static final String LOG_TAG = "MainApp";
     private static MainApp mMainApp;
     private IMainApp mMainAppInterface;
-    private final Context mAppContext;
+    private static Context mAppContext;
+    private static CountDownLatch countDownLatch;
 
     private MainApp() {
         mAppContext = DashCamApplication.getAppContext();
@@ -51,6 +54,19 @@ public class MainApp {
     public static MainApp getInstance(){
         if(mMainApp == null)
             mMainApp = new MainApp();
+         countDownLatch = new CountDownLatch(3);
+         new Thread(new Runnable() {
+             @Override
+             public void run() {
+                 try {
+                     countDownLatch.await();
+                 } catch (InterruptedException e) {
+                     e.printStackTrace();
+                 }
+                 sendStatUpNotify();
+                 Log.d(LOG_TAG,"countDownLatch.await()~！");
+             }
+         }).start();
 
         return mMainApp;
     }
@@ -74,41 +90,49 @@ public class MainApp {
         @Override
         public void reportInsuranceTerm(int oos, String response) {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
-
-            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
-            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
-            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            LocalJvcStatusManager.setInsuranceTerm(enumMap);
+                if (oos!=0){
+                    sendStatUpNotify();
+                }else {
+                    EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+                    enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+                    enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+                    LocalJvcStatusManager.setInsuranceTerm(enumMap);
+                }
         }
 
         @Override
-        public void reportUserList(int oos, String response) {
+        public void reportUserList(int oos, String response) throws RemoteException {
             Logg.d(LOG_TAG, "reportUserList: oos=" + oos + ", response=" + response);
 
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            UserSettingManager.getUserList(enumMap);
+            UserSettingManager.getUserList(enumMap,countDownLatch);
         }
 
         @Override
         public void reportSystemSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportSystemSettings: oos=" + oos + ", response=" + response);
-
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            SystemSettingManager.systemSetting(enumMap);
+            SystemSettingManager.systemSetting(enumMap,countDownLatch);
         }
 
         @Override
         public void reportUserSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
-
-            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
-            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
-            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            UserSettingManager.userSettings(enumMap);
+            UserSettingManager.setUserListCallBack(new UserSettingManager.UserInfoCallback() {
+                @Override
+                public void notifyUserInfo(boolean isOk, int num) {
+                    if (isOk){
+                        EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+                        enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+                        enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+                        UserSettingManager.userSettings(enumMap,countDownLatch,num);
+                    }
+                }
+            });
         }
 
         @Override
@@ -326,5 +350,10 @@ public class MainApp {
 
         return true;
     }
-
+    private static void sendStatUpNotify(){
+        Log.d(LOG_TAG,"sendStatUpNotify~~~~!");
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.STARTUP_NOTIFY");
+        mAppContext.sendBroadcast(intent);
+    }
 }
