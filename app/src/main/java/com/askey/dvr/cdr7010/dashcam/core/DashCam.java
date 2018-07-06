@@ -6,7 +6,6 @@ import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
 
-import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
@@ -14,7 +13,6 @@ import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +30,7 @@ public class DashCam implements DashCamControl {
     private StateCallback mStateCallback;
     private boolean mIsRunning;
     private StateMachine mStateMachine;
-    private AdasController mAdasController;
+//    private AdasController mAdasController;
 
     public interface StateCallback {
         void onStarted();
@@ -102,7 +100,7 @@ public class DashCam implements DashCamControl {
         mConfig = config;
         mStateCallback = callback;
         mStateMachine = new StateMachine(this);
-        mAdasController = AdasController.getsInstance();
+//        mAdasController = AdasController.getsInstance();
     }
 
     public void startVideoRecord(String reason) {
@@ -129,14 +127,14 @@ public class DashCam implements DashCamControl {
         if (mIsRunning) {
             return;
         }
-        mAdasController.start(mContext);
+//        mAdasController.start(mContext);
         ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
                 Image image = reader.acquireLatestImage();
                 if (image != null) {
-                    mAdasController.process(image);
+//                    mAdasController.process(image);
                 }
             }
         }, null);

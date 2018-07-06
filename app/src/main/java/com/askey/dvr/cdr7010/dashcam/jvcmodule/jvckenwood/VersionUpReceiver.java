@@ -20,7 +20,6 @@ public class VersionUpReceiver extends BroadcastReceiver{
     private static final String ACTION_EVENT_UPDATE_READY = "com.jvckenwood.versionup.UPDATE_READY";
     private static final String ACTION_EVENT_UPDATE_COMPLETED = "com.jvckenwood.versionup.UPDATE_COMPLETED";
     private static final String ACTION_EVENT_UPDATE_CHECK = "com.jvckenwood.versionup.UPDATE_CHECK";
-    private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
 
     public static final String ACTION_FOTA_STATUS = "action_fota_status";
     public static final String ACTION_UPDATE_CHECK = "action_update_check";
@@ -61,16 +60,6 @@ public class VersionUpReceiver extends BroadcastReceiver{
             }
             UpdateCompleteInfo updateCompleteInfo = new UpdateCompleteInfo(type,result);
             EventUtil.sendEvent(updateCompleteInfo);
-        }else if(action.equals(ACTION_EVENT_STARTUP)){
-            int bootinfo = intent.getIntExtra("bootinfo", -1);
-            int updateInfo = intent.getIntExtra("updateInfo", -10);
-            String farmver = intent.getStringExtra("farmver");
-            String soundver = intent.getStringExtra("soundver");
-            Logg.i(LOG_TAG,"==ACTION_EVENT_STARTUP=bootinfo=" + bootinfo + "=updateInfo=" + updateInfo);
-            if(updateInfo == 0) {//None
-                StartUpInfo startUpInfo = new StartUpInfo(bootinfo, updateInfo, farmver, soundver);
-                EventUtil.sendEvent(startUpInfo);
-            }
         }else if(action.equals(ACTION_EVENT_UPDATE_CHECK)){
             int result = intent.getIntExtra("result", 1);
             Intent broadcastIntent = new Intent(ACTION_UPDATE_CHECK);
@@ -87,7 +76,7 @@ public class VersionUpReceiver extends BroadcastReceiver{
         return true;
     }
 
-    public class StartUpInfo{
+    public static class StartUpInfo{
         public int bootinfo;
         public int updateInfo;
         public String farmver;
