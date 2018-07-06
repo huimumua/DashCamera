@@ -356,7 +356,7 @@ public class CameraRecordFragment extends Fragment {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-              //      EventManager.getInstance().handOutEventInfo(114);
+                    EventManager.getInstance().handOutEventInfo(114);
                 }
             });
 
@@ -522,10 +522,6 @@ public class CameraRecordFragment extends Fragment {
 
         try {
             startVideoRecord("Fragment onResume");
-        } catch (SDCardUnavailableException ex) {
-            Logg.e(TAG, "onResume: start video record fail with exception: " + ex.getMessage());
-            EventManager.getInstance().handOutEventInfo(110);
-            EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
         } catch (Exception e) {
             Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
         }
@@ -744,7 +740,7 @@ public class CameraRecordFragment extends Fragment {
                         equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
             mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
-            throw new SDCardUnavailableException("sd card unavailable");
+            throw new RuntimeException("sd card unavailable");
         } else {
             mRecordingFlags |= FLAG_SDCARD_AVAILABLE;
         }
