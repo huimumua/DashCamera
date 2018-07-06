@@ -1,7 +1,10 @@
 package com.askey.dvr.cdr7010.dashcam.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
@@ -14,17 +17,12 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 
 
 public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener, UpdateFragment.UpdateListener {
@@ -34,6 +32,25 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     private boolean isUpdate;
     private UpdateInfo updateInfo;
     private boolean isNoticeFinish = false;
+    private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Logg.d(TAG, "onReceive: " + action);
+            if(ACTION_EVENT_STARTUP.equals(action)){
+                int bootinfo = intent.getIntExtra("bootinfo", -1);
+                int updateInfo = intent.getIntExtra("updateInfo", -10);
+                String farmver = intent.getStringExtra("farmver");
+                String soundver = intent.getStringExtra("soundver");
+                Logg.i(TAG,"onReceive: STARTUP: bootinfo=" + bootinfo + ", updateInfo=" + updateInfo);
+                if(updateInfo == 0) {//None
+                    VersionUpReceiver.StartUpInfo startUpInfo = new VersionUpReceiver.StartUpInfo(bootinfo, updateInfo, farmver, soundver);
+                    EventUtil.sendEvent(startUpInfo);
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +59,11 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         noticeFragment = NoticeFragment.newInstance(null);
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                 noticeFragment, R.id.contentFrame);
+        //add by Mark for PUCDR-1262
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_EVENT_STARTUP);
+        registerReceiver(receiver, filter);
+        //end add
     }
 
     @Override
@@ -233,6 +255,9 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
             DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_UPDATE);
             isUpdate = false;
         }
+        //add by Mark for PUCDR-1262
+        unregisterReceiver(receiver);
+        //end add
         super.onDestroy();
     }
 

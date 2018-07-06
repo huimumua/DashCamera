@@ -51,12 +51,17 @@ public abstract class DialogActivity extends AppCompatActivity {
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp) {
             int eventType = eventInfo.getEventType();
+            String voiceCode ="";
             if(!EventTyeTtsOnOffCheck.checkTtsOnOff(eventType)){
                 Logg.i(TAG, "ttsEventCallback: onEvent: eventType=" + eventType + ", tts user set OFF.");
                 return;
             }
 
-            String voiceCode = eventInfo.getVoiceGuidence().trim();
+            try {
+                voiceCode = eventInfo.getVoiceGuidence().trim();
+            }catch(Exception e){
+                voiceCode = "";
+            }
             if(!TextUtils.isEmpty(voiceCode)) {
                 String[] voiceArray = voiceCode.split(",");
                 int[] voiceId = new int[voiceArray.length];
