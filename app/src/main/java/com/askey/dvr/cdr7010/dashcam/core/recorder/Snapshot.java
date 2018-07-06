@@ -39,7 +39,16 @@ public class Snapshot {
             return;
         }
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(videoFilePath);
+        try {
+            retriever.setDataSource(videoFilePath);
+        } catch (Exception e) {
+            Logg.e(TAG, "setDataSource exception: " + e.getMessage());
+            if (listener != null) {
+                listener.onPictureTake(new ArrayList<>(0));
+            }
+            return;
+        }
+
         long pts = timeStamp - 3000;
         long pos = firstTime;
         final List<String> fileNames = new ArrayList<>(3);
