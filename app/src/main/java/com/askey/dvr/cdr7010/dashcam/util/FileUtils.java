@@ -135,17 +135,17 @@ public class FileUtils {
      * @throws RuntimeException if an error occurs while operator FileWriter
      */
     public static boolean writeFile(String filePath, String content, boolean append) {
-//        if(filePath ==null || content ==null){
-//            return false;
-//        }
-//        if (content.isEmpty()) {
-//            return false;
-//        }
+        if(filePath ==null || content ==null){
+            return false;
+        }
+        if (content.isEmpty()) {
+            return false;
+        }
         boolean ret = true;
         OutputStreamWriter out = null;
         Logg.d("FileUtils","content1="+content);
         try {
-       //     makeDirs(filePath);
+            makeDirs(filePath);
             out = new OutputStreamWriter(new FileOutputStream(filePath, append),"UTF-8");
             Logg.d("FileUtils","content="+content);
             out.write(content);
