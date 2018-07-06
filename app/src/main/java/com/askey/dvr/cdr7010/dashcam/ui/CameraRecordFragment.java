@@ -177,10 +177,15 @@ public class CameraRecordFragment extends Fragment {
     private BroadcastReceiver mSdBadRemovalListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Logg.d(TAG, "mSdBadRemovalListener...action==" + intent.getAction());
             if (Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
                 Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
                 mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
                 stopVideoRecord("SD MEDIA_BAD_REMOVAL");
+            } else if (Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())) {
+                //存储卡异常情况下拔卡
+                EventManager.getInstance().handOutEventInfo(110);
+                EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
             }
         }
     };
@@ -481,6 +486,7 @@ public class CameraRecordFragment extends Fragment {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);
         filter.addDataScheme("file");
         getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
@@ -733,12 +739,12 @@ public class CameraRecordFragment extends Fragment {
 
     private void startVideoRecord(String reason) throws Exception {
         boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
-        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_SDCARD,
+        onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,
                 sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
                         equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
         if (!sdcardAvailable) {
             mRecordingFlags &= (~FLAG_SDCARD_AVAILABLE);
-            throw new RuntimeException("sd card unavailable");
+            throw new SDCardUnavailableException("sd card unavailable");
         } else {
             mRecordingFlags |= FLAG_SDCARD_AVAILABLE;
         }
