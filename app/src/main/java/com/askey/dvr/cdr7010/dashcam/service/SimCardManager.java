@@ -17,23 +17,26 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCard
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_UNKNOWN;
 
 public class SimCardManager {
-    private static  SimCardManager instance;
+    private static SimCardManager instance;
     private TelephonyManager telephoneMgr;
     public static final int SIM_STATE_NOT_READY = 6;
 
-    private SimCardManager(){
+    private SimCardManager() {
         telephoneMgr = (TelephonyManager) DashCamApplication.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
     }
-    public static SimCardManager getInstant(){
-        if(instance == null)
+
+    public static SimCardManager getInstant() {
+        if (instance == null)
             instance = new SimCardManager();
         return instance;
     }
-    public int getSimState(){
+
+    public int getSimState() {
         return telephoneMgr.getSimState();
     }
-    public void setSimState(int simState){
-        Logg.i("SimCardManager","simState="+simState);
+
+    public void setSimState(int simState) {
+        Logg.i("SimCardManager", "simState=" + simState);
         switch (simState) {
             case TelephonyManager.SIM_STATE_ABSENT:
                 GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_ABSENT);
@@ -58,8 +61,7 @@ public class SimCardManager {
                 break;
             default:
                 GlobalLogic.getInstance().setSimCardStatus(SIM_STATE_ILLEGAL);
+                break;
         }
-        return;
     }
-
 }

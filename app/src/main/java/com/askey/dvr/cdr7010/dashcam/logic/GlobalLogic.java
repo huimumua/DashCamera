@@ -1,7 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.logic;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -18,9 +17,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
 
-public class GlobalLogic{
+public class GlobalLogic {
     private static GlobalLogic globalLogic;
-    private Context mContext;
     private boolean isInRecording;
     private String userInfo;
     private volatile boolean isStartSwitchUser = false;
@@ -37,129 +35,161 @@ public class GlobalLogic{
     private UIElementStatusEnum.SDcardStatusType sdCardCurrentStatus = SDCARD_REMOVED;
     private ContentResolver contentResolver = DashCamApplication.getAppContext().getContentResolver();
 
-    public static GlobalLogic getInstance(){
-        if(globalLogic == null){
+    public static GlobalLogic getInstance() {
+        if (globalLogic == null) {
             globalLogic = new GlobalLogic();
         }
         return globalLogic;
     }
-    public void setRecordingStatus(UIElementStatusEnum.RecordingStatusType recordingStatus){
+
+    public void setRecordingStatus(UIElementStatusEnum.RecordingStatusType recordingStatus) {
         this.recordingStatus = recordingStatus;
     }
+
     public UIElementStatusEnum.RecordingStatusType getRecordingStatus() {
         return recordingStatus;
     }
-    public void setMicStatus(UIElementStatusEnum.MICStatusType micStatusType){
+
+    public void setMicStatus(UIElementStatusEnum.MICStatusType micStatusType) {
         this.micStatusType = micStatusType;
     }
-    public UIElementStatusEnum.MICStatusType getMicStatus(){
+
+    public UIElementStatusEnum.MICStatusType getMicStatus() {
         return micStatusType;
     }
-    public void setLTEStatus(UIElementStatusEnum.LTEStatusType lteStatus){
+
+    public void setLTEStatus(UIElementStatusEnum.LTEStatusType lteStatus) {
         this.lteStatus = lteStatus;
     }
-    public UIElementStatusEnum.LTEStatusType getLTEStatus(){
+
+    public UIElementStatusEnum.LTEStatusType getLTEStatus() {
         return lteStatus;
     }
-    public void setEventRecordingLimitStatus(UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus){
+
+    public void setEventRecordingLimitStatus(UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus) {
         this.eventRecordingLimitStatus = eventRecordingLimitStatus;
     }
-    public UIElementStatusEnum.EventRecordingLimitStatusType getEventRecordingLimitStatus(){
-       return eventRecordingLimitStatus ;
+
+    public UIElementStatusEnum.EventRecordingLimitStatusType getEventRecordingLimitStatus() {
+        return eventRecordingLimitStatus;
     }
-    public void setParkingRecordingLimitStatus(UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus){
+
+    public void setParkingRecordingLimitStatus(UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus) {
         this.parkingRecordingLimitStatus = parkingRecordingLimitStatus;
     }
-    public UIElementStatusEnum.ParkingRecordingLimitStatusType getParkingRecordingLimitStatus(){
+
+    public UIElementStatusEnum.ParkingRecordingLimitStatusType getParkingRecordingLimitStatus() {
         return parkingRecordingLimitStatus;
     }
-    public void setSecondCameraStatus(UIElementStatusEnum.SecondCameraStatusType secondCameraStatus){
-        this.secondCameraStatus =secondCameraStatus;
+
+    public void setSecondCameraStatus(UIElementStatusEnum.SecondCameraStatusType secondCameraStatus) {
+        this.secondCameraStatus = secondCameraStatus;
     }
-    public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus(){
+
+    public UIElementStatusEnum.SecondCameraStatusType getSecondCameraStatus() {
         return secondCameraStatus;
     }
-    public void setGPSStatus(UIElementStatusEnum.GPSStatusType gpsStatus){
-        this.gpsStatus =gpsStatus;
+
+    public void setGPSStatus(UIElementStatusEnum.GPSStatusType gpsStatus) {
+        this.gpsStatus = gpsStatus;
     }
-    public UIElementStatusEnum.GPSStatusType getGpsStatus(){
+
+    public UIElementStatusEnum.GPSStatusType getGpsStatus() {
         return gpsStatus;
     }
-    public void setSDCardStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus){
+
+    public void setSDCardStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus) {
         this.sdCardStatus = sdCardStatus;
     }
-    public UIElementStatusEnum.SDcardStatusType getSDCardStatus(){
+
+    public UIElementStatusEnum.SDcardStatusType getSDCardStatus() {
         return sdCardStatus;
     }
-    public void setSDCardCurrentStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus){
+
+    public void setSDCardCurrentStatus(UIElementStatusEnum.SDcardStatusType sdCardStatus) {
         this.sdCardCurrentStatus = sdCardStatus;
     }
-    public UIElementStatusEnum.SDcardStatusType getSDCardCurrentStatus(){
+
+    public UIElementStatusEnum.SDcardStatusType getSDCardCurrentStatus() {
         return sdCardCurrentStatus;
     }
-    public void setFOTAFileStatus(UIElementStatusEnum.FOTAFileStatus fotaFileStatus){
+
+    public void setFOTAFileStatus(UIElementStatusEnum.FOTAFileStatus fotaFileStatus) {
         this.fotaFileStatus = fotaFileStatus;
     }
-    public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus(){
+
+    public UIElementStatusEnum.FOTAFileStatus getFotaFileStatus() {
         return fotaFileStatus;
     }
-    public void setSimCardStatus(UIElementStatusEnum.SimCardStatus simCardStatus){
+
+    public void setSimCardStatus(UIElementStatusEnum.SimCardStatus simCardStatus) {
         this.simCardStatus = simCardStatus;
     }
-    public UIElementStatusEnum.SimCardStatus getSimCardStatus(){
+
+    public UIElementStatusEnum.SimCardStatus getSimCardStatus() {
         return simCardStatus;
     }
-    public void setUserInfo(String userInfo){
+
+    public void setUserInfo(String userInfo) {
         this.userInfo = userInfo;
     }
-    public String getUserInfo(){
+
+    public String getUserInfo() {
         return userInfo;
     }
 
-    public boolean putInt(String key, int value){
-        return Settings.Global.putInt(contentResolver , key,value);
+    public boolean putInt(String key, int value) {
+        return Settings.Global.putInt(contentResolver, key, value);
     }
-    public int getInt(String key){
-        int value = 0;
+
+    public int getInt(String key) {
+        int value;
         try {
-          value =  Settings.Global.getInt(contentResolver, key);
-        }catch (Settings.SettingNotFoundException e){
+            value = Settings.Global.getInt(contentResolver, key);
+        } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
             value = -1;
         }
         return value;
     }
-    public int getInt(String key,int def){
-        int value = def;
-        try{
-            value =  Settings.Global.getInt(contentResolver, key,def);
-        }catch(Exception e){
+
+    public int getInt(String key, int def) {
+        int value;
+        try {
+            value = Settings.Global.getInt(contentResolver, key, def);
+        } catch (Exception e) {
             value = def;
         }
         return value;
     }
-    public boolean putString(String key, String value){
-        return Settings.Global.putString(contentResolver , key,value);
+
+    public boolean putString(String key, String value) {
+        return Settings.Global.putString(contentResolver, key, value);
     }
-    public String getString(String key,String def){
-        String value = def;
-        try{
-            value =  Settings.Global.getString(contentResolver, key);
-        }catch(Exception e){
+
+    public String getString(String key, String def) {
+        String value;
+        try {
+            value = Settings.Global.getString(contentResolver, key);
+        } catch (Exception e) {
             value = def;
         }
         return value;
     }
-    public void setIsInRecording(boolean isInRecording){
+
+    public void setIsInRecording(boolean isInRecording) {
         this.isInRecording = isInRecording;
     }
-    public boolean isInRecording(){
+
+    public boolean isInRecording() {
         return isInRecording;
     }
-    public synchronized  void setStartSwitchUser(boolean startSwitchUserFlag){
+
+    public synchronized void setStartSwitchUser(boolean startSwitchUserFlag) {
         this.isStartSwitchUser = startSwitchUserFlag;
     }
-    public synchronized boolean isStartSwitchUser(){
+
+    public synchronized boolean isStartSwitchUser() {
         return isStartSwitchUser;
     }
 

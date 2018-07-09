@@ -83,9 +83,9 @@ public class EventManager {
 
     public void loadXML(String language) {
         try {
-            if(language.equals("en") || language.equals("us")) {
+            if (language.equals("en") || language.equals("us")) {
                 inputStream = assets.open("eventlist_en.xml");
-            }else{
+            } else {
                 inputStream = assets.open("eventlist_jp.xml");
             }
         } catch (Exception e) {
@@ -116,71 +116,70 @@ public class EventManager {
         return eventInfo;
     }
 
-    public void registPopUpEventCallback(EventCallback callback){
+    public void registPopUpEventCallback(EventCallback callback) {
         mPopUpEventCallbackList.add(callback);
     }
 
-    public void unRegistPopUpEventCallback(EventCallback callback){
+    public void unRegistPopUpEventCallback(EventCallback callback) {
         mPopUpEventCallbackList.remove(callback);
     }
 
-    public void registIconEventCallback(EventCallback callback){
+    public void registIconEventCallback(EventCallback callback) {
         mIconEventCallbackList.add(callback);
     }
 
-    public void unRegistIconEventCallback(EventCallback callback){
+    public void unRegistIconEventCallback(EventCallback callback) {
         mIconEventCallbackList.remove(callback);
     }
 
-    public void registLedEventCallback(EventCallback callback){
+    public void registLedEventCallback(EventCallback callback) {
         mLedEventCallbackList.add(callback);
     }
 
-    public void unRegistLedEventCallback(EventCallback callback){
+    public void unRegistLedEventCallback(EventCallback callback) {
         mLedEventCallbackList.remove(callback);
     }
 
-    public void registTtsEventCallback(EventCallback callback){
+    public void registTtsEventCallback(EventCallback callback) {
         mTtsEventCallbackList.add(callback);
     }
 
-    public void unRegistTtsEventCallback(EventCallback callback){
+    public void unRegistTtsEventCallback(EventCallback callback) {
         mTtsEventCallbackList.remove(callback);
     }
 
-    public void handOutEventInfo(int eventType){
+    public void handOutEventInfo(int eventType) {
         long timeStamp = System.currentTimeMillis();
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-        Logg.d(LOG_TAG, "handOutEventInfo: eventType=" + eventType);
-        if(eventInfo == null){
+        if (eventInfo == null) {
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
             return;
         }
-        if(GlobalLogic.getInstance().isStartSwitchUser()){
-            if(eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()){
+        if (GlobalLogic.getInstance().isStartSwitchUser()) {
+            if (eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()) {
                 Logg.d(LOG_TAG, "handOutEventInfo: start switch user, eventType=" + eventType);
-                return ;
+                return;
             }
         }
         handOutEventInfo(eventInfo, timeStamp);
     }
 
-    public void handOutEventInfo(EventInfo eventInfo, long timeStamp){
+    public void handOutEventInfo(EventInfo eventInfo, long timeStamp) {
         Logg.d(LOG_TAG, "handOutEventInfo: id=" + eventInfo.getId() + ", eventType=" + eventInfo.getEventType() + ", eventName=" + eventInfo.getEventName());
-        if(eventInfo.isSupportPopUp()){
-            for(EventCallback eventCallback : mPopUpEventCallbackList)
+        if (eventInfo.isSupportPopUp()) {
+            for (EventCallback eventCallback : mPopUpEventCallbackList)
                 eventCallback.onEvent(eventInfo, timeStamp);
         }
-        if(eventInfo.isSupportIcon()){
-            for(EventCallback eventCallback : mIconEventCallbackList)
+        if (eventInfo.isSupportIcon()) {
+            for (EventCallback eventCallback : mIconEventCallbackList)
                 eventCallback.onEvent(eventInfo, timeStamp);
         }
-        if(eventInfo.isSupportLed()){
-            for(EventCallback eventCallback : mLedEventCallbackList)
+        if (eventInfo.isSupportLed()) {
+            for (EventCallback eventCallback : mLedEventCallbackList)
                 eventCallback.onEvent(eventInfo, timeStamp);
         }
-        if(eventInfo.isSupportSpeech()){
-            for(EventCallback eventCallback : mTtsEventCallbackList)
+        if (eventInfo.isSupportSpeech()) {
+            for (EventCallback eventCallback : mTtsEventCallbackList)
                 eventCallback.onEvent(eventInfo, timeStamp);
         }
     }
@@ -208,7 +207,7 @@ public class EventManager {
 //        }
 //    }
 
-    public interface EventCallback{
+    public interface EventCallback {
         void onEvent(EventInfo eventInfo, long timeStamp);
 //        void onCommunication(EventInfo eventInfo, int oos, String response);
     }

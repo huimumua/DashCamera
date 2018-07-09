@@ -138,7 +138,7 @@ public class MainActivity extends DialogActivity {
     private  EventManager.EventCallback iconEventCallback = new EventManager.EventCallback() {
         @Override
         public void onEvent(EventInfo eventInfo, long timeStamp) {
-
+            Logg.d(TAG,"iconEventCallback...eventInfo:"+eventInfo.toString());
         }
     };
 
