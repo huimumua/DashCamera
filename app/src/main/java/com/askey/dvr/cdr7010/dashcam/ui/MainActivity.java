@@ -257,7 +257,22 @@ public class MainActivity extends DialogActivity {
     }
     @Override
     public  void onContinueKeyHoldOneSecond(int keyCode){
-
+        switch (keyCode) {
+            case KeyAdapter.KEY_VOLUME_UP:
+                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) + 1;
+                if (currentVolume <= maxVolume) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
+                            0);
+                }
+                break;
+            case KeyAdapter.KEY_VOLUME_DOWN:
+                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) - 1;
+                if (currentVolume >= 0) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
+                            0);
+                }
+                break;
+        }
     }
     @Override
     public void onKeyShortPressed(int keyCode) {
