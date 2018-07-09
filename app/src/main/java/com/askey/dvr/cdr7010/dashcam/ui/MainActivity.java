@@ -105,6 +105,15 @@ public class MainActivity extends DialogActivity {
             SDcardHelper.handleSdcardAbnormalEvent();
         }
     }
+    @Override
+    protected  void onPause(){
+        super.onPause();
+        UIElementStatusEnum.SDcardStatusType sdcardStatus = GlobalLogic.getInstance().getSDCardCurrentStatus();
+        if(sdcardStatus != SDCARD_MOUNTED && sdcardStatus != SDCARD_SUPPORTED
+                && sdcardStatus != SDCARD_INIT_SUCCESS) {
+            LedMananger.getInstance().setLedRecStatus(true, false, 0);
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -305,7 +314,6 @@ public class MainActivity extends DialogActivity {
                     isFromOtherApp = true;
                     MainAppSending.menuTransition(FROM_MAINAPP);
                     ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
-                    LedMananger.getInstance().setLedRecStatus(true, false, 0);
                 }
 
         }
