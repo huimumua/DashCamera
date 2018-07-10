@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.ui;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -8,6 +9,7 @@ import android.location.Location;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.provider.Settings;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
@@ -62,6 +64,8 @@ public class MainActivity extends DialogActivity {
     private int maxVolume,currentVolume;
     private CameraRecordFragment fragment;
     private boolean isFromOtherApp =false;
+    private ContentResolver contentResolver;
+    private int setUpWizardType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +97,7 @@ public class MainActivity extends DialogActivity {
         EventManager.getInstance().registLedEventCallback(ledEventCallback);
 
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
+        contentResolver = getContentResolver();
     }
 
     @Override
@@ -301,21 +306,34 @@ public class MainActivity extends DialogActivity {
                 }
                 break;
             case KeyAdapter.KEY_BACK:
-                int micValue = GlobalLogic.getInstance().getInt(AskeySettings.Global.RECSET_VOICE_RECORD);
-                int newVal = (micValue == 0) ? 1 : 0;
-                boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
-                EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
+                // add by Lisa start
+                setUpWizardType = Settings.Global.getInt(contentResolver, AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 1);
+                Logg.i(TAG,"=KEY_BACK==SettingsActivity=setUpWizardType="+setUpWizardType);
+                if(setUpWizardType == 1){
+                    Settings.Global.putInt(contentResolver, AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 0);
+                }else {// add by Lisa end 防止在设置向导时最后的按键被mainAPP中监听到
+                    int micValue = GlobalLogic.getInstance().getInt(AskeySettings.Global.RECSET_VOICE_RECORD);
+                    int newVal = (micValue == 0) ? 1 : 0;
+                    boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
+                    EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
+                }
                 break;
             case KeyAdapter.KEY_MENU:
-                Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-                if(currentLocation != null && currentLocation.getSpeed() > 0.0f){ //有GPS信号，且速度大于0
-                    //
-                }else {
-                    isFromOtherApp = true;
-                    MainAppSending.menuTransition(FROM_MAINAPP);
-                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
+                // add by Lisa start
+                setUpWizardType = Settings.Global.getInt(contentResolver, AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 1);
+                Logg.i(TAG, "=KEY_MENU==SettingsActivity=setUpWizardType="+setUpWizardType);
+                if(setUpWizardType == 1){
+                    Settings.Global.putInt(contentResolver, AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 0);
+                }else {// add by Lisa end 防止在设置向导时最后的按键被mainAPP中监听到
+                    Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+                    if (currentLocation != null && currentLocation.getSpeed() > 0.0f) { //有GPS信号，且速度大于0
+                        //
+                    } else {
+                        isFromOtherApp = true;
+                        MainAppSending.menuTransition(FROM_MAINAPP);
+                        ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
+                    }
                 }
-
         }
     }
     @Override
