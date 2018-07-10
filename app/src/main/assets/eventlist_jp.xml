@@ -535,7 +535,7 @@
     </event>
     <event>
         <id>42</id>
-        <priority>0</priority>
+        <priority>1</priority>
         <event_type>114</event_type>
         <dialog_type>5</dialog_type>
         <name>異常検出による録画停止</name>
