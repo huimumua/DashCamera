@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.service;
 
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeyLedManager;
 
 public class LedMananger{
@@ -24,6 +25,7 @@ public class LedMananger{
         return instance;
     }
     public void setLedRecStatus(boolean isNormal , boolean isInRecording ,int priority){
+        Logg.d("LEDManager","isNormal="+isNormal+",isInRecording="+isInRecording+",priority="+priority+",lastPriority="+lastPriority+",isLedOff="+isLedOff);
         if ((priority <= lastPriority && !isLedOff) || isLedOff) {
             if(isInRecording && isNormal){
                 isLedOff = false;
