@@ -340,6 +340,7 @@ public class MediaMuxerWrapper {
         private EventMuxer eventMuxer;
         private int slice_index = 0;
         private final Object syncObj = new Object();
+        private boolean preperaEventRecording = false;
 
         MuxerHandler(Looper looper, MediaMuxerWrapper parent) {
             super(looper);
@@ -389,6 +390,7 @@ public class MediaMuxerWrapper {
             MediaMuxerWrapper parent = weakParent.get();
             synchronized (syncObj) {
                 if (parent != null && muxer != null) {
+                    preperaEventRecording = true;
                     parent.closeMuxer(muxer);
                     muxer = null;
                     if (nmeaRecorder != null) {
@@ -507,6 +509,13 @@ public class MediaMuxerWrapper {
                     long pts = fin.readLong();
 
                     if (eventMuxer.isRecording()) {
+                        eventId = event;
+                        eventTime = time;
+                        preperaEventRecording = false;
+                        break;
+                    }
+
+                    if (preperaEventRecording) {
                         eventId = event;
                         eventTime = time;
                         break;
