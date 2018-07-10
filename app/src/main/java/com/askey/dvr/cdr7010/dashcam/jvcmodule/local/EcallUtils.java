@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.NetUtil;
 
 /***
  * Company: Chengdu Skysoft Info&Tech Co., Ltd.
@@ -23,14 +24,17 @@ public class EcallUtils {
 
     private static final String LOG_TAG = "EcallUtils";
 
-    public static void startVoipActivity(int order){
-        Logg.d(LOG_TAG, "startVoipActivity: ");
-        Context appContext = DashCamApplication.getAppContext();
-        Intent intent = new Intent();
-        ComponentName componentName = new ComponentName(VOIP_PACKAGE_NAME, VOIP_CLASS_NAME);
-        intent.setComponent(componentName);
-        intent.putExtra(EXTRA_ORDER, order);
-        appContext.startActivity(intent);
+    public static void startVoipActivity(int order) {
+        if (NetUtil.isNetworkAvailable()) {
+            Logg.d(LOG_TAG, "startVoipActivity: ");
+            Context appContext = DashCamApplication.getAppContext();
+            Intent intent = new Intent();
+            ComponentName componentName = new ComponentName(VOIP_PACKAGE_NAME, VOIP_CLASS_NAME);
+            intent.setComponent(componentName);
+            intent.putExtra(EXTRA_ORDER, order);
+            appContext.startActivity(intent);
+        } else {
+            Logg.d(LOG_TAG, "no network, can not start voip");
+        }
     }
-
 }

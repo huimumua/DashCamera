@@ -12,7 +12,6 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcLogUploadTask;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.NetUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,9 +34,7 @@ public class CommunicationReceiver extends BroadcastReceiver {
              * 2:VoIP指示
              */
             int order = intent.getIntExtra("order", -1);
-            if (NetUtil.isNetworkAvailable()) {
-                EcallUtils.startVoipActivity(order);
-            }
+            EcallUtils.startVoipActivity(order);
         } else if (action.equals(ACTION_VOIP_INFORMATION_RESULT)) {
             int requestID = intent.getIntExtra("requestID", -1);
             int status = intent.getIntExtra("status", -1);
