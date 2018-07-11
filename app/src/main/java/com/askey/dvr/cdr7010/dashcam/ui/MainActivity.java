@@ -41,6 +41,7 @@ import org.json.JSONObject;
 
 import java.util.EnumMap;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
@@ -369,6 +370,7 @@ public class MainActivity extends DialogActivity {
                 }
             }else if(action.equals(Intent.ACTION_MEDIA_EJECT )){
                 GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_REMOVED);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
                     EventManager.getInstance().handOutEventInfo(110);
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
