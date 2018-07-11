@@ -80,7 +80,8 @@ public class UIElementStatusEnum{
         SDCARD_INIT_FAIL(5),
         SDCARD_UNRECOGNIZABLE(6),
         SDCARD_UNMOUNTED(7),
-        SDCARD_FULL_LIMIT(8);
+        SDCARD_FULL_LIMIT(8),
+        SDCARD_FULL_LIMIT_EXIT(9);
 
         public final int value;
         SDcardStatusType(int value){
@@ -171,6 +172,27 @@ public class UIElementStatusEnum{
         CHECK_COMPLETE(2);
         public final int value;
         SdCardAndSimCardCheckStatus(int value){
+            this.value = value;
+        }
+        @Override
+        public String toString(){
+            return String.valueOf(value);
+        }
+    }
+    public enum RecordingPreconditionStatus{
+        BATTERY_STATUS_CHARGING(0),
+        BATTERY_STATUS_DISCHARGING(1),
+        SDCARD_AVAILABLE(2),
+        SDCARD_UNAVAILABLE(3),
+        SDCARD_RECORDING_FULL_LIMIT(4),
+        SDCARD_RECORDING_FULL_LIMIT_EXIT(5),
+        SWITCH_USER_STARTED(6),
+        SWITCH_USER_COMPLETED(7),
+        LOW_TEMPERATURE(8),
+        HIGH_TEMPERATURE(9);
+
+        public final int value;
+        RecordingPreconditionStatus(int value){
             this.value = value;
         }
         @Override
