@@ -184,10 +184,10 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             Logg.d(TAG, "mSdBadRemovalListener...action==" + intent.getAction());
-            if (Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
-                Logg.d(TAG, "SD Card MEDIA_BAD_REMOVAL");
+            if (Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
+                Logg.d(TAG, "SD Card ACTION_MEDIA_EJECT");
                 RecordHelper.setRecordingPrecondition(SDCARD_UNAVAILABLE);
-                stopVideoRecord("SD MEDIA_BAD_REMOVAL");
+                stopVideoRecord("SD ACTION_MEDIA_EJECT");
             } else if (Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())) {
                 //存储卡异常情况下拔卡
                 EventManager.getInstance().handOutEventInfo(110);
@@ -493,6 +493,8 @@ public class CameraRecordFragment extends Fragment {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
         filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);
         filter.addDataScheme("file");
         getActivity().registerReceiver(mSdBadRemovalListener, filter);
 
