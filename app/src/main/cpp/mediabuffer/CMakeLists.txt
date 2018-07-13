@@ -4,7 +4,8 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon" )
+# comment below flag set for build arm64-v8a abi
+#set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon" )
 
 add_library( # Sets the name of the library.
              mediabuffer-jni
