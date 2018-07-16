@@ -88,7 +88,7 @@ public class DialogLogic{
     private void dialogDismissAlgorithm(int dialogType,int eventType){
       if(Event.contains(Event.nomalEvent,eventType)
               || Event.contains(Event.highTemperatureLv1Event,eventType)
-              || Event.contains(Event.limitRecordingEvent,eventType)){
+              || Event.contains(Event.limitRecordingFileEvent,eventType)){
           if(showTime >0){
               if(System.currentTimeMillis() -showTime < DELAY_TIME) {
                   delayHideDialogDisplay(System.currentTimeMillis() - showTime, dialogType, eventType);

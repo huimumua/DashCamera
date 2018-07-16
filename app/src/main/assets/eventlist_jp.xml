@@ -808,4 +808,17 @@
         <led>no</led>
         <speech>yes</speech>
     </event>
+    <event>
+        <id>63</id>
+        <priority>0</priority>
+        <event_type>129</event_type>
+        <dialog_type>3</dialog_type>
+        <name>ファイル数オーバーによる静止画記録の失敗</name>
+        <description>静止画記録失敗（ファイル数超過）</description>
+        <voice_guidence></voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>no</speech>
+    </event>
 </eventlist>

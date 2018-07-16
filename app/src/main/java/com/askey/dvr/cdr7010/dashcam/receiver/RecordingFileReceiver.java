@@ -46,9 +46,9 @@ public class RecordingFileReceiver extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, final Intent intent){
         String action = intent.getAction();
-        Logg.d(LOG_TAG, "action=" + action);
         if(action.equals(ACTION_SDCARD_LIMT)){
             String cmd_ex = intent.getStringExtra("cmd_ex");
+            Logg.d(LOG_TAG, "action=" + action+",cmd_ex="+cmd_ex);
             if(CMD_SHOW_REACH_EVENT_FILE_LIMIT.equals(cmd_ex)){
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_REACH_LIMIT_CONDITION));
                 handOutEventInfo(115); // defined to 115 in assets
@@ -56,15 +56,19 @@ public class RecordingFileReceiver extends BroadcastReceiver{
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
             } else if(CMD_SHOW_REACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.ParkingRecordingLimitStatusType>(Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_REACH_LIMIT_CONDITION));
-            }else if(CMD_SHOW_UNREACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
+            } else if(CMD_SHOW_UNREACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.ParkingRecordingLimitStatusType>(Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION));
-            }else if(CMD_SHOW_SDCARD_FULL_LIMIT.equals(cmd_ex)){
+            } else if(CMD_SHOW_SDCARD_FULL_LIMIT.equals(cmd_ex)){
                 RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT);
                 GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_FULL_LIMIT);
                 handOutEventInfo(116); // defined to 116 in assets
-            }else if(CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT.equals(cmd_ex)) {
+            } else if(CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT.equals(cmd_ex)) {
                 RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                 GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_FULL_LIMIT_EXIT);
+            } else if(CMD_SHOW_REACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
+                handOutEventInfo(129); // defined to 129 in assets
+            } else if(CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
+
             }
         }
     }

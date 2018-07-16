@@ -808,4 +808,17 @@
         <led>no</led>
         <speech>yes</speech>
     </event>
+    <event>
+        <id>63</id>
+        <priority>0</priority>
+        <event_type>129</event_type>
+        <dialog_type>3</dialog_type>
+        <name>When the number of picture recording files has reached the limit</name>
+        <description>Picture recording fail.(Count over)</description>
+        <voice_guidence></voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>no</led>
+        <speech>no</speech>
+    </event>
 </eventlist>

@@ -189,7 +189,7 @@ public class DialogManager{
                 eventList.add(dialogType,eventType,priority,beginTime,message);
             }
             if(Event.contains(Event.nomalEvent,eventType) || Event.contains(Event.highTemperatureLv1Event,eventType)
-                    || Event.contains(Event.limitRecordingEvent,eventType)){
+                    || Event.contains(Event.limitRecordingFileEvent,eventType)){
                 dialogLogic.setCancelableRunnable(true);
             }
         }
