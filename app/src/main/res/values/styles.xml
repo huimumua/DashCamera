@@ -9,6 +9,7 @@
     </style>
     <style name="AppTheme.FullScreen" parent="AppTheme">
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
     </style>
     <style name="dialogNoTitle" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item>
