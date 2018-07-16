@@ -124,6 +124,7 @@ public class MediaMuxerWrapper {
 
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter();
+        filter.setPriority(1000); //[PUCDR-1412][PUCDR-1287] The highest priority
         filter.addAction(Intent.ACTION_MEDIA_EJECT);
         filter.addDataScheme("file");
         mContext.registerReceiver(mSDCardEjectReceiver, filter);
