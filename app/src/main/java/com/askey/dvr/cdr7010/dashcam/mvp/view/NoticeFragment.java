@@ -3,13 +3,15 @@ package com.askey.dvr.cdr7010.dashcam.mvp.view;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.adas.SystemPropertiesProxy;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.mvp.presenter.NoticePresenter;
 import com.askey.dvr.cdr7010.dashcam.notice.NoticeContract;
@@ -19,6 +21,8 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePresenter> implements NoticeContract.View {
 
     private static final String TAG = NoticeFragment.class.getSimpleName();
+    private static final int DELAY_END_BOOT_ANIMATION = 1000;
+    private static final int TIME_TO_SHOW_NOTICE = 4000;
     private String param;
     private TextView mTitle;
     private TextView mDescription;
@@ -80,7 +84,14 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         super.onActivityCreated(savedInstanceState);
         Logg.d(TAG, "NoticeFragment 和依附的Activity对象创建完成");
         initData();
-        timerNotice.start();
+
+        // PUCDR-1447: To cover the "Start Android..." screen, end boot animation until the notice is showed
+        // Then start to count down the timerNotice
+        new Handler().postDelayed(() -> {
+            Log.v(TAG, "Set service.bootanim.exit=1 to end boot animation");
+            SystemPropertiesProxy.set("service.bootanim.exit", "1");
+            timerNotice.start();
+        }, DELAY_END_BOOT_ANIMATION);
     }
 
     private void initView(View v) {
@@ -106,7 +117,7 @@ public class NoticeFragment extends BaseFragment<NoticeContract.View, NoticePres
         mDescription.setText(description);
     }
 
-    private CountDownTimer timerNotice = new CountDownTimer(4000, 1000) {
+    private CountDownTimer timerNotice = new CountDownTimer(TIME_TO_SHOW_NOTICE, 1000) {
 
         @Override
         public void onTick(long millisUntilFinished) {
