@@ -27,9 +27,7 @@ public class DashCam implements DashCamControl {
     private EGLRenderer mRenderer;
     private Recorder mRecorder;
     private SurfaceTexture mSurfaceTexture;
-    private Semaphore mRecordLock = new Semaphore(1);
     private StateCallback mStateCallback;
-    private boolean mIsRunning;
     private StateMachine mStateMachine;
     private AdasController mAdasController;
 
@@ -49,34 +47,28 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStarted() {
             Logg.d(TAG, "RecorderStateCallback: onStarted");
-            mIsRunning = true;
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_OPEN_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStarted();
             }
-            mRecordLock.release();
         }
 
         @Override
         public void onStoped() {
             Logg.d(TAG, "RecorderStateCallback: onStoped");
-            mIsRunning = false;
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_CLOSE_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStoped();
             }
-            mRecordLock.release();
         }
 
         @Override
         public void onInterrupted() {
             Logg.d(TAG, "RecorderStateCallback: onInterrupted");
-            mIsRunning = false;
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_ERROR, ""));
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
-            mRecordLock.release();
         }
 
         @Override
@@ -129,9 +121,6 @@ public class DashCam implements DashCamControl {
     @Override
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
-        if (mIsRunning) {
-            return;
-        }
         mAdasController.start(mContext);
         ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -144,20 +133,12 @@ public class DashCam implements DashCamControl {
             }
         }, null);
 
-
         boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
         if (!sdcardAvailable) {
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
             throw new RuntimeException("sd card unavailable");
-        }
-
-        if (!mRecordLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-            if (mStateCallback != null) {
-                mStateCallback.onError();
-            }
-            throw new RuntimeException("Time out waiting to lock recorder start.");
         }
 
         mCamera2Controller = new Camera2Controller(mContext);
@@ -217,16 +198,7 @@ public class DashCam implements DashCamControl {
     @Override
     public void onStopVideoRecord() {
         Logg.d(TAG, "onStopVideoRecord");
-
-        if (!mIsRunning) {
-            return;
-        }
-
         try {
-            if (!mRecordLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                throw new RuntimeException("Time out waiting to lock recorder stop.");
-            }
-
             mCamera2Controller.stopRecordingVideo();
             mCamera2Controller.closeCamera();
             mCamera2Controller = null;
