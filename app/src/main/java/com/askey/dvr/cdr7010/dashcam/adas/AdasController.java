@@ -58,7 +58,7 @@ public class AdasController implements Util.AdasCallback {
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         mHandler = new AdasHandler(handlerThread.getLooper());
-        ADAS_DISABLED = SystemPropertiesProxy.getBoolean(PROP_ADAS_DISABLED, true);
+        ADAS_DISABLED = SystemPropertiesProxy.getBoolean(PROP_ADAS_DISABLED, false);
         Log.v(TAG, "AdasController: ADAS_DISABLED = " + ADAS_DISABLED);
         DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, false);
         Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
