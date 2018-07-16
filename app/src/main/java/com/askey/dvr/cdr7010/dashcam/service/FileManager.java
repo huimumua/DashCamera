@@ -99,4 +99,28 @@ public class FileManager {
         }
         return mService.checkSdcardAvailable();
     }
+
+    private String buildNmeaFilePath(long timeStamp, @NonNull String fileType, String ext) throws RemoteException {
+        if (mService == null) {
+            throw new RemoteException("No FileManagement service.");
+        }
+
+        String fileName;
+        synchronized (DATETIME_FORMAT) {
+            fileName = DATETIME_FORMAT.format(new Date(timeStamp)) + ext;
+        }
+        final String path = mService.openSdcard(fileName, fileType);
+        if (path == null) {
+            throw new RemoteException("null file path from FileManagement service.");
+        }
+        return path;
+    }
+
+    public String getFilePathForNmeaNormal(long timeStamp) throws RemoteException {
+        return buildNmeaFilePath(timeStamp, "NMEA_NORMAL", ".nmea");
+    }
+
+    public String getFilePathForNmeaEvent(long timeStamp) throws RemoteException {
+        return buildNmeaFilePath(timeStamp, "NMEA_EVENT", ".nmea");
+    }
 }

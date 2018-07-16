@@ -102,8 +102,9 @@ public class EventMuxer implements Runnable{
                             String path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
                             mMuxer = createMuxer(path, eventId, eventTime);
                             isNewFile = true;
-                            String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("EVENT", "SYSTEM/NMEA/EVENT");
-                           // Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
+                            // String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("EVENT", "SYSTEM/NMEA/EVENT");
+                            String nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaEvent(eventTime);
+                            Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
                             nmeaRecorder = NmeaRecorder.create(nmeaPath);
                             if (nmeaRecorder != null) {
                                 nmeaRecorder.eventStart(eventTime);

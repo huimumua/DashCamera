@@ -466,35 +466,30 @@ public class NmeaRecorder {
 
     private static void initNmeaDirToSDcard() {  //TODO: Change to FileManager
         String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            Log.d(LOG_TAG, "RW");
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            Log.d(LOG_TAG, "onlyR");
-        } else {
-            Log.d(LOG_TAG, "noRW");
-        }
+        // if (Environment.MEDIA_MOUNTED.equals(state)) {
+        //     Log.d(LOG_TAG, "RW");
+        // } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        //     Log.d(LOG_TAG, "onlyR");
+        // } else {
+        //     Log.d(LOG_TAG, "noRW");
+        // }
         String path = Environment.getExternalStorageDirectory().getPath();
         File dir = new File(path + "/SYSTEM/NMEA");
         if (!dir.exists()) {
-            Log.d(LOG_TAG, "mkdir = " + dir.getPath());
+            // Log.d(LOG_TAG, "mkdir = " + dir.getPath());
             dir.mkdir();
-        } else {
-            Log.i(LOG_TAG, "mkdir = " + dir.getPath());
         }
+
         dir = new File(path + "/SYSTEM/NMEA/EVENT");
         if (!dir.exists()) {
-            Log.d(LOG_TAG, "mkdir = " + dir.getPath());
+            // Log.d(LOG_TAG, "mkdir = " + dir.getPath());
             dir.mkdir();
-        } else {
-            Log.i(LOG_TAG, "mkdir = " + dir.getPath());
         }
 
         dir = new File(path + "/SYSTEM/NMEA/NORMAL");
         if (!dir.exists()) {
-            Log.d(LOG_TAG, "mkdir = " + dir.getPath());
+            // Log.d(LOG_TAG, "mkdir = " + dir.getPath());
             dir.mkdir();
-        } else {
-            Log.i(LOG_TAG, "mkdir = " + dir.getPath());
         }
 
         // dir = new File(path + "/SYSTEM/NMEA/PARKING");

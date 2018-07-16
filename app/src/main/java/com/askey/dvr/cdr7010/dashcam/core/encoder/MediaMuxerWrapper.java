@@ -431,9 +431,10 @@ public class MediaMuxerWrapper {
                         try {
                             String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(time);
                             muxer = new AndroidMuxer(path);
-
                             //TODO: Next vesion Change FileManage
-                            String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("NORMAL", "SYSTEM/NMEA/NORMAL");
+                            // String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("NORMAL", "SYSTEM/NMEA/NORMAL");
+                            String nmeaPath = FileManager.getInstance(parent.mContext).getFilePathForNmeaNormal(time);
+                            Logg.i(LOG_TAG,"nmea path = " + nmeaPath);
                             nmeaRecorder = NmeaRecorder.create(nmeaPath);
                             //Logg.i(LOG_TAG,"muxer address = " + muxer + ", nmeaRecorder = " + nmeaRecorder);
 
