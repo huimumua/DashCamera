@@ -407,8 +407,10 @@ public class CameraRecordFragment extends Fragment {
             if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
                 Logg.d(TAG, "ThermalController startRecording");
                 try {
-                    RecordHelper.setRecordingPrecondition(LOW_TEMPERATURE);
-                    startVideoRecord("cpu low temperature");
+                    if(RecordHelper.isHighTemperature()) {
+                        RecordHelper.setRecordingPrecondition(LOW_TEMPERATURE);
+                        startVideoRecord("cpu low temperature");
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

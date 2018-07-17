@@ -54,4 +54,7 @@ public class RecordHelper{
                 && (mRecordingFlags & FLAG_SWITCH_USER) > 0
                 && (mRecordingFlags & FLAG_SDCARD_AVAILABLE) > 0;
     }
+    public static boolean isHighTemperature(){
+        return !((mRecordingFlags & FLAG_LOW_TEMPERATURE) > 0);
+    }
 }
