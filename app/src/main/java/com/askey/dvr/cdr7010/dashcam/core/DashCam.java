@@ -1,31 +1,43 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.location.Location;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
-import com.askey.dvr.cdr7010.dashcam.adas.AdasStateControl;
 import com.askey.dvr.cdr7010.dashcam.adas.AdasStateListener;
 import com.askey.dvr.cdr7010.dashcam.core.StateMachine.EEvent;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraControllerListener;
-import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
+import com.askey.dvr.cdr7010.dashcam.core.recorder.ExifHelper;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
+import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SetUtils;
 
 import java.util.EnumSet;
+import net.sf.marineapi.nmea.util.Position;
+
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class DashCam implements DashCamControl, AdasStateListener {
 
-    private static final String TAG = "DashCam";
+    private String TAG = "DashCam";
     private final Handler mMainThreadHandler;
     private Context mContext;
     private RecordConfig mConfig;
@@ -113,14 +125,17 @@ public class DashCam implements DashCamControl, AdasStateListener {
     };
 
     public DashCam(Context context, RecordConfig config, StateCallback callback) {
+        TAG = TAG + "-" + config.cameraId();
         mContext = context.getApplicationContext();
         mConfig = config;
         mStateCallback = callback;
         mStateMachine = new StateMachine(this);
         mMainThreadHandler = new Handler(Looper.getMainLooper());
-        mAdasController = AdasController.getsInstance();
-        mAdasController.addListener(this);
-        mAdasController.init(mContext);
+        if (config.adasEnable()) {
+            mAdasController = AdasController.getsInstance();
+            mAdasController.addListener(this);
+            mAdasController.init(mContext);
+        }
     }
 
     public boolean isBusy() {
@@ -148,25 +163,25 @@ public class DashCam implements DashCamControl, AdasStateListener {
     }
 
     private synchronized void enableFunction(Function function) {
-        Log.v(TAG, "enableFunction: " + function.name());
+        Logg.v(TAG, "enableFunction: " + function.name());
         if (mSetEnabledFunctions.contains(function)) {
             return;
         }
         mSetEnabledFunctions.add(function);
         mMainThreadHandler.post(() -> {
-            Log.v(TAG, "enableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
+            Logg.v(TAG, "enableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
             checkEnabledFunctions();
         });
     }
 
     private synchronized void disableFunction(Function function) {
-        Log.v(TAG, "disableFunction: " + function.name());
+        Logg.v(TAG, "disableFunction: " + function.name());
         if (!mSetEnabledFunctions.contains(function)) {
             return;
         }
         mSetEnabledFunctions.remove(function);
         mMainThreadHandler.post(() -> {
-            Log.v(TAG, "disableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
+            Logg.v(TAG, "disableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
             checkEnabledFunctions();
         });
     }
@@ -185,12 +200,12 @@ public class DashCam implements DashCamControl, AdasStateListener {
      */
     private void setFunctionReady(Function function) {
         mMainThreadHandler.post(() -> {
-            Log.v(TAG, "setFunctionReady: " + function);
+            Logg.v(TAG, "setFunctionReady: " + function);
             if (mReadyFunctions.contains(function)) {
                 return;
             }
             mReadyFunctions.add(function);
-            Log.v(TAG, "setFunctionReady: mReadyFunctions=" + mReadyFunctions + ", mSetEnabledFunctions=" + mSetEnabledFunctions);
+            Logg.v(TAG, "setFunctionReady: mReadyFunctions=" + mReadyFunctions + ", mSetEnabledFunctions=" + mSetEnabledFunctions);
             if (SetUtils.equals(mReadyFunctions, mSetEnabledFunctions)) {
                 try {
                     startCamera();
@@ -205,11 +220,11 @@ public class DashCam implements DashCamControl, AdasStateListener {
      * Check the changes of functions to change the state of StateMachine
      */
     private synchronized void checkEnabledFunctions() {
-        Log.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
+        Logg.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
         mMainThreadHandler.postDelayed(() -> {
             synchronized (this) {
-                Log.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
-                Log.v(TAG, "checkEnabledFunctions: mSetEnabledFunctions=" + mSetEnabledFunctions + ", mEnabledFunctions=" + mEnabledFunctions);
+                Logg.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
+                Logg.v(TAG, "checkEnabledFunctions: mSetEnabledFunctions=" + mSetEnabledFunctions + ", mEnabledFunctions=" + mEnabledFunctions);
                 if (SetUtils.equals(mSetEnabledFunctions, mEnabledFunctions)) {
                     return;
                 }
@@ -235,7 +250,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
                 mEnabledFunctions.clear();
                 mEnabledFunctions.addAll(mSetEnabledFunctions);
-
             }
         }, 100);
     }
@@ -250,26 +264,17 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
 
     @Override
-    public void onOpenCamera() {
-        Log.v(TAG, "onOpenCamera");
+    public void onOpenCamera() throws Exception {
+        Logg.v(TAG, "onOpenCamera");
         clearFunctionReady();
         mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
         mCamera2Controller.startBackgroundThread();
-        try {
-            if (mConfig.cameraId() == 0) {
-                mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);
-            } else {
-                mCamera2Controller.open(Camera2Controller.CAMERA.EXT);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        mCamera2Controller.open(mConfig.cameraId());
     }
 
     @Override
     public void onCameraClosed() {
-        Log.v(TAG, "onCameraClosed");
+        Logg.v(TAG, "onCameraClosed");
         if (mSetEnabledFunctions.size() != 0) {
             // Open again if any function is enabled
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN, mSetEnabledFunctions.toString()));
@@ -282,9 +287,48 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     }
 
-    public void takeAPicture(EGLRenderer.SnapshotCallback callback) {
+    public void takeAPicture(final Handler handler) {
         if (mRenderer != null) {
-            mRenderer.takeDisplaySnapshot(callback);
+            mRenderer.takeDisplaySnapshot(new EGLRenderer.SnapshotCallback() {
+                @Override
+                public void onSnapshotAvailable(byte[] data, int width, int height, long timeStamp) {
+                    Bitmap bmp = null;
+                    BufferedOutputStream bos = null;
+                    try {
+                        String filePathForPicture = FileManager.getInstance(mContext).getFilePathForPicture(mConfig.cameraId(), timeStamp);
+                        ByteBuffer buf = ByteBuffer.wrap(data);
+                        bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
+                        bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                        bmp.copyPixelsFromBuffer(buf);
+                        bmp = convertBmp(bmp);
+                        bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+                        Position position = null;
+                        if (currentLocation != null) {
+                            Logg.d(TAG, "currentLocation!=null,getLatitude==" + currentLocation.getLatitude() + ",getLongitude==" + currentLocation.getLongitude());
+                            position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        }
+                        Logg.d(TAG, "timeStamp==" + timeStamp);
+                        ExifHelper.build(filePathForPicture, timeStamp, position);
+                        // TODO: 2018/6/28 上傳文件
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (bmp != null) {
+                            bmp.recycle();
+                        }
+                        if (bos != null) {
+                            try {
+                                bos.flush();
+                                bos.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        handler.sendEmptyMessage(0);
+                    }
+                }
+            });
         }
     }
 
@@ -316,7 +360,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
                 mRecorder.release();
                 mRecorder = null;
             }
-            NmeaRecorder.deinit(mContext);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -353,7 +396,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
     private CameraControllerListener mCameraListener = new CameraControllerListener() {
         @Override
         public void onCameraOpened() {
-            Log.v(TAG, "onCameraOpened");
+            Logg.v(TAG, "onCameraOpened");
             if (mSetEnabledFunctions.contains(Function.RECORD)) {
                 try {
                     prepareRecorder();
@@ -361,23 +404,25 @@ public class DashCam implements DashCamControl, AdasStateListener {
                     e.printStackTrace();
                 }
             }
-            prepareAdas(mCamera2Controller);
+            if (mAdasController != null) {
+                prepareAdas(mCamera2Controller);
+            }
         }
 
         @Override
         public void onCameraClosed() {
-            Log.v(TAG, "onCameraClosed");
+            Logg.v(TAG, "onCameraClosed");
         }
 
         @Override
         public void onCaptureStarted() {
-            Log.v(TAG, "onCaptureStarted");
+            Logg.v(TAG, "onCaptureStarted");
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN_SUCCESS, "onCaptureStarted"));
         }
 
         @Override
         public void onCaptureStopped() {
-            Log.v(TAG, "onCaptureStopped");
+            Logg.v(TAG, "onCaptureStopped");
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "onCaptureStopped"));
         }
     };
@@ -397,7 +442,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
         mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
         mRecorder.prepare();
 
-        NmeaRecorder.init(mContext);
         mRenderer = new EGLRenderer(mContext,
                 mConfig.videoWidth(),
                 mConfig.videoHeight(),
@@ -425,9 +469,24 @@ public class DashCam implements DashCamControl, AdasStateListener {
     }
 
     private void prepareAdas(Camera2Controller camera2Controller) {
-        Log.v(TAG, "prepareAdas");
+        Logg.v(TAG, "prepareAdas");
         camera2Controller.setImageReader(mAdasController.getImageReader());
         setFunctionReady(Function.ADAS);
     }
 
+    private static Bitmap convertBmp(Bitmap bmp) {
+        int w = bmp.getWidth();
+        int h = bmp.getHeight();
+        Bitmap convertBmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);// 创建一个新的和SRC长度宽度一样的位图
+        Canvas cv = new Canvas(convertBmp);
+        Matrix matrix = new Matrix();
+//        matrix.postScale(1, -1); //镜像垂直翻转
+        matrix.postScale(-1, 1); //镜像水平翻转
+        matrix.postRotate(-180); //旋转-180度
+        Bitmap newBmp = Bitmap.createBitmap(bmp, 0, 0, w, h, matrix, true);
+        cv.drawBitmap(newBmp, new Rect(0, 0, newBmp.getWidth(), newBmp.getHeight()), new Rect(0, 0, w, h), null);
+        newBmp.recycle();
+        bmp.recycle();
+        return convertBmp;
+    }
 }

@@ -27,6 +27,7 @@ public class Snapshot {
     }
 
     public static void take3Pictures(@NonNull String videoFilePath,
+                                     int cameraId,
                                      long timeStamp,
                                      long firstTime,
                                      @NonNull FileManager fileManager,
@@ -54,7 +55,7 @@ public class Snapshot {
         final List<String> fileNames = new ArrayList<>(3);
         for (int i = 0; i < 3; i++) {
             try {
-                String image = fileManager.getFilePathForPicture(pts);
+                String image = fileManager.getFilePathForPicture(cameraId, pts);
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(image));
                 Bitmap bmp = retriever.getFrameAtTime(pos);
                 if (bmp != null) {

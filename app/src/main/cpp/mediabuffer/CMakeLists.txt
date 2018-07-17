@@ -18,6 +18,7 @@ add_library( # Sets the name of the library.
              # Associated headers in the same location as their source
              # file are automatically included.
              mediabuffer_jni.cpp
+             MediaBuffer.cpp
             )
 
 # Searches for a specified prebuilt library and stores the path as a

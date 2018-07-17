@@ -29,12 +29,9 @@ public class Camera2Controller {
     private static final String TAG = "Camera2Controller";
     private final CameraControllerListener mListener;
     private final Handler mListenerHandler;
-    private boolean mIsPreviewing;
     private boolean mIsRecordingVideo;
     private ImageReader mImageReader;
     private SurfaceTexture mSurfaceTexture;
-
-    public enum CAMERA {MAIN, EXT}
 
     private Context mContext;
     private CameraManager mCameraManager;
@@ -81,16 +78,12 @@ public class Camera2Controller {
         }
     }
 
-    private String getCameraId(CAMERA camera) {
-        int lensFacing = (camera == CAMERA.EXT) ?
-                CameraCharacteristics.LENS_FACING_FRONT :
-                CameraCharacteristics.LENS_FACING_BACK;
+    private String getCameraId(@CameraHelper.CameraName int cameraName) {
         try {
             for (String cameraId : mCameraManager.getCameraIdList()) {
-                CameraCharacteristics characteristics
-                        = mCameraManager.getCameraCharacteristics(cameraId);
-
-                if (characteristics.get(CameraCharacteristics.LENS_FACING) == lensFacing) {
+                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(cameraId);
+                Integer fc = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (fc != null && fc == cameraName) {
                     return cameraId;
                 }
             }
@@ -127,14 +120,13 @@ public class Camera2Controller {
         }
     };
 
-    public void open(CAMERA camera) throws Exception {
-        Log.v(TAG, "open()");
+    public void open(@CameraHelper.CameraName int camera) throws Exception {
+        Log.v(TAG, "open: facing = " + camera);
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             throw new RuntimeException("Camera permission fail.");
         }
         try {
-            Log.d(TAG, "tryAcquire");
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }

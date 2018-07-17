@@ -9,11 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Rect;
-import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -37,7 +32,7 @@ import android.widget.TextView;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
-import com.askey.dvr.cdr7010.dashcam.core.recorder.ExifHelper;
+import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
@@ -59,15 +54,10 @@ import com.askey.dvr.cdr7010.dashcam.widget.OSDView;
 import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
 
-import net.sf.marineapi.nmea.util.Position;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -112,6 +102,7 @@ public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
     private static final String ACTIVITY_CLASSNAME = "com.askey.dvr.cdr7010.dashcam.ui.MainActivity";
     private DashCam mMainCam;
+    private DashCam mExtCam;
     private OSDView osdView;
     private TextView tvContent;
     private Handler mHandler;
@@ -261,43 +252,7 @@ public class CameraRecordFragment extends Fragment {
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
                         isChargeDisconnect = true;
                         Log.i(TAG, "battery status is discharging");
-                        mMainCam.takeAPicture((data, width, height, timeStamp) -> handler.post(() -> {
-                            Bitmap bmp = null;
-                            BufferedOutputStream bos = null;
-                            try {
-                                String filePathForPicture = FileManager.getInstance(getActivity()).getFilePathForPicture(timeStamp);
-                                ByteBuffer buf = ByteBuffer.wrap(data);
-                                bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
-                                bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                                bmp.copyPixelsFromBuffer(buf);
-                                bmp = convertBmp(bmp);
-                                bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                                Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-                                Position position = null;
-                                if (currentLocation != null) {
-                                    Logg.d(TAG, "currentLocation!=null,getLatitude==" + currentLocation.getLatitude() + ",getLongitude==" + currentLocation.getLongitude());
-                                    position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                }
-                                Logg.d(TAG, "timeStamp==" + timeStamp);
-                                ExifHelper.build(filePathForPicture, timeStamp, position);
-                                // TODO: 2018/6/28 上傳文件
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                if (bmp != null) {
-                                    bmp.recycle();
-                                }
-                                if (bos != null) {
-                                    try {
-                                        bos.flush();
-                                        bos.close();
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                handler.sendEmptyMessage(0);
-                            }
-                        }));
+                        mMainCam.takeAPicture(handler);
                         break;
                 }
             }
@@ -321,23 +276,6 @@ public class CameraRecordFragment extends Fragment {
             return true;
         }
     });
-
-    //by beck 将图片水平镜像翻转
-    private Bitmap convertBmp(Bitmap bmp) {
-        int w = bmp.getWidth();
-        int h = bmp.getHeight();
-        Bitmap convertBmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);// 创建一个新的和SRC长度宽度一样的位图
-        Canvas cv = new Canvas(convertBmp);
-        Matrix matrix = new Matrix();
-//        matrix.postScale(1, -1); //镜像垂直翻转
-        matrix.postScale(-1, 1); //镜像水平翻转
-        matrix.postRotate(-180); //旋转-180度
-        Bitmap newBmp = Bitmap.createBitmap(bmp, 0, 0, w, h, matrix, true);
-        cv.drawBitmap(newBmp, new Rect(0, 0, newBmp.getWidth(), newBmp.getHeight()), new Rect(0, 0, w, h), null);
-        newBmp.recycle();
-        bmp.recycle();
-        return convertBmp;
-    }
 
     DashCam.StateCallback mDashCallback = new DashCam.StateCallback() {
         @Override
@@ -437,7 +375,7 @@ public class CameraRecordFragment extends Fragment {
                         startVideoRecord("cpu low temperature");
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
 
@@ -542,16 +480,36 @@ public class CameraRecordFragment extends Fragment {
         final boolean stamp = getRecordStamp();
         final boolean audio = getMicphoneEnable();
         RecordConfig mainConfig = RecordConfig.builder()
-                .cameraId(0)
+                .cameraId(CameraHelper.CAMERA_MAIN)
                 .videoWidth(1920)
                 .videoHeight(1080)
                 .videoFPS(27)
                 .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
                 .videoStampEnable(stamp)
-                .audioRecordEnable(audio)
+                .audioRecordEnable(true)
+                .audioMute(!audio)
+                .adasEnable(true)
+                .nmeaRecordEnable(true)
                 .build();
         mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
         mMainCam.enableAdas(true);
+
+        if (CameraHelper.hasExtCamera()) {
+            RecordConfig extConfig = RecordConfig.builder()
+                    .cameraId(CameraHelper.CAMERA_EXT)
+                    .videoWidth(1280)
+                    .videoHeight(720)
+                    .videoFPS(15)
+                    .videoBitRate(5 * 1024 * 1024) // 5Mbps
+                    .videoStampEnable(false)
+                    .audioRecordEnable(false)
+                    .audioMute(true)
+                    .adasEnable(false)
+                    .nmeaRecordEnable(false)
+                    .build();
+            mExtCam = new DashCam(getActivity(), extConfig, null);
+        }
+
         try {
             startVideoRecord("Fragment onResume");
         } catch (Exception e) {
@@ -812,9 +770,16 @@ public class CameraRecordFragment extends Fragment {
         } else {
             throw new RuntimeException(RecordHelper.getErrorString());
         }
+
+        if (mExtCam != null) {
+            mExtCam.startVideoRecord(reason);
+        }
     }
 
     private void stopVideoRecord(String reason) {
+        if (mExtCam != null) {
+            mExtCam.stopVideoRecord(reason);
+        }
         if (mMainCam != null) {
             mMainCam.stopVideoRecord(reason);
         }

@@ -3,24 +3,16 @@
 #include <string>
 #include <android/log.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
-#include <time.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <pthread.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+
+#include "MediaBuffer.h"
+#include "jniutils.h"
 
 #define TAG "mediabuffer-jni"
 
-#define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__)
-#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #define DEFINE_METHOD(name) static jmethodID method_##name
@@ -57,11 +49,6 @@
             __FILE__ ":" LITERAL_TO_STRING(__LINE__)    \
             " CHECK(" #condition ") failed.")
 
-#define SWAP32(x) (((x) & 0xff) << 24 | ((x) & 0xff00) << 8 | ((x) & 0xff0000) >> 8 | ((x) >> 24) & 0xff)
-#define SWAP64(x) (SWAP32((x) & 0xffffffff)  << 32 | SWAP32(((x) >> 32) & 0xffffffff))
-
-#define PACKAGE_TAG    0x55AA55AAu
-
 struct fields_t {
     jmethodID arrayID;
 };
@@ -69,41 +56,10 @@ struct fields_t {
 typedef struct {
     JavaVM *vm;
     JNIEnv *env;
-    jobject cb;  // callback object
 } context_t;
-
-typedef struct {
-    uint8_t type;
-    uint8_t event;
-    int64_t time;
-    int32_t size;
-    int32_t flags;
-    int64_t pts;
-    int8_t data[0];
-} __packed frame_t;
-
-typedef struct {
-    uint32_t tag;
-    uint32_t length;
-    frame_t frame;
-} __packed packet_t;
 
 static fields_t gFields;
 static context_t sVMContext = {NULL};
-static jbyte *buffer_ptr = NULL;
-static jsize buffer_size = 0;
-static char file_path[256];
-static char *file_name;
-static jbyte *head_ptr = NULL;
-static jbyte *tail_ptr = NULL;
-static jbyte *buffer_fence = NULL;
-static uint32_t slice_count;
-
-static pthread_mutex_t mutex;
-static pthread_cond_t  data_available;
-static pthread_mutex_t lock;
-static bool thread_exit = true;
-static pthread_t thread_id = 0;
 
 // define callback function id
 DEFINE_METHOD(reportCacheFile);
@@ -139,86 +95,15 @@ static int jniThrowException(JNIEnv* env, const char* className, const char* msg
     return 0;
 }
 
-/* return current time in milliseconds */
-static unsigned long current_time_ms() {
-    struct timeval now;
-    if (gettimeofday(&now, NULL) != 0) {
-        struct timespec ts;
-        if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
-            now.tv_sec = ts.tv_sec;
-            now.tv_usec = ts.tv_nsec / 1000UL;
-        } else {
-            now.tv_sec = time(NULL);
-            now.tv_usec = 0;
-        }
-    }
-    return now.tv_sec * 1000UL + now.tv_usec / 1000UL;
-}
-
-static void *thread_func(void *arg) {
-    unsigned long start_time_ms = 0;
-    int fd = -1;
-    slice_count = 0;
-    while (!thread_exit) {
-        pthread_mutex_lock(&mutex);
-        pthread_cond_wait(&data_available, &mutex);
-        pthread_mutex_unlock(&mutex);
-        if (thread_exit) break;
-
-        if (tail_ptr == head_ptr) {
-            continue;
-        } else {
-            if (fd > 0) {
-                unsigned long diff = current_time_ms() - start_time_ms;
-                if (diff > 1000ul) {
-                    close(fd);
-                    fd = -1;
-                    JNIEnv *env = NULL;
-                    sVMContext.vm->AttachCurrentThread(&env, NULL);
-                    jstring str = env->NewStringUTF(file_path);
-                    env->CallVoidMethod(sVMContext.cb, method_reportCacheFile, str);
-                    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-                    env->DeleteLocalRef(str);
-                    sVMContext.vm->DetachCurrentThread();
-                }
-            }
-
-            if (fd < 0) {
-                int n = sprintf(file_name, "%lu", current_time_ms());
-                file_name[n] = '\0';
-                fd = open(file_path, O_WRONLY | O_CREAT | O_APPEND);
-                if (fd < 0) {
-                    ALOGE("Error(%d): %s", errno, strerror(errno));
-                    continue;
-                }
-                fchmod(fd, 0644);
-                start_time_ms = current_time_ms();
-                slice_count++;
-                uint32_t count = SWAP32(slice_count);
-                write(fd, &count, sizeof(count));
-            }
-
-            pthread_mutex_lock(&lock);
-            unsigned long t1 = current_time_ms();
-            if (head_ptr < tail_ptr) {
-                write(fd, head_ptr, tail_ptr - head_ptr);
-                head_ptr = tail_ptr = buffer_ptr;
-            } else if (head_ptr > tail_ptr) {
-                write(fd, head_ptr, buffer_fence - head_ptr);
-                write(fd, buffer_ptr, tail_ptr - buffer_ptr);
-                head_ptr = tail_ptr = buffer_ptr;
-            }
-            unsigned long diff = current_time_ms() - t1;
-            if (diff > 30) {
-                ALOGW("write cache time: %lu", diff);
-            }
-            pthread_mutex_unlock(&lock);
-        }
-    }
-    if (fd > 0) {
-        close(fd);
-    }
-    return NULL;
+static void jniCallback(jobject obj, const char *path)
+{
+    JNIEnv *env = NULL;
+    sVMContext.vm->AttachCurrentThread(&env, NULL);
+    jstring str = env->NewStringUTF(path);
+    env->CallVoidMethod(obj, method_reportCacheFile, str);
+    checkAndClearExceptionFromCallback(env, __FUNCTION__);
+    env->DeleteLocalRef(str);
+    sVMContext.vm->DetachCurrentThread();
 }
 
 /**************************************************************************************************
@@ -229,63 +114,43 @@ static void MediaBuffer_class_init_native(JNIEnv *env, jclass clazz) {
     INITIAL_METHOD(reportCacheFile, "(Ljava/lang/String;)V");
 }
 
-static void MediaBuffer_native_init(JNIEnv *env, jobject thiz, jint bufferSize, jstring dir) {
-    sVMContext.cb = env->NewGlobalRef(thiz);
-
+static jlong MediaBuffer_native_init(JNIEnv *env, jobject thiz, jint bufferSize, jstring dir) {
     jboolean copy = JNI_FALSE;
     const char *dir_str = env->GetStringUTFChars(dir, &copy);
     if (dir_str == NULL) {
     }
-    strcpy(file_path, dir_str);
+    MediaBuffer *buffer = new MediaBuffer(env->NewGlobalRef(thiz), (size_t)bufferSize, dir_str, jniCallback);
     env->ReleaseStringUTFChars(dir, dir_str);
-    const int end = strlen(file_path) - 1;
-    if (file_path[end] != '/') {
-        file_path[end + 1] = '/';
-        file_path[end + 2] = '\0';
-        file_name = &file_path[end + 2];
-    } else {
-        file_name = &file_path[end + 1];
-    }
-
-    buffer_size = bufferSize;
-    buffer_ptr = new jbyte[buffer_size];
-    buffer_fence = buffer_ptr + buffer_size;
-    head_ptr = tail_ptr = buffer_ptr;
-
-    pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&data_available, NULL);
-    pthread_mutex_init(&lock, NULL);
+    return reinterpret_cast<jlong> (buffer);
 }
 
-static void MediaBuffer_release(JNIEnv *env, jobject thiz) {
-    delete[] buffer_ptr;
+static void MediaBuffer_release(JNIEnv *env, jobject thiz, jlong native_object) {
+    MediaBuffer *buffer = reinterpret_cast<MediaBuffer*> (native_object);
+    delete buffer;
 }
 
-static void MediaBuffer_start(JNIEnv *env, jobject thiz) {
-    thread_exit = false;
-    pthread_create(&thread_id, NULL ,thread_func, NULL);
+static void MediaBuffer_start(JNIEnv *env, jobject thiz, jlong native_object) {
+    MediaBuffer *buffer = reinterpret_cast<MediaBuffer*> (native_object);
+    buffer->start();
 }
 
-static void MediaBuffer_stop(JNIEnv *env, jobject thiz) {
-    thread_exit = true;
-    pthread_cond_signal(&data_available);
-    pthread_join(thread_id, NULL);
-    thread_id = 0;
+static void MediaBuffer_stop(JNIEnv *env, jobject thiz, jlong native_object) {
+    MediaBuffer *buffer = reinterpret_cast<MediaBuffer*> (native_object);
+    buffer->stop();
 }
 
-static void MediaBuffer_reset(JNIEnv *env, jobject thiz) {
-    pthread_mutex_lock(&lock);
-    head_ptr = tail_ptr = buffer_ptr;
-    pthread_cond_init(&data_available, NULL);
-    pthread_mutex_unlock(&lock);
+static void MediaBuffer_reset(JNIEnv *env, jobject thiz, jlong native_object) {
+    MediaBuffer *buffer = reinterpret_cast<MediaBuffer*> (native_object);
+    buffer->reset();
 }
 
-static void MediaBuffer_writeSampleData(JNIEnv *env, jobject thiz,
+static void MediaBuffer_writeSampleData(JNIEnv *env, jobject thiz, jlong native_object,
                                           jint type, jint event, jlong time,
                                           jobject byteBuf, jint offset, jint size,
                                           jlong presentationTimeUs, jint flags) {
 
-    if (thread_exit) {
+    MediaBuffer *buffer = reinterpret_cast<MediaBuffer*> (native_object);
+    if (buffer->isStop()) {
         return;
     }
 
@@ -321,92 +186,10 @@ static void MediaBuffer_writeSampleData(JNIEnv *env, jobject thiz,
         return;
     }
 
-    pthread_mutex_lock(&lock);
-    if (head_ptr <= tail_ptr) {
-        if (buffer_fence - tail_ptr > sizeof(packet_t) + size) {
-            packet_t *packet = (packet_t *) tail_ptr;
-            packet->tag = SWAP32(PACKAGE_TAG);
-            packet->length = SWAP32(sizeof(frame_t) + size);
-            packet->frame.type = (uint8_t) type;
-            packet->frame.event = (uint8_t) event;
-            packet->frame.time = SWAP64(time);
-            packet->frame.size = SWAP32(size);
-            packet->frame.flags = SWAP32(flags);
-            packet->frame.pts = SWAP64(presentationTimeUs);
-            memcpy(packet->frame.data, dst, size);
-            tail_ptr = packet->frame.data + size;
-            pthread_cond_signal(&data_available);
-        } else if ((buffer_fence - tail_ptr) + (head_ptr - buffer_ptr) > sizeof(packet_t) + size) {
-            if (buffer_fence - tail_ptr >= sizeof(packet_t)) {
-                packet_t *packet = (packet_t *) tail_ptr;
-                packet->tag = SWAP32(PACKAGE_TAG);
-                packet->length = SWAP32(sizeof(frame_t) + size);
-                packet->frame.type = (uint8_t) type;
-                packet->frame.event = (uint8_t) event;
-                packet->frame.time = SWAP64(time);
-                packet->frame.size = SWAP32(size);
-                packet->frame.flags = SWAP32(flags);
-                packet->frame.pts = SWAP64(presentationTimeUs);
-                if (packet->frame.data < buffer_fence) {
-                    const size_t s1 = buffer_fence - packet->frame.data;
-                    const size_t s2 = size - s1;
-                    memcpy(packet->frame.data, dst, s1);
-                    memcpy(buffer_ptr, dst + s1, s2);
-                    tail_ptr = buffer_ptr + s2;
-                } else {
-                    memcpy(buffer_ptr, dst, size);
-                    tail_ptr = buffer_ptr + size;
-                }
-            } else {
-                packet_t packet;
-                packet.tag = SWAP32(PACKAGE_TAG);
-                packet.length = SWAP32(sizeof(frame_t) + size);
-                packet.frame.type = (uint8_t) type;
-                packet.frame.event = (uint8_t) event;
-                packet.frame.time = SWAP64(time);
-                packet.frame.size = SWAP32(size);
-                packet.frame.flags = SWAP32(flags);
-                packet.frame.pts = SWAP64(presentationTimeUs);
-                const size_t s1 = buffer_fence - tail_ptr;
-                const size_t s2 = sizeof(packet_t) - s1;
-                int8_t *ptr = (int8_t *) &packet;
-                memcpy(tail_ptr, ptr, s1);
-                memcpy(buffer_ptr, ptr + s1, s2);
-                tail_ptr = buffer_ptr + s2;
-            }
-            pthread_cond_signal(&data_available);
-        } else {
-            pthread_mutex_unlock(&lock);
-            if (byteArray != NULL) {
-                env->ReleaseByteArrayElements(byteArray, dst, 0);
-            }
-            jniThrowException(env, "java/lang/RuntimeException", "buffer overflow");
-            return;
-        }
-    } else {
-        if (head_ptr - tail_ptr > sizeof(packet_t) + size) {
-            packet_t *packet = (packet_t *) tail_ptr;
-            packet->tag = SWAP32(PACKAGE_TAG);
-            packet->length = SWAP32(sizeof(frame_t) + size);
-            packet->frame.type = (uint8_t) type;
-            packet->frame.event = (uint8_t) event;
-            packet->frame.time = SWAP64(time);
-            packet->frame.size = SWAP32(size);
-            packet->frame.flags = SWAP32(flags);
-            packet->frame.pts = SWAP64(presentationTimeUs);
-            memcpy(packet->frame.data, dst, size);
-            tail_ptr = packet->frame.data + size;
-            pthread_cond_signal(&data_available);
-        } else {
-            pthread_mutex_unlock(&lock);
-            if (byteArray != NULL) {
-                env->ReleaseByteArrayElements(byteArray, dst, 0);
-            }
-            jniThrowException(env, "java/lang/RuntimeException", "buffer overflow");
-            return;
-        }
+    if(!buffer->writeSampleData(type, event, time, dst, (size_t)size, presentationTimeUs, flags)) {
+        jniThrowException(env, "java/lang/RuntimeException", "buffer overflow");
     }
-    pthread_mutex_unlock(&lock);
+
     if (byteArray != NULL) {
         env->ReleaseByteArrayElements(byteArray, dst, 0);
     }
@@ -417,12 +200,12 @@ static void MediaBuffer_writeSampleData(JNIEnv *env, jobject thiz,
  **************************************************************************************************/
 static const JNINativeMethod gMethods[] = {
         {"class_init_native", "()V", (void *)MediaBuffer_class_init_native},
-        { "native_init", "(ILjava/lang/String;)V", (void *)MediaBuffer_native_init },
-        { "release", "()V", (void *)MediaBuffer_release },
-        { "nativeWriteSampleData", "(IIJLjava/nio/ByteBuffer;IIJI)V", (void *)MediaBuffer_writeSampleData },
-        { "start", "()V", (void *)MediaBuffer_start },
-        { "stop", "()V", (void *)MediaBuffer_stop },
-        { "reset", "()V", (void *)MediaBuffer_reset },
+        { "native_init", "(ILjava/lang/String;)J", (void *)MediaBuffer_native_init },
+        { "native_release", "(J)V", (void *)MediaBuffer_release },
+        { "native_writeSampleData", "(JIIJLjava/nio/ByteBuffer;IIJI)V", (void *)MediaBuffer_writeSampleData },
+        { "native_start", "(J)V", (void *)MediaBuffer_start },
+        { "native_stop", "(J)V", (void *)MediaBuffer_stop },
+        { "native_reset", "(J)V", (void *)MediaBuffer_reset },
 };
 
 static int registerNativeMethods(JNIEnv* env, const char* className, const JNINativeMethod* methods, int numMethods) {

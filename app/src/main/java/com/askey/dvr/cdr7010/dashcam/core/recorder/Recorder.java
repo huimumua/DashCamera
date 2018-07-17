@@ -1,6 +1,7 @@
 package com.askey.dvr.cdr7010.dashcam.core.recorder;
 
 import android.content.Context;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Surface;
@@ -11,10 +12,13 @@ import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaAudioEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaVideoEncoder;
+import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Recorder implements IFrameListener {
@@ -25,6 +29,7 @@ public class Recorder implements IFrameListener {
     private MediaVideoEncoder mVideoEncoder;
     private MediaAudioEncoder mAudioEncoder;
     private MediaMuxerWrapper mMuxer;
+    private HashMap<String, NmeaRecorder> mNmeaMap;
 
     private final Object mSync = new Object();
 
@@ -53,7 +58,7 @@ public class Recorder implements IFrameListener {
     public void prepare() throws IOException {
 
         try {
-            mMuxer = new MediaMuxerWrapper(mContext, mSegmentCallback, mMuxerStateCallback);
+            mMuxer = new MediaMuxerWrapper(mContext, mConfig, mSegmentCallback, mMuxerStateCallback);
         } catch (IOException e) {
             Logg.e(TAG, "Exception: " + e.getMessage());
             throw new IOException("create muxer error.");
@@ -64,10 +69,17 @@ public class Recorder implements IFrameListener {
                 mConfig.videoHeight(),
                 mConfig.videoFPS(),
                 mConfig.videoBitRate());
-        mAudioEncoder = new MediaAudioEncoder(mMuxer, mConfig.audioRecordEnable(), mMediaEncoderListener);
+
+        if (mConfig.audioRecordEnable()) {
+            mAudioEncoder = new MediaAudioEncoder(mMuxer, mConfig.audioMute(), mMediaEncoderListener);
+        }
 
         try {
             mMuxer.prepare();
+            if (mConfig.nmeaRecordEnable()) {
+                mNmeaMap = new LinkedHashMap<>();
+                NmeaRecorder.init(mContext);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,14 +103,21 @@ public class Recorder implements IFrameListener {
         mMuxer = null;
         mVideoEncoder = null;
         mAudioEncoder = null;
+        if (mConfig.nmeaRecordEnable()) {
+            NmeaRecorder.deinit(mContext);
+        }
     }
 
     public void mute() {
-        mAudioEncoder.mute();
+        if (mAudioEncoder != null) {
+            mAudioEncoder.mute();
+        }
     }
 
     public void demute() {
-        mAudioEncoder.demute();
+        if (mAudioEncoder != null) {
+            mAudioEncoder.demute();
+        }
     }
 
     @Override
@@ -126,9 +145,32 @@ public class Recorder implements IFrameListener {
 
     private MediaMuxerWrapper.SegmentCallback mSegmentCallback = new MediaMuxerWrapper.SegmentCallback() {
         @Override
-        public boolean segmentStartPrepareSync(int event, String path) {
+        public boolean segmentStartPrepareSync(int event, long startTime, String path) {
             Logg.v(TAG, "segmentStartPrepareSync: event=" + event + " " + path);
             // 注意：禁止在这里进行耗时操作
+            if (mConfig.nmeaRecordEnable()) {
+                try {
+                    String nmeaPath;
+                    if (event == 0) {
+                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaNormal(startTime);
+                    } else {
+                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaEvent(startTime);
+                    }
+                    Logg.i(TAG, "nmea path = " + nmeaPath);
+                    NmeaRecorder nmea = NmeaRecorder.create(nmeaPath);
+                    if (nmea != null) {
+                        if (event == 0) {
+                            nmea.start(startTime, 60);
+                        } else {
+                            nmea.eventStart(startTime);
+                        }
+                        mNmeaMap.put(path, nmea);
+                    }
+                } catch (RemoteException e) {
+                    Logg.e(TAG, "create NMEA file error. exception: " + e.getMessage());
+                }
+            }
+
             if (mStateCallback != null) {
                 mStateCallback.onEventStateChanged(event != 0);
             }
@@ -141,10 +183,21 @@ public class Recorder implements IFrameListener {
         }
 
         @Override
+        public void segmentCompletedSync(int event, String path) {
+            // 注意：禁止在这里进行耗时操作
+            if (mConfig.nmeaRecordEnable()) {
+                NmeaRecorder nmea = mNmeaMap.remove(path);
+                if (nmea != null && NmeaRecorder.RecorderState.STARTED == nmea.getState()) {
+                    nmea.stop();
+                }
+            }
+        }
+
+        @Override
         public void segmentCompletedAsync(int event, final long eventTimeMs, final String path, final long startTimeMs, long durationMs) {
             Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " " + path);
             if (event != 0) {
-                Snapshot.take3Pictures(path, startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
+                Snapshot.take3Pictures(path, mConfig.cameraId(), startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
                     if (pictures != null) {
                         for (String pic : pictures) {
                             Logg.d(TAG, pic);
@@ -154,6 +207,18 @@ public class Recorder implements IFrameListener {
                         mStateCallback.onEventCompleted(event, startTimeMs, pictures, path);
                     }
                 });
+            }
+        }
+
+        @Override
+        public void segmentTerminated() {
+            if (mConfig.nmeaRecordEnable()) {
+                for (NmeaRecorder nmea : mNmeaMap.values()) {
+                    if (nmea != null && NmeaRecorder.RecorderState.STARTED == nmea.getState()) {
+                        nmea.stop();
+                    }
+                }
+                mNmeaMap.clear();
             }
         }
     };

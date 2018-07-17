@@ -8,9 +8,9 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper.SegmentCallback;
 import com.askey.dvr.cdr7010.dashcam.core.event.Event;
-import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -35,10 +35,10 @@ public class EventMuxer implements Runnable{
     private MediaFormat mVideoFormat;
     private MediaFormat mAudioFormat;
     private AndroidMuxer mMuxer;
-    private NmeaRecorder nmeaRecorder;
     private boolean mFlagTerm = false;
     private boolean mFlagStop = false;
     private Context mContext;
+    private final RecordConfig mConfig;
     private final SegmentCallback mCallback;
     private final Handler mHandler;
     private int slice_index = 0;
@@ -99,16 +99,9 @@ public class EventMuxer implements Runnable{
                 if (s != null) {
                     if (mMuxer == null) {
                         try {
-                            String path = FileManager.getInstance(mContext).getFilePathForEvent(eventTime);
+                            String path = FileManager.getInstance(mContext).getFilePathForEvent(mConfig.cameraId(), eventTime);
                             mMuxer = createMuxer(path, eventId, eventTime);
                             isNewFile = true;
-                            // String nmeaPath = path.replaceAll("mp4", "nmea").replaceAll("EVENT", "SYSTEM/NMEA/EVENT");
-                            String nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaEvent(eventTime);
-                            Logg.i(LOG_TAG,"event nmeaRecorder path = " + nmeaPath);
-                            nmeaRecorder = NmeaRecorder.create(nmeaPath);
-                            if (nmeaRecorder != null) {
-                                nmeaRecorder.eventStart(eventTime);
-                            }
                         } catch (RemoteException e) {
                             Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
                                     + e.getMessage());
@@ -129,6 +122,9 @@ public class EventMuxer implements Runnable{
                             final AndroidMuxer muxer = mMuxer;
                             final int event = eventId;
                             final long time = eventTime;
+                            if (mCallback != null) {
+                                mCallback.segmentCompletedSync(event, muxer.filePath());
+                            }
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -157,9 +153,11 @@ public class EventMuxer implements Runnable{
     }
 
     EventMuxer(@NonNull Context context,
+               @NonNull RecordConfig config,
                @Nullable final SegmentCallback callback,
                Handler handler) {
         mContext = context.getApplicationContext();
+        mConfig = config;
         mCallback = callback;
         mHandler = handler;
 
@@ -184,13 +182,6 @@ public class EventMuxer implements Runnable{
         Logg.d(LOG_TAG, "terminate");
         mFlagTerm = true;
         mInputQueue.add(new Slice(0, 0, null));
-        if (nmeaRecorder != null) {
-            if (nmeaRecorder.getState() == NmeaRecorder.RecorderState.STARTED) {
-                nmeaRecorder.stop();
-            }
-            nmeaRecorder = null;
-           // Logg.i(LOG_TAG,"terminate: nmeaRecorder stop");
-        }
     }
 
     void release() {
@@ -208,7 +199,7 @@ public class EventMuxer implements Runnable{
         AndroidMuxer muxer = null;
         try {
             if (mCallback != null) {
-                mCallback.segmentStartPrepareSync(eventId, path);
+                mCallback.segmentStartPrepareSync(eventId, eventTime, path);
             }
             muxer = new AndroidMuxer(path);
             muxer.addTrack(SAMPLE_TYPE_VIDEO, mVideoFormat);
