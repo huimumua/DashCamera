@@ -24,6 +24,7 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainAppSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.receiver.DvrShutDownReceiver;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
@@ -35,6 +36,7 @@ import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
+import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
 
 import org.json.JSONObject;
@@ -67,6 +69,7 @@ public class MainActivity extends DialogActivity {
     private boolean isFromOtherApp =false;
     private ContentResolver contentResolver;
     private int setUpWizardType;
+    private final DvrShutDownReceiver mDvrShutDownBroadCastReceiver = new DvrShutDownReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +102,12 @@ public class MainActivity extends DialogActivity {
 
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
         contentResolver = getContentResolver();
+
+        //add by Mark for bug PUCDR-1445 in 20180717
+        IntentFilter dvrShutDownIntentFilter = new IntentFilter(AskeyIntent.ACTION_DVR_SHUTDOWN);
+        dvrShutDownIntentFilter.setPriority(1000);
+        registerReceiver(mDvrShutDownBroadCastReceiver, dvrShutDownIntentFilter);
+        //end add
     }
 
     @Override
@@ -133,6 +142,7 @@ public class MainActivity extends DialogActivity {
         //add by Mark
         MainApp.getInstance().unBindJvcMainAppService();
         //end add
+        unregisterReceiver(mDvrShutDownBroadCastReceiver);
         super.onDestroy();
     }
 

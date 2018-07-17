@@ -12,6 +12,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.EventItem;
 import com.askey.dvr.cdr7010.dashcam.domain.EventList;
 import com.askey.dvr.cdr7010.dashcam.logic.DialogLogic;
+import com.askey.dvr.cdr7010.dashcam.receiver.DvrShutDownReceiver;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.CancelableRunnable;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -56,6 +57,11 @@ public class DialogManager{
         }
     }
     public void showDialog(int dialogType,String message,boolean resize){
+        if(DvrShutDownReceiver.isShutDown()){
+            Logg.w(TAG, "showDialog: received ACTION_DVR_SHUTDOWN, not show dialog anymore.");
+            return;
+        }
+
         if(mContext != null && (mContext instanceof Activity)){
             Bundle bundle = new Bundle();
             bundle.putString("Message",message);
@@ -67,6 +73,11 @@ public class DialogManager{
         }
     }
     public void showDialog(int eventType,long showTime){
+        if(DvrShutDownReceiver.isShutDown()){
+            Logg.w(TAG, "showDialog: received ACTION_DVR_SHUTDOWN, not show dialog anymore.");
+            return;
+        }
+
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
         if(eventInfo !=null) {
             int priority = eventInfo.getPriority();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.receiver.DvrShutDownReceiver;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 
@@ -27,6 +28,11 @@ public class TTS {
     }
 
     public void voiceNotification(int[] voiceId, final int requestId) {
+        if(DvrShutDownReceiver.isShutDown()){
+            Logg.w(TAG, "showDialog: received ACTION_DVR_SHUTDOWN, not tts anymore.");
+            return;
+        }
+
         Intent intent = new Intent(ACTION_VOICE_NOTIFICATION);
         intent.putExtra("voiceId", voiceId);
         Logg.i(TAG, "voiceNotification=voiceId==" + voiceId[0]);

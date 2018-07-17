@@ -40,7 +40,6 @@ import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.ExifHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
-import com.askey.dvr.cdr7010.dashcam.exception.SDCardUnavailableException;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
@@ -52,9 +51,7 @@ import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
-import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
-import com.askey.dvr.cdr7010.dashcam.util.FileUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.RecordHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
@@ -96,7 +93,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SWITCH_USER_COMPLETED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SWITCH_USER_STARTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
@@ -207,9 +203,9 @@ public class CameraRecordFragment extends Fragment {
     private BroadcastReceiver mShutdownReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_SHUTDOWN.equals(intent.getAction())) {
-                Logg.d(TAG, "BroadcastReceiver: Intent.ACTION_SHUTDOWN");
-                stopVideoRecord("Intent.ACTION_SHUTDOWN");
+            if (Intent.ACTION_SHUTDOWN.equals(intent.getAction()) || AskeyIntent.ACTION_DVR_SHUTDOWN.equals(intent.getAction())) {
+                Logg.d(TAG, "BroadcastReceiver: " + intent.getAction());
+                stopVideoRecord(intent.getAction());
             }
         }
     };
@@ -505,7 +501,10 @@ public class CameraRecordFragment extends Fragment {
         filter2.addAction(ACTION_SDCARD_LIMT);
         getActivity().registerReceiver(mSdStatusListener, filter2);
 
-        getActivity().registerReceiver(mShutdownReceiver, new IntentFilter(Intent.ACTION_SHUTDOWN));
+        IntentFilter dvrShutDownIntentFilter = new IntentFilter(AskeyIntent.ACTION_DVR_SHUTDOWN);
+        dvrShutDownIntentFilter.addAction(Intent.ACTION_SHUTDOWN);
+        dvrShutDownIntentFilter.setPriority(1000);
+        getActivity().registerReceiver(mShutdownReceiver, dvrShutDownIntentFilter);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
