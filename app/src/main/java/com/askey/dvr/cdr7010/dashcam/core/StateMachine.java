@@ -15,6 +15,7 @@ public class StateMachine {
     private final State STATE_OPEN;
     private final State STATE_PREPARE_CLOSE;
     private final State STATE_PREPARE_OPEN;
+
     private static final boolean DEBUG = true;
 
     public enum EEvent {
@@ -118,9 +119,9 @@ public class StateMachine {
             public void enter() {
                 super.enter();
                 try {
-                    mDashCamControl.onStartVideoRecord();
+                    mDashCamControl.onOpenCamera();
                 } catch (Exception e) {
-                    Logg.e(TAG, "startVideoRecord() fail with exception: " + e.getMessage());
+                    Logg.e(TAG, "onOpenCamera() fail with exception: " + e.getMessage());
                     dispatchEvent(new Event(EEvent.ERROR, e.getMessage()));
                 }
             }
@@ -177,6 +178,7 @@ public class StateMachine {
             @Override
             public void enter() {
                 super.enter();
+                mDashCamControl.onCameraClosed();
                 if (pendingEvent.what != EEvent.NONE) {
                     handler.post(new Runnable() {
                         @Override
@@ -193,6 +195,7 @@ public class StateMachine {
         addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.OPEN_SUCCESS, STATE_OPEN));
         addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.ERROR, STATE_CLOSE));
         addTransition(Transition.create(STATE_OPEN, EEvent.CLOSE, STATE_PREPARE_CLOSE));
+        addTransition(Transition.create(STATE_OPEN, EEvent.OPEN, STATE_PREPARE_CLOSE));
         addTransition(Transition.create(STATE_PREPARE_CLOSE, EEvent.CLOSE_SUCCESS, STATE_CLOSE));
         addTransition(Transition.create(STATE_PREPARE_CLOSE, EEvent.ERROR, STATE_CLOSE));
 

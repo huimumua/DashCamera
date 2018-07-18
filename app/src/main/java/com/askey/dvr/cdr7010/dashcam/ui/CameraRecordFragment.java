@@ -522,7 +522,7 @@ public class CameraRecordFragment extends Fragment {
                 .audioRecordEnable(audio)
                 .build();
         mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
-
+        mMainCam.enableAdas(true);
         try {
             startVideoRecord("Fragment onResume");
         } catch (Exception e) {
@@ -534,6 +534,7 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onPause() {
         Logg.d(TAG, "onPause");
+        mMainCam.enableAdas(false);
         if (!hasStopped) {
             stopVideoRecord("Fragment onPause");
             getActivity().unregisterReceiver(mSdStatusListener);
@@ -751,9 +752,11 @@ public class CameraRecordFragment extends Fragment {
         if (mMainCam == null) {
             throw new RuntimeException("dashcam unavailable");
         }
-        if (mMainCam.isBusy()) {
-            throw new RuntimeException("dashcam is busy");
-        }
+        // TODO: TBD: need to check?
+        // Or don't check here Let DashCam decide it can start or not
+        // if (mMainCam.isBusy()) {
+        //     throw new RuntimeException("dashcam is busy");
+        // }
         if (RecordHelper.isRecodingEnable()) {
 
             mMainCam.startVideoRecord(reason);

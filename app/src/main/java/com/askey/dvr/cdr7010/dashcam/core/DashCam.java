@@ -1,15 +1,14 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
 import android.content.Context;
-import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
-import android.media.Image;
-import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
+import com.askey.dvr.cdr7010.dashcam.adas.AdasStateControl;
+import com.askey.dvr.cdr7010.dashcam.adas.AdasStateListener;
 import com.askey.dvr.cdr7010.dashcam.core.StateMachine.EEvent;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraControllerListener;
@@ -18,10 +17,12 @@ import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SetUtils;
 
+import java.util.EnumSet;
 import java.util.List;
 
-public class DashCam implements DashCamControl {
+public class DashCam implements DashCamControl, AdasStateListener {
 
     private static final String TAG = "DashCam";
     private final Handler mMainThreadHandler;
@@ -34,6 +35,26 @@ public class DashCam implements DashCamControl {
     private StateCallback mStateCallback;
     private StateMachine mStateMachine;
     private AdasController mAdasController;
+
+
+    /**
+     * Functions which need to start Camera
+     * Use Function enum & EnumSet to know which function is enabled
+     * And does Camera needs to be re-start to disable some outputs (Surface/ImageReader)
+     */
+    private enum Function {
+        RECORD, ADAS
+    }
+
+    // Current Enabled Functions
+    private final EnumSet<Function> mEnabledFunctions = EnumSet.noneOf(Function.class);
+
+    // User Set / Conditions Control may disable/enable functions and set to this variable
+    private final EnumSet<Function> mSetEnabledFunctions = EnumSet.noneOf(Function.class);
+
+    // Check Function is ready to start see @setFunctionReady
+    private final EnumSet<Function> mReadyFunctions = EnumSet.noneOf(Function.class);
+
 
     public interface StateCallback {
         void onStarted();
@@ -51,7 +72,6 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStarted() {
             Logg.d(TAG, "RecorderStateCallback: onStarted");
-            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.OPEN_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStarted();
             }
@@ -60,7 +80,6 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStoped() {
             Logg.d(TAG, "RecorderStateCallback: onStoped");
-            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStoped();
             }
@@ -99,6 +118,9 @@ public class DashCam implements DashCamControl {
         mStateMachine = new StateMachine(this);
         mMainThreadHandler = new Handler(Looper.getMainLooper());
         mAdasController = AdasController.getsInstance();
+        mAdasController.addListener(this);
+        mAdasController.start(mContext);
+        // TODO: find a place to stop ADAS
     }
 
     public boolean isBusy() {
@@ -107,12 +129,113 @@ public class DashCam implements DashCamControl {
 
     public void startVideoRecord(String reason) {
         Logg.d(TAG, "startVideoRecord " + reason);
-        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.OPEN, reason));
+        enableFunction(Function.RECORD);
     }
 
     public void stopVideoRecord(String reason) {
         Logg.d(TAG, "stopVideoRecord " + reason);
-        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE, reason));
+        disableFunction(Function.RECORD);
+    }
+
+    public void enableAdas(boolean enabled) {
+        if (enabled) {
+            enableFunction(Function.ADAS);
+        } else {
+            disableFunction(Function.ADAS);
+        }
+    }
+
+    private synchronized void enableFunction(Function function) {
+        Log.v(TAG, "enableFunction: " + function.name());
+        if (mSetEnabledFunctions.contains(function)) {
+            return;
+        }
+        mSetEnabledFunctions.add(function);
+        mMainThreadHandler.post(() -> {
+            Log.v(TAG, "enableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
+            checkEnabledFunctions();
+        });
+    }
+
+    private synchronized void disableFunction(Function function) {
+        Log.v(TAG, "disableFunction: " + function.name());
+        if (!mSetEnabledFunctions.contains(function)) {
+            return;
+        }
+        mSetEnabledFunctions.remove(function);
+        mMainThreadHandler.post(() -> {
+            Log.v(TAG, "disableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
+            checkEnabledFunctions();
+        });
+    }
+
+    private synchronized void clearFunctionReady() {
+        mMainThreadHandler.post(() -> {
+            mReadyFunctions.clear();
+        });
+
+    }
+
+    /**
+     * A function may need sometimes to be ready.
+     * This method set and check all functions is ready to start the Camera
+     * @param function the function which is ready to start
+     */
+    private void setFunctionReady(Function function) {
+        mMainThreadHandler.post(() -> {
+            Log.v(TAG, "setFunctionReady: " + function);
+            if (mReadyFunctions.contains(function)) {
+                return;
+            }
+            mReadyFunctions.add(function);
+            Log.v(TAG, "setFunctionReady: mReadyFunctions=" + mReadyFunctions + ", mSetEnabledFunctions=" + mSetEnabledFunctions);
+            if (SetUtils.equals(mReadyFunctions, mSetEnabledFunctions)) {
+                try {
+                    startCamera();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    /**
+     * Check the changes of functions to change the state of StateMachine
+     */
+    private synchronized void checkEnabledFunctions() {
+        Log.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
+        mMainThreadHandler.postDelayed(() -> {
+            synchronized (this) {
+                Log.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
+                Log.v(TAG, "checkEnabledFunctions: mSetEnabledFunctions=" + mSetEnabledFunctions + ", mEnabledFunctions=" + mEnabledFunctions);
+                if (SetUtils.equals(mSetEnabledFunctions, mEnabledFunctions)) {
+                    return;
+                }
+
+                StateMachine.EEvent pendingEvent = null;
+                if (!mEnabledFunctions.contains(Function.RECORD) && mSetEnabledFunctions.contains(Function.RECORD)) {
+                    // No-RECORD --> RECORD
+                    pendingEvent = StateMachine.EEvent.OPEN;
+                    mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN, mSetEnabledFunctions.toString()));
+                } else if (mEnabledFunctions.contains(Function.RECORD) && !mSetEnabledFunctions.contains(Function.RECORD)) {
+                    // RECORD --> No-RECORD
+                    pendingEvent = StateMachine.EEvent.CLOSE;
+                    mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE, mSetEnabledFunctions.toString()));
+                } else if (mSetEnabledFunctions.contains(Function.RECORD) || mSetEnabledFunctions.contains(Function.ADAS)) {
+                    pendingEvent = StateMachine.EEvent.OPEN;
+                } else if (mSetEnabledFunctions.size() == 0) {
+                    pendingEvent = StateMachine.EEvent.CLOSE;
+                }
+
+                if (pendingEvent != null) {
+                    mStateMachine.dispatchEvent(new StateMachine.Event(pendingEvent, mSetEnabledFunctions.toString()));
+                }
+
+                mEnabledFunctions.clear();
+                mEnabledFunctions.addAll(mSetEnabledFunctions);
+
+            }
+        }, 100);
     }
 
     public void mute() {
@@ -123,64 +246,38 @@ public class DashCam implements DashCamControl {
         mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.UNMUTE, ""));
     }
 
+
+    @Override
+    public void onOpenCamera() {
+        Log.v(TAG, "onOpenCamera");
+        clearFunctionReady();
+        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
+        mCamera2Controller.startBackgroundThread();
+        try {
+            if (mConfig.cameraId() == 0) {
+                mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);
+            } else {
+                mCamera2Controller.open(Camera2Controller.CAMERA.EXT);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void onCameraClosed() {
+        Log.v(TAG, "onCameraClosed");
+        if (mSetEnabledFunctions.size() != 0) {
+            // Open again if any function is enabled
+            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN, mSetEnabledFunctions.toString()));
+        }
+    }
+
     @Override
     public void onStartVideoRecord() throws Exception {
         Logg.d(TAG, "onStartVideoRecord");
-        mAdasController.start(mContext);
-        ImageReader imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 6);
-        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
-            @Override
-            public void onImageAvailable(ImageReader reader) {
-                Image image = reader.acquireLatestImage();
-                if (image != null) {
-                    mAdasController.process(image);
-                }
-            }
-        }, null);
 
-        boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
-        if (!sdcardAvailable) {
-            if (mStateCallback != null) {
-                mStateCallback.onError();
-            }
-            throw new RuntimeException("sd card unavailable");
-        }
-
-        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
-        mCamera2Controller.setImageReader(imageReader);
-        mCamera2Controller.startBackgroundThread();
-        if (mConfig.cameraId() == 0) {
-            mCamera2Controller.open(Camera2Controller.CAMERA.MAIN);
-        } else {
-            mCamera2Controller.open(Camera2Controller.CAMERA.EXT);
-        }
-
-        mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
-        mRecorder.prepare();
-
-        NmeaRecorder.init(mContext);
-        mRenderer = new EGLRenderer(mContext,
-                mConfig.videoWidth(),
-                mConfig.videoHeight(),
-                mConfig.videoStampEnable(),
-                new EGLRenderer.OnSurfaceTextureListener() {
-                    @Override
-                    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-                        mSurfaceTexture = surfaceTexture;
-                        mRenderer.createEncoderSurface(mRecorder.getInputSurface(), mRecorder);
-                        try {
-                            startInternal();
-                        } catch (Exception e) {
-                            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, ""));
-                        }
-                    }
-
-                    @Override
-                    public void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-                        mSurfaceTexture = null;
-                    }
-                });
-        mRenderer.start();
     }
 
     public void takeAPicture(EGLRenderer.SnapshotCallback callback) {
@@ -189,14 +286,13 @@ public class DashCam implements DashCamControl {
         }
     }
 
-    private void startInternal() throws Exception {
-        Logg.d(TAG, "startInternal");
+    private void startCamera() throws Exception {
+        Logg.d(TAG, "startCamera");
         if (mRecorder != null) {
             mRecorder.startRecording();
         }
 
         if (mCamera2Controller != null) {
-            mCamera2Controller.setSurface(mSurfaceTexture);
             mCamera2Controller.startRecordingVideo();
         }
     }
@@ -240,10 +336,30 @@ public class DashCam implements DashCamControl {
         }
     }
 
+    @Override
+    public void onAdasStarted() {
+        Logg.v(TAG, "onAdasStarted");
+        enableFunction(Function.ADAS);
+    }
+
+    @Override
+    public void onAdasStopped() {
+        Logg.v(TAG, "onAdasStopped");
+        disableFunction(Function.ADAS);
+    }
+
     private CameraControllerListener mCameraListener = new CameraControllerListener() {
         @Override
         public void onCameraOpened() {
             Log.v(TAG, "onCameraOpened");
+            if (mSetEnabledFunctions.contains(Function.RECORD)) {
+                try {
+                    prepareRecorder();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            prepareAdas(mCamera2Controller);
         }
 
         @Override
@@ -254,11 +370,62 @@ public class DashCam implements DashCamControl {
         @Override
         public void onCaptureStarted() {
             Log.v(TAG, "onCaptureStarted");
+            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN_SUCCESS, "onCaptureStarted"));
         }
 
         @Override
         public void onCaptureStopped() {
             Log.v(TAG, "onCaptureStopped");
+            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "onCaptureStopped"));
         }
     };
+
+    private void prepareRecorder() throws Exception {
+        Logg.v(TAG, "prepareRecorder");
+
+        boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
+        if (!sdcardAvailable) {
+            if (mStateCallback != null) {
+                mStateCallback.onError();
+            }
+            throw new RuntimeException("sd card unavailable");
+        }
+
+
+        mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
+        mRecorder.prepare();
+
+        NmeaRecorder.init(mContext);
+        mRenderer = new EGLRenderer(mContext,
+                mConfig.videoWidth(),
+                mConfig.videoHeight(),
+                mConfig.videoStampEnable(),
+                new EGLRenderer.OnSurfaceTextureListener() {
+                    @Override
+                    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+                        mSurfaceTexture = surfaceTexture;
+                        mRenderer.createEncoderSurface(mRecorder.getInputSurface(), mRecorder);
+                        try {
+                            mCamera2Controller.setSurface(surfaceTexture);
+                            setFunctionReady(Function.RECORD);
+                        } catch (Exception e) {
+                            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, ""));
+                        }
+                    }
+
+                    @Override
+                    public void onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+                        mSurfaceTexture = null;
+                    }
+                });
+        mRenderer.start();
+
+    }
+
+    private void prepareAdas(Camera2Controller camera2Controller) {
+        Log.v(TAG, "prepareAdas");
+        camera2Controller.setImageReader(mAdasController.getImageReader());
+        setFunctionReady(Function.ADAS);
+    }
+
 }

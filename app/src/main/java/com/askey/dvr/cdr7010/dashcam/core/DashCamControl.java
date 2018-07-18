@@ -5,4 +5,6 @@ public interface DashCamControl {
     void onStopVideoRecord();
     void onMuteAudio();
     void onDemuteAudio();
+    void onOpenCamera() throws Exception;
+    void onCameraClosed();
 }

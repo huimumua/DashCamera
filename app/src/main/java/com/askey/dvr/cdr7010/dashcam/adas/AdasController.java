@@ -1,7 +1,9 @@
 package com.askey.dvr.cdr7010.dashcam.adas;
 
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.media.Image;
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -18,16 +20,23 @@ import com.jvckenwood.adas.util.FC_PARAMETER;
 import com.jvckenwood.adas.util.Util;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-public class AdasController implements Util.AdasCallback {
+import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
+
+public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final String TAG = AdasController.class.getSimpleName();
     private static final int CAR_TYPE_NUM = 7;
     private static final int[] INSTALLATION_HEIGHTS = new int[] {120, 135, 120, 135, 120, 135, 200};
     private static final int[] VEHICLE_WIDTHS = new int[] {148, 148, 170, 170, 180, 190, 200};
     private static final int[] VEHICLE_POINT_DISTANCES = new int[] {130, 90, 180, 190, 180, 190, 50};
     private static final boolean DEBUG = false;
-    private boolean DEBUG_FPS = false;
-    private boolean ADAS_DISABLED = false;
+    private static final int ADAS_IMAGE_WIDTH = 1280;
+    private static final int ADAS_IMAGE_HEIGHT = 720;
+    private static final int BUFFER_NUM = 6;
+    private boolean DEBUG_FPS;
+    private boolean ADAS_DISABLED;
     /* Handler Messages */
     private static final int MSG_PROCESS = 0;
     private static final int MSG_DID_ADAS_DETECT = 1;
@@ -44,6 +53,11 @@ public class AdasController implements Util.AdasCallback {
     private FC_INPUT mFcInput;
     private Image mProcessingImage;
     private Handler mHandler;
+    private List<AdasStateListener> mListeners;
+    private ImageReader mImageReader;
+    private boolean mEnabled = true; // TODO: false default
+    private AdasStateControl mStateControl;
+
     private AdasController() {
         if (sInstance != null) {
             throw new RuntimeException("Singleton instance is already created!");
@@ -58,6 +72,9 @@ public class AdasController implements Util.AdasCallback {
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         mHandler = new AdasHandler(handlerThread.getLooper());
+        mListeners = new ArrayList<>();
+        mStateControl = new JkcAdasStateControl();
+        mStateControl.addListener(this);
         ADAS_DISABLED = SystemPropertiesProxy.getBoolean(PROP_ADAS_DISABLED, false);
         Log.v(TAG, "AdasController: ADAS_DISABLED = " + ADAS_DISABLED);
         DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, false);
@@ -76,7 +93,9 @@ public class AdasController implements Util.AdasCallback {
     }
 
     public void start(Context context) {
+        Log.i(TAG, "start");
         if (ADAS_DISABLED) {
+            Log.e(TAG, "start: not start because ADAS_DISABLED");
             return;
         }
         if (INSTALLATION_HEIGHTS.length != CAR_TYPE_NUM) {
@@ -117,6 +136,7 @@ public class AdasController implements Util.AdasCallback {
         if (result != 0) {
             Log.e(TAG, "start: initAdas() failed with return value = " + result);
         }
+        mStateControl.start();
     }
     private int getVehiclePointDistance(int carType) {
         return VEHICLE_POINT_DISTANCES[carType];
@@ -130,7 +150,7 @@ public class AdasController implements Util.AdasCallback {
         return INSTALLATION_HEIGHTS[carType];
     }
 
-    public int getSelectIP() {
+    private int getSelectIP() {
         int result = 0;
         boolean bFCWS = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_FCWS));
         boolean bLDS = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_LDS));
@@ -152,6 +172,7 @@ public class AdasController implements Util.AdasCallback {
     }
 
     public void process(Image image) {
+        if (DEBUG_FPS) mTpsc.update();
         if (ADAS_DISABLED) {
             image.close();
             return;
@@ -165,7 +186,6 @@ public class AdasController implements Util.AdasCallback {
         if (DEBUG) {
             Log.v(TAG, "process: image = " + image);
         }
-        if (DEBUG_FPS) mTpsc.update();
 
         if (mProcessingImage != null) {
             if (DEBUG_FPS) mTpscFrameDrop.update();
@@ -182,7 +202,7 @@ public class AdasController implements Util.AdasCallback {
         ByteBuffer v = image.getPlanes()[2].getBuffer();
         int result = Detection.adasDetect(y, u, v, mFcInput);
 
-        if (result == Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
+        if (result == ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
             image.close();
         } else if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "process: adasDetect() failed with return value = " + result);
@@ -193,6 +213,7 @@ public class AdasController implements Util.AdasCallback {
         }
     }
     public void stop() {
+        Log.v(TAG, "stop");
         if (ADAS_DISABLED) {
             return;
         }
@@ -232,6 +253,61 @@ public class AdasController implements Util.AdasCallback {
 
     public float getYscale() {
         return 4.5f; // TODO: calculate the scale according to the ADAS image size & LCD resolution
+    }
+
+    public void addListener(AdasStateListener listener) {
+        synchronized (mListeners) {
+            mListeners.add(listener);
+        }
+    }
+
+    public void removeListener(AdasStateListener listener) {
+        synchronized (mListeners) {
+            mListeners.remove(listener);
+        }
+    }
+
+    public ImageReader getImageReader() {
+        if (mImageReader == null) {
+            mImageReader = ImageReader.newInstance(ADAS_IMAGE_WIDTH, ADAS_IMAGE_HEIGHT, ImageFormat.YUV_420_888, BUFFER_NUM);
+            mImageReader.setOnImageAvailableListener(reader -> {
+                Image image = reader.acquireLatestImage();
+                if (image != null) {
+                    process(image);
+                }
+            }, null);
+        }
+        return mImageReader;
+    }
+
+    public boolean isEnabled() {
+        return mEnabled;
+    }
+
+    @Override
+    public void onAdasStarted() {
+        Log.v(TAG, "onAdasStarted");
+        mEnabled = true;
+        synchronized (mListeners) {
+            for (AdasStateListener listener : mListeners) {
+                listener.onAdasStarted();
+            }
+
+        }
+        //TODO: start thread?
+    }
+
+    @Override
+    public void onAdasStopped() {
+        Log.v(TAG, "onAdasStopped");
+        mEnabled = false;
+        synchronized (mListeners) {
+            for (AdasStateListener listener : mListeners) {
+                listener.onAdasStopped();
+            }
+
+        }
+        //TODO: stop thread?
     }
 
     private class AdasHandler extends Handler {
