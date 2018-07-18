@@ -30,7 +30,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     private NoticeFragment noticeFragment;
     private UpdateFragment updateFragment;
     private boolean isUpdate;
-    private UpdateInfo updateInfo;
+    private UpdateInfos updateInfos;
     private boolean isNoticeFinish = false;
     private static final String ACTION_EVENT_STARTUP = "com.jvckenwood.versionup.STARTUP";
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -70,7 +70,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onKeyShortPressed(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_ENTER:
-                if (updateInfo != null && (updateInfo.updateResultState != Const.UPDATE_READY) && isUpdate) {
+                if (updateInfos != null && (updateInfos.updateResultState != Const.UPDATE_READY) && isUpdate) {
                     startNextActivity();
                 }
         }
@@ -100,16 +100,16 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //            } else{
 //                startNextActivity();
 //            }
-        if (updateInfo != null && updateInfo.updateType == Const.NONE_UPDATE) {
+        if (updateInfos != null && updateInfos.updateType == Const.NONE_UPDATE) {
             Logg.i(TAG, "=noticeJump=None=startNextActivity");
             startNextActivity();
-        } else if (updateInfo != null && ((updateInfo.updateResultState == Const.UPDATE_SUCCESS)
-                || (updateInfo.updateResultState == Const.UPDATE_FAIL) || updateInfo.updateResultState == Const.UPDATE_READY)) {
+        } else if (updateInfos != null && ((updateInfos.updateResultState == Const.UPDATE_SUCCESS)
+                || (updateInfos.updateResultState == Const.UPDATE_FAIL) || updateInfos.updateResultState == Const.UPDATE_READY)) {
             Logg.i(TAG, "=noticeJump=UpdateFragment=startNextActivity");
             isUpdate = true;
             updateFragment = new UpdateFragment();
             Bundle bundle = new Bundle();
-            bundle.putInt("updateResultState", updateInfo.updateResultState);
+            bundle.putInt("updateResultState", updateInfos.updateResultState);
             updateFragment.setArguments(bundle);
             ActivityUtils.hideFragment(getSupportFragmentManager(), noticeFragment);
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
@@ -123,16 +123,16 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     public void onHandleEvent(Object eventType) {
         if (eventType instanceof VersionUpReceiver.StartUpInfo || eventType instanceof VersionUpReceiver.UpdateCompleteInfo
                 || eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
-            updateInfo = new UpdateInfo();
+            updateInfos = new UpdateInfos();
             if (eventType instanceof VersionUpReceiver.StartUpInfo && ((VersionUpReceiver.StartUpInfo) eventType).updateInfo == 0) {//None
                 Logg.i(TAG, "=system_update=None=");
-                updateInfo.updateType = Const.NONE_UPDATE;
+                updateInfos.updateType = Const.NONE_UPDATE;
             } else if (eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
                 if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-                    updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+                    updateInfos.updateResultState = Const.UPDATE_SUCCESS;
                     Logg.i(TAG, "=system_update_success==");
                 } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-                    updateInfo.updateResultState = Const.UPDATE_FAIL;
+                    updateInfos.updateResultState = Const.UPDATE_FAIL;
                     Logg.i(TAG, "=system_update_fail==");
                 }
 //                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
@@ -156,7 +156,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //                    }
 //                }
             } else if (eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
-                updateInfo.updateResultState = Const.UPDATE_READY;
+                updateInfos.updateResultState = Const.UPDATE_READY;
             }
             Logg.i(TAG, "=onHandleEvent=isNoticeFinish=" + isNoticeFinish);
             if (isNoticeFinish) {
@@ -182,13 +182,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Override
     public void displayTipInfo() {
-        if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_SUCCESS)) {
+        if (updateInfos != null && (updateInfos.updateResultState == Const.UPDATE_SUCCESS)) {
             DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_success), true);
             TTSManager.getInstance().ttsNormalStart(201, new int[]{0x0A03});
-        } else if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_FAIL)) {
+        } else if (updateInfos != null && (updateInfos.updateResultState == Const.UPDATE_FAIL)) {
             DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_fail), true);
             TTSManager.getInstance().ttsNormalStart(200, new int[]{0x0A04});
-        } else if (updateInfo != null && (updateInfo.updateResultState == Const.UPDATE_READY)) {
+        } else if (updateInfos != null && (updateInfos.updateResultState == Const.UPDATE_READY)) {
             DialogManager.getIntance().showDialog(DialogActivity.DIALOG_TYPE_UPDATE, getResources().getString(R.string.system_update_ready), true);
             TTSManager.getInstance().ttsNormalStart(202, new int[]{0x0A02});
         }
@@ -239,7 +239,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //        return updateInfo;
 //    }
     public void startNextActivity() {
-        if (updateInfo.updateResultState != Const.UPDATE_READY) {//update ready 界面时不跳转
+        if (updateInfos.updateResultState != Const.UPDATE_READY) {//update ready 界面时不跳转
             if (GlobalLogic.getInstance().getInt(AskeySettings.Global.SETUP_WIZARD_AVAILABLE, 1) == Const.FIRST_INIT_SUCCESS) {
                 ActivityUtils.startActivity(this, this.getPackageName(), "com.askey.dvr.cdr7010.dashcam.ui.MainActivity", true);
             } else {
@@ -250,7 +250,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     @Override
     public void onDestroy() {
-        updateInfo = null;
+        updateInfos = null;
         if (isUpdate) {
             DialogManager.getIntance().dismissDialog(DialogActivity.DIALOG_TYPE_UPDATE);
             isUpdate = false;
@@ -261,7 +261,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         super.onDestroy();
     }
 
-    private class UpdateInfo {
+    private class UpdateInfos {
         public int updateType = -1;
         public int updateResultState = -1;
     }
