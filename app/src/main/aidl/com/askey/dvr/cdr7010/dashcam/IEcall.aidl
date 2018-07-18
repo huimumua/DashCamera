@@ -22,7 +22,7 @@ interface IEcall {
      * @param isUserCall
      *      1.User Button Press / 2.Realtime.
      */
-    void voipInformationRequest(int requestID, int isUserCall);
+    void voipInformationRequest(int requestID, int userId, int isUserCall);
 
     void registerCallback(IEcallCallback callback);
     void unregisterCallback(IEcallCallback callback);

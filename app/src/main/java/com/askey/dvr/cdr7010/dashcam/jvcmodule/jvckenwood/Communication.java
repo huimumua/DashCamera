@@ -85,10 +85,11 @@ public class Communication {
      * @param isUserCall
      *      1.User Button Press / 2.Realtime.
      */
-    public void voipInformationRequest(int requestID, int isUserCall){
+    public void voipInformationRequest(int requestID, int userId, int isUserCall){
         Logg.d(LOG_TAG, "alertComplite: requestID=" + requestID + ", isUserCall=" + isUserCall);
         Intent intent = new Intent(ACTION_VOIP_INFORMATION_REQUEST);
         intent.putExtra("requestID", requestID);
+        intent.putExtra("userId", userId);
         intent.putExtra("isUserCall", isUserCall);
         sendOutBroadcast(intent);
     }

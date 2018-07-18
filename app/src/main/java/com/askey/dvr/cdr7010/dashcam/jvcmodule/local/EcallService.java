@@ -33,8 +33,8 @@ public class EcallService extends Service {
         }
 
         @Override
-        public void voipInformationRequest(int requestID, int isUserCall) {
-            Communication.getInstance().voipInformationRequest(requestID, isUserCall);
+        public void voipInformationRequest(int requestID, int userId, int isUserCall) {
+            Communication.getInstance().voipInformationRequest(requestID, userId, isUserCall);
         }
 
         @Override
@@ -56,7 +56,7 @@ public class EcallService extends Service {
         }
     }
 
-    public static void onVoipInformationResult(int requestID, int status, long impactId, long policyNo, int policyBranchNo,
+    public static void onVoipInformationResult(int requestID, int status, long impactId, String policyNo, int policyBranchNo,
                                                String authUserName, String displayName, String outboundProxy, String password,
                                                int port, String protocol, boolean isSendKeepAlive, String profileName, boolean isAutoRegistration){
         if(mEcallCallbackList == null)

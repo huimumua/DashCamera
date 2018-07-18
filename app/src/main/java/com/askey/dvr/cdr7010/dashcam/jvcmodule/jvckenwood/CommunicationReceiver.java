@@ -39,7 +39,7 @@ public class CommunicationReceiver extends BroadcastReceiver {
             int requestID = intent.getIntExtra("requestID", -1);
             int status = intent.getIntExtra("status", -1);
             long impactId = intent.getLongExtra("impactId", -1);
-            long policyNo = intent.getLongExtra("policyNo", -1);
+            String policyNo = intent.getStringExtra("policyNo");
             int policyBranchNo = intent.getIntExtra("policyBranchNo", -1);
             String authUserName = intent.getStringExtra("authUserName");
             String displayName = intent.getStringExtra("displayName");
@@ -54,9 +54,9 @@ public class CommunicationReceiver extends BroadcastReceiver {
             EcallService.onVoipInformationResult(requestID, status, impactId, policyNo, policyBranchNo, authUserName, displayName,
                     outboundProxy, password, port, protocol, isSendKeepAlive, profileName, isAutoRegistration);
         } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
-            int userCancel = intent.getIntExtra("userCancel", -1);
+            int result = intent.getIntExtra("result", -2);
             String response = intent.getStringExtra("response");
-            ManualUploadService.manualUploadComplete(userCancel, response);
+            ManualUploadService.manualUploadComplete(result, response);
         } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");

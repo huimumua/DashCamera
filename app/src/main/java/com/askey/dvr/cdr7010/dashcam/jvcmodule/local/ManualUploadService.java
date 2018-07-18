@@ -71,14 +71,14 @@ public class ManualUploadService extends Service {
         mManualUploadCallbackList.finishBroadcast();
     }
 
-    public static void manualUploadComplete(int userCancel, String response){
+    public static void manualUploadComplete(int result, String response){
         if(mManualUploadCallbackList == null)
             return;
 
         int num = mManualUploadCallbackList.beginBroadcast();
         try {
             for (int i = 0; i < num; i++) {
-                mManualUploadCallbackList.getBroadcastItem(i).manualUploadComplete(userCancel, response);
+                mManualUploadCallbackList.getBroadcastItem(i).manualUploadComplete(result, response);
             }
         } catch (RemoteException e) {
             Logg.e(LOG_TAG, "manualUploadComplete: " + e.getMessage());
