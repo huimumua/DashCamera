@@ -21,20 +21,18 @@ import android.util.Log;
 import android.view.Surface;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class Camera2Controller {
     private static final String TAG = "Camera2Controller";
+    private final CameraControllerListener mListener;
+    private final Handler mListenerHandler;
     private boolean mIsPreviewing;
     private boolean mIsRecordingVideo;
     private ImageReader mImageReader;
-
-    public void setImageReader(@NonNull ImageReader imageReader) {
-        mImageReader = imageReader;
-    }
+    private SurfaceTexture mSurfaceTexture;
 
     public enum CAMERA {MAIN, EXT}
 
@@ -50,10 +48,20 @@ public class Camera2Controller {
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
     @SuppressLint("MissingPermission")
-    public Camera2Controller(Context context) {
+    public Camera2Controller(Context context, CameraControllerListener listener, Handler handler) {
         mContext = context.getApplicationContext();
         mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
         mImageReader = null;
+        mListener = listener;
+        mListenerHandler = handler;
+    }
+
+    public void setImageReader(@NonNull ImageReader imageReader) {
+        mImageReader = imageReader;
+    }
+
+    public void setSurface(@NonNull SurfaceTexture surfaceTexture) {
+        mSurfaceTexture = surfaceTexture;
     }
 
     public void startBackgroundThread() {
@@ -98,6 +106,7 @@ public class Camera2Controller {
             Log.v(TAG, "onOpened: cameraDevice = " + cameraDevice);
             mCameraDevice = cameraDevice;
             mCameraOpenCloseLock.release();
+            mListenerHandler.post(mListener::onCameraOpened);
         }
 
         @Override
@@ -106,6 +115,7 @@ public class Camera2Controller {
             mCameraDevice.close();
             mCameraDevice = null;
             mCameraOpenCloseLock.release();
+            mListenerHandler.post(mListener::onCameraClosed);
         }
 
         @Override
@@ -146,6 +156,7 @@ public class Camera2Controller {
                 mCaptureSession.stopRepeating();
                 mCaptureSession.close();
                 mCaptureSession = null;
+                mListenerHandler.post(mListener::onCaptureStopped);
             }
             if (null != mCameraDevice) {
                 mCameraDevice.close();
@@ -158,7 +169,7 @@ public class Camera2Controller {
         }
     }
 
-    public void startRecordingVideo(@NonNull SurfaceTexture surfaceTexture) throws CameraAccessException {
+    public void startRecordingVideo() throws CameraAccessException {
         if (mIsRecordingVideo) {
             return;
         }
@@ -167,12 +178,18 @@ public class Camera2Controller {
             throw new RuntimeException("null CameraDevice.");
         }
 
-        Surface surface = new Surface(surfaceTexture);
+        Surface surface = null;
+        if (mSurfaceTexture != null) {
+            surface = new Surface(mSurfaceTexture);
+        }
         mCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-        mCaptureBuilder.addTarget(surface);
         List<Surface> listSurface = new ArrayList<>();
-        listSurface.add(surface);
+        if (surface != null) {
+            mCaptureBuilder.addTarget(surface);
+            listSurface.add(surface);
+        }
         if (mImageReader != null) {
+            mCaptureBuilder.addTarget(mImageReader.getSurface());
             listSurface.add(mImageReader.getSurface());
         }
         mCameraDevice.createCaptureSession(listSurface,
@@ -208,6 +225,7 @@ public class Camera2Controller {
             HandlerThread thread = new HandlerThread("CameraPreview");
             thread.start();
             mCaptureSession.setRepeatingRequest(mCaptureBuilder.build(), null, mBackgroundHandler);
+            mListenerHandler.post(mListener::onCaptureStarted);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

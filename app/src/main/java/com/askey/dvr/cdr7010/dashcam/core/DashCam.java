@@ -5,10 +5,14 @@ import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.core.StateMachine.EEvent;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
+import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraControllerListener;
 import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
@@ -16,12 +20,11 @@ import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 public class DashCam implements DashCamControl {
 
     private static final String TAG = "DashCam";
+    private final Handler mMainThreadHandler;
     private Context mContext;
     private RecordConfig mConfig;
     private Camera2Controller mCamera2Controller;
@@ -94,6 +97,7 @@ public class DashCam implements DashCamControl {
         mConfig = config;
         mStateCallback = callback;
         mStateMachine = new StateMachine(this);
+        mMainThreadHandler = new Handler(Looper.getMainLooper());
         mAdasController = AdasController.getsInstance();
     }
 
@@ -142,7 +146,7 @@ public class DashCam implements DashCamControl {
             throw new RuntimeException("sd card unavailable");
         }
 
-        mCamera2Controller = new Camera2Controller(mContext);
+        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
         mCamera2Controller.setImageReader(imageReader);
         mCamera2Controller.startBackgroundThread();
         if (mConfig.cameraId() == 0) {
@@ -192,7 +196,8 @@ public class DashCam implements DashCamControl {
         }
 
         if (mCamera2Controller != null) {
-            mCamera2Controller.startRecordingVideo(mSurfaceTexture);
+            mCamera2Controller.setSurface(mSurfaceTexture);
+            mCamera2Controller.startRecordingVideo();
         }
     }
 
@@ -234,4 +239,26 @@ public class DashCam implements DashCamControl {
             mRecorder.demute();
         }
     }
+
+    private CameraControllerListener mCameraListener = new CameraControllerListener() {
+        @Override
+        public void onCameraOpened() {
+            Log.v(TAG, "onCameraOpened");
+        }
+
+        @Override
+        public void onCameraClosed() {
+            Log.v(TAG, "onCameraClosed");
+        }
+
+        @Override
+        public void onCaptureStarted() {
+            Log.v(TAG, "onCaptureStarted");
+        }
+
+        @Override
+        public void onCaptureStopped() {
+            Log.v(TAG, "onCaptureStopped");
+        }
+    };
 }
