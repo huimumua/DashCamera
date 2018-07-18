@@ -7,6 +7,7 @@ import android.media.Image;
 import android.media.ImageReader;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
+import com.askey.dvr.cdr7010.dashcam.core.StateMachine.EEvent;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
@@ -47,7 +48,7 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStarted() {
             Logg.d(TAG, "RecorderStateCallback: onStarted");
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_OPEN_SUCCESS, ""));
+            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.OPEN_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStarted();
             }
@@ -56,7 +57,7 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStoped() {
             Logg.d(TAG, "RecorderStateCallback: onStoped");
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_CLOSE_SUCCESS, ""));
+            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE_SUCCESS, ""));
             if (mStateCallback != null) {
                 mStateCallback.onStoped();
             }
@@ -65,7 +66,7 @@ public class DashCam implements DashCamControl {
         @Override
         public void onInterrupted() {
             Logg.d(TAG, "RecorderStateCallback: onInterrupted");
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_ERROR, ""));
+            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, ""));
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
@@ -97,25 +98,25 @@ public class DashCam implements DashCamControl {
     }
 
     public boolean isBusy() {
-        return !mStateMachine.getCurrentState().equals(StateMachine.STATE_CLOSE);
+        return mStateMachine.getCurrentState() != mStateMachine.STATE_CLOSE;
     }
 
     public void startVideoRecord(String reason) {
         Logg.d(TAG, "startVideoRecord " + reason);
-        mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_OPEN, reason));
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.OPEN, reason));
     }
 
     public void stopVideoRecord(String reason) {
         Logg.d(TAG, "stopVideoRecord " + reason);
-        mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_CLOSE, reason));
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE, reason));
     }
 
     public void mute() {
-        mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_AUDIO_MUTE, ""));
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.MUTE, ""));
     }
 
     public void demute() {
-        mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_AUDIO_DEMUTE, ""));
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.UNMUTE, ""));
     }
 
     @Override
@@ -166,7 +167,7 @@ public class DashCam implements DashCamControl {
                         try {
                             startInternal();
                         } catch (Exception e) {
-                            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EVENT_ERROR, ""));
+                            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, ""));
                         }
                     }
 

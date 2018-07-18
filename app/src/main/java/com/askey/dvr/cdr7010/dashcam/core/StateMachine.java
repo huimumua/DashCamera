@@ -1,6 +1,8 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
 import android.os.Handler;
+import android.util.Log;
+
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import java.util.ArrayList;
@@ -9,22 +11,19 @@ import java.util.List;
 public class StateMachine {
     private static final String TAG = "StateMachine";
 
-    public static final String STATE_CLOSE = "closeState";
-    public static final String STATE_OPEN = "openState";
-    public static final String STATE_PREPARE_CLOSE = "prepareCloseState";
-    public static final String STATE_PREPARE_OPEN = "prepareOpenState";
+    public final State STATE_CLOSE;
+    private final State STATE_OPEN;
+    private final State STATE_PREPARE_CLOSE;
+    private final State STATE_PREPARE_OPEN;
+    private static final boolean DEBUG = true;
 
-    public static final int EVENT_OPEN = 1;
-    public static final int EVENT_CLOSE = 2;
-    public static final int EVENT_ERROR = 3;
-    public static final int EVENT_OPEN_SUCCESS = 4;
-    public static final int EVENT_CLOSE_SUCCESS = 5;
-    public static final int EVENT_AUDIO_MUTE = 6;
-    public static final int EVENT_AUDIO_DEMUTE = 7;
+    public enum EEvent {
+        NONE, OPEN, CLOSE, ERROR, OPEN_SUCCESS, CLOSE_SUCCESS, MUTE, UNMUTE
+    }
 
     private State currState;
     private State nextState;
-    private Event NoneEvent = new Event(0, "");
+    private Event NoneEvent = new Event(EEvent.NONE, "");
     private Event pendingEvent = NoneEvent;
     private Handler handler = new Handler();
 
@@ -33,7 +32,7 @@ public class StateMachine {
     private List<Transition> transitions = new ArrayList<>();
 
     public static class Event {
-        public Event(int what, String reason) {
+        public Event(EEvent what, String reason) {
             this.what = what;
             this.reason = reason;
         }
@@ -42,7 +41,15 @@ public class StateMachine {
             return this.what == other.what;
         }
 
-        int what;
+        @Override
+        public String toString() {
+            return "Event{" +
+                    "what=" + what +
+                    ", reason='" + reason + '\'' +
+                    '}';
+        }
+
+        EEvent what;
         String reason;
     }
 
@@ -77,15 +84,23 @@ public class StateMachine {
 
         @Override
         public void processEvent(Event event) {
+            Logg.d(TAG, name + " processEvent: " + event);
+        }
+
+        @Override
+        public String toString() {
+            return "State{" +
+                    "name='" + name + '\'' +
+                    '}';
         }
     }
 
     public static class Transition {
-        public static Transition create(State currState, int event, State destState) {
+        public static Transition create(State currState, EEvent event, State destState) {
             return new Transition(currState, event, destState);
         }
 
-        Transition(State currState, int event, State destState) {
+        Transition(State currState, EEvent event, State destState) {
             this.currState = currState;
             this.event = event;
             this.destState = destState;
@@ -93,12 +108,12 @@ public class StateMachine {
 
         State currState;
         State destState;
-        int event;
+        EEvent event;
     }
 
     public StateMachine(DashCamControl dashCam) {
         mDashCamControl = dashCam;
-        State prepareOpenState = new State(STATE_PREPARE_OPEN) {
+        STATE_PREPARE_OPEN = new State("PREPARE_OPEN") {
             @Override
             public void enter() {
                 super.enter();
@@ -106,19 +121,19 @@ public class StateMachine {
                     mDashCamControl.onStartVideoRecord();
                 } catch (Exception e) {
                     Logg.e(TAG, "startVideoRecord() fail with exception: " + e.getMessage());
-                    dispatchEvent(new Event(EVENT_ERROR, e.getMessage()));
+                    dispatchEvent(new Event(EEvent.ERROR, e.getMessage()));
                 }
             }
 
             @Override
             public void processEvent(Event event) {
-                if (event.what == EVENT_CLOSE || event.what == EVENT_OPEN) {
+                if (event.what == EEvent.CLOSE || event.what == EEvent.OPEN) {
                     pendingEvent = event;
                 }
             }
         };
 
-        State prepareCloseState = new State(STATE_PREPARE_CLOSE) {
+        STATE_PREPARE_CLOSE = new State("PREPARE_CLOSE") {
             @Override
             public void enter() {
                 super.enter();
@@ -127,17 +142,17 @@ public class StateMachine {
 
             @Override
             public void processEvent(Event event) {
-                if (event.what == EVENT_CLOSE || event.what == EVENT_OPEN) {
+                if (event.what == EEvent.CLOSE || event.what == EEvent.OPEN) {
                     pendingEvent = event;
                 }
             }
         };
 
-        State openState = new State(STATE_OPEN) {
+        STATE_OPEN = new State("OPEN") {
             @Override
             public void enter() {
                 super.enter();
-                if (pendingEvent.what != 0) {
+                if (pendingEvent.what != EEvent.NONE) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -150,19 +165,19 @@ public class StateMachine {
 
             @Override
             public void processEvent(Event event) {
-                if (event.what == EVENT_AUDIO_MUTE) {
+                if (event.what == EEvent.MUTE) {
                     mDashCamControl.onMuteAudio();
-                } else if (event.what == EVENT_AUDIO_DEMUTE) {
+                } else if (event.what == EEvent.UNMUTE) {
                     mDashCamControl.onDemuteAudio();
                 }
             }
         };
 
-        State closeState = new State(STATE_CLOSE) {
+        STATE_CLOSE = new State("CLOSE") {
             @Override
             public void enter() {
                 super.enter();
-                if (pendingEvent.what != 0) {
+                if (pendingEvent.what != EEvent.NONE) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -174,18 +189,18 @@ public class StateMachine {
             }
         };
 
-        addTransition(Transition.create(closeState, EVENT_OPEN, prepareOpenState));
-        addTransition(Transition.create(prepareOpenState, EVENT_OPEN_SUCCESS, openState));
-        addTransition(Transition.create(prepareOpenState, EVENT_ERROR, closeState));
-        addTransition(Transition.create(openState, EVENT_CLOSE, prepareCloseState));
-        addTransition(Transition.create(prepareCloseState, EVENT_CLOSE_SUCCESS, closeState));
-        addTransition(Transition.create(prepareCloseState, EVENT_ERROR, closeState));
+        addTransition(Transition.create(STATE_CLOSE, EEvent.OPEN, STATE_PREPARE_OPEN));
+        addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.OPEN_SUCCESS, STATE_OPEN));
+        addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.ERROR, STATE_CLOSE));
+        addTransition(Transition.create(STATE_OPEN, EEvent.CLOSE, STATE_PREPARE_CLOSE));
+        addTransition(Transition.create(STATE_PREPARE_CLOSE, EEvent.CLOSE_SUCCESS, STATE_CLOSE));
+        addTransition(Transition.create(STATE_PREPARE_CLOSE, EEvent.ERROR, STATE_CLOSE));
 
-        initialState(closeState);
+        initialState(STATE_CLOSE);
     }
 
-    public String getCurrentState() {
-        return currState.getName();
+    public State getCurrentState() {
+        return currState;
     }
 
     public void initialState(State state) {
@@ -200,10 +215,12 @@ public class StateMachine {
     }
 
     public synchronized void dispatchEvent(Event event) {
+        if (DEBUG) Log.v(TAG, "dispatchEvent: currState=" + currState + ", event=" + event);
         boolean found = false;
         for (Transition trans : transitions) {
             if ((trans.currState == currState) && (trans.event == event.what)) {
                 nextState = trans.destState;
+                if (DEBUG) Log.v(TAG, "dispatchEvent: nextState=" + nextState);
                 found = true;
             }
         }
