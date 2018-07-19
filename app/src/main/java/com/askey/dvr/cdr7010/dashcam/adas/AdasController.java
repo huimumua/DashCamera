@@ -24,6 +24,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
 
@@ -36,12 +38,13 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final boolean DEBUG = false;
     private static final int ADAS_IMAGE_WIDTH = 1280;
     private static final int ADAS_IMAGE_HEIGHT = 720;
-    private static final int BUFFER_NUM = 12;
+    protected static final int BUFFER_NUM = 12;
 
     /* Properties for debug */
     private static boolean EXCEPTION_WHEN_ERROR;
     private static boolean DEBUG_FPS;
     private static boolean ADAS_DISABLED;
+    private static boolean DEBUG_IMAGE_PROCESS;
 
     /* Handler Messages */
     private static final int MSG_PROCESS = 0;
@@ -49,6 +52,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final String PROP_DEBUG_FPS = "persist.dvr.adas.debug_fps";
     private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
     private static final String PROP_EXCEPTION = "persist.dvr.adas.exception";
+    private static final String PROP_DEBUG_PROCESS = "persist.dvr.adas.dbg_proc";
 
     private static AdasController sInstance;
 
@@ -58,7 +62,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private final TimesPerSecondCounter mTpscDidAdas;
     private final TimesPerSecondCounter mTpscFrameDrop;
     private FC_INPUT mFcInput;
-    private Image mProcessingImage;
+    private Queue<ImageRecord> mProcessingImages;
     private Handler mHandler;
     private List<WeakReference<AdasStateListener>> mListeners;
     private ImageReader mImageReader;
@@ -82,7 +86,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         mTpscDidAdas = new TimesPerSecondCounter(TAG + "_didAdas");
         mTpscFrameDrop = new TimesPerSecondCounter(TAG + "_frameDrop");
         mFcInput = new FC_INPUT();
-        mProcessingImage = null;
+        mProcessingImages = new LinkedList<>();
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         mHandler = new AdasHandler(handlerThread.getLooper());
@@ -95,6 +99,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
         EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, false);
         Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
+        DEBUG_IMAGE_PROCESS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_PROCESS, false);
+        Log.v(TAG, "AdasController: DEBUG_IMAGE_PROCESS = " + DEBUG_IMAGE_PROCESS);
     }
 
     public static AdasController getsInstance() {
@@ -203,18 +209,21 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
 
     private void process_internal(Image image) {
         if (DEBUG) {
-            Log.v(TAG, "process: image = " + image);
-        }
-
-        if (mProcessingImage != null) {
-            if (DEBUG_FPS) mTpscFrameDrop.update();
-            image.close();
-            return;
+            Log.v(TAG, "process_internal: image = " + image);
         }
 
         mFcInput.VehicleSpeed = 70; // TODO: get real value
-        mFcInput.CaptureMilliSec = System.currentTimeMillis(); // TODO: confirm the parameter
-        mFcInput.CaptureTime = System.currentTimeMillis(); // TODO: confirm the parameter
+        mFcInput.CaptureMilliSec = image.getTimestamp(); // TODO: confirm the parameter
+        mFcInput.CaptureTime = image.getTimestamp(); // TODO: confirm the parameter
+        ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureTime, image);
+
+        if (Detection.isRunningDetection()) {
+            if (DEBUG_FPS) {
+                mTpscFrameDrop.update();
+            }
+            imageRecord.recycle();
+            return;
+        }
 
         ByteBuffer y = image.getPlanes()[0].getBuffer();
         ByteBuffer u = image.getPlanes()[1].getBuffer();
@@ -222,13 +231,25 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         int result = Detection.adasDetect(y, u, v, mFcInput);
 
         if (result == ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
-            image.close();
+            if (DEBUG_IMAGE_PROCESS) {
+                Log.v(TAG, "process_internal: ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION: close " + imageRecord);
+            }
+            if (DEBUG_FPS) {
+                mTpscFrameDrop.update();
+            }
+            imageRecord.recycle();
         } else if (result != Constant.ADAS_SUCCESS) {
-            Log.e(TAG, "process: adasDetect() failed with return value = " + result);
-            image.close();
+            Log.e(TAG, "process_internal: adasDetect() result = " + result + ", close " + imageRecord);
+            imageRecord.recycle();
         } else {
             assert result == Constant.ADAS_SUCCESS;
-            mProcessingImage = image;
+
+            mProcessingImages.add(imageRecord);
+            if (DEBUG_IMAGE_PROCESS) {
+                Log.v(TAG, "process_internal: new image queued: " + mProcessingImages.size()
+                        + ", " + imageRecord);
+            }
+
         }
     }
 
@@ -263,15 +284,28 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
     
     private void didAdasDetect_internal(long captureTime) {
-        if (DEBUG) {
-            Log.v(TAG, "didAdasDetect: captureTime = " + captureTime);
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "didAdasDetect_internal: captureTime = " + captureTime);
         }
-        assert mProcessingImage != null;
-        if (DEBUG) {
-            Log.v(TAG, "didAdasDetect: close image = " + mProcessingImage);
+
+        ImageRecord imageRecord = mProcessingImages.remove();
+        if (imageRecord.getTimestamp() != captureTime) {
+            throw new RuntimeException("callback captureTime=" + captureTime + ", but oldest record timestamp=" + imageRecord.getTimestamp());
         }
-        mProcessingImage.close();
-        mProcessingImage = null;
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "didAdasDetect_internal: close image = " + imageRecord);
+            Log.v(TAG, "didAdasDetect_internal: image dequeued = " + processingImagesToString());
+        }
+        imageRecord.recycle();
+    }
+
+    private String processingImagesToString() {
+        StringBuffer sb = new StringBuffer();
+        for (ImageRecord ir :
+                mProcessingImages) {
+            sb.append(ir + ", ");
+        }
+        return sb.toString();
     }
 
     public float getXscale() {
