@@ -53,6 +53,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        doNotStrip "*/*/libAdas.so"
+    }
+
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"
