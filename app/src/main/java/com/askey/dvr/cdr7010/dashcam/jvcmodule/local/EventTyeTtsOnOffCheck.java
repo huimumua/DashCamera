@@ -6,7 +6,6 @@ import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
-import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
 
 /***
@@ -79,7 +78,6 @@ public class EventTyeTtsOnOffCheck {
             }else if (eventType == Event.GPS_LOCATION_INFORMATION ||
                     eventType == Event.GPS_LOCATION_INFORMATION_ERROR) {
                 result = Settings.Global.getInt(contentResolver, AskeySettings.Global.NOTIFY_LOCATION_INFO);
-                Logg.d(LOG_TAG,"checkTtsOnOff GPS result="+result);
             }
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();

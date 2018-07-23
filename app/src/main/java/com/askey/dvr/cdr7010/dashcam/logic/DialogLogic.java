@@ -93,14 +93,13 @@ public class DialogLogic{
           if(isSdcardInvisible && Event.contains(Event.limitRecordingFileEvent,eventType)){
               setCancelableRunnable(true);
               onDismiss(dialogType,eventType);
-          }
-          if(showTime >0){
+          } else if(showTime >0){
               if(System.currentTimeMillis() -showTime < DELAY_TIME) {
                   delayHideDialogDisplay(System.currentTimeMillis() - showTime, dialogType, eventType);
               }else{
                   onDismiss(dialogType,eventType);
               }
-          }else {
+          } else {
               delayHideDialogDisplay(DELAY_TIME, dialogType, eventType);
           }
       } else if(Event.contains(Event.sdCardUnMountedEvent,eventType)){
