@@ -128,7 +128,7 @@ public class UserSettingManager {
             case 03:
             case 04:
             case 05:
-                String suffix = "0"+num;
+                String suffix = "_USER"+num;
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID+suffix, userListInfo.userid);
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME+suffix, userListInfo.user_name);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.ADAS_FCWS+suffix, userListInfo.warn_coll);
@@ -167,6 +167,7 @@ public class UserSettingManager {
                     countDownLatch.countDown();
                     Log.d(LOG_TAG,"abby countDown~~02~!");
                 }
+                Log.d(LOG_TAG,"setUserSettings==AskeySettings.Global.SYSSET_USER_ID+suffix="+AskeySettings.Global.SYSSET_USER_ID+suffix+"///userListInfo.userid=="+userListInfo.userid);
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
                 break;
         }
