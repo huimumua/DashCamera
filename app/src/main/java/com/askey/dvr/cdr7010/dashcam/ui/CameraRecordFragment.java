@@ -184,10 +184,6 @@ public class CameraRecordFragment extends Fragment {
                 Logg.d(TAG, "SD Card ACTION_MEDIA_EJECT");
                 RecordHelper.setRecordingPrecondition(SDCARD_UNAVAILABLE);
                 stopVideoRecord("SD ACTION_MEDIA_EJECT");
-            } else if (Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())) {
-                //存储卡异常情况下拔卡
-                EventManager.getInstance().handOutEventInfo(110);
-                EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
             }
         }
     };
@@ -738,15 +734,16 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void startVideoRecord(String reason) throws Exception {
-        boolean sdcardAvailable = FileManager.getInstance(getContext()).isSdcardAvailable();
-        onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,
-                sdcardAvailable ? SDCARD_INIT_SUCCESS : Environment.getExternalStorageState().
-                        equalsIgnoreCase(Environment.MEDIA_REMOVED) ? SDCARD_UNMOUNTED : SDCARD_INIT_FAIL));
-        if (!sdcardAvailable) {
+        int sdcardStatus = FileManager.getInstance(getContext()).checkSdcardAvailable();
+        Logg.d(TAG,"startVideoRecord sdcardStatus="+sdcardStatus);
+
+        if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
             RecordHelper.setRecordingPrecondition(SDCARD_UNAVAILABLE);
+            onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_FAIL));
             throw new RuntimeException("sd card unavailable");
         } else {
             RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);
+      //      onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_SUCCESS));
         }
 
         if (mMainCam == null) {
@@ -882,7 +879,7 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void checkSdcardAndSimcardStatus() {
-        SDcardHelper.handleSdcardAbnormalEvent();
+        SDcardHelper.checkSdcardState(getContext());
         int simState = SimCardManager.getInstant().getSimState();
         if (simState != TelephonyManager.SIM_STATE_ABSENT
                 && simState != TelephonyManager.SIM_STATE_READY

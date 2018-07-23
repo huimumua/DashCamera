@@ -566,11 +566,11 @@
         <dialog_type>1</dialog_type>
         <name>Insufficient SD card space</name>
         <description>SD card out of space</description>
-        <voice_guidence></voice_guidence>
+        <voice_guidence>010A</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
-        <led>no</led>
-        <speech>no</speech>
+        <led>yes</led>
+        <speech>yes</speech>
     </event>
     <event>
         <id>45</id>
@@ -820,5 +820,18 @@
         <icon>yes</icon>
         <led>no</led>
         <speech>no</speech>
+    </event>
+    <event>
+        <id>64</id>
+        <priority>0</priority>
+        <event_type>8</event_type>
+        <dialog_type>3</dialog_type>
+        <name>System Error ,Machine Falut</name>
+        <description>A system error has occurred</description>
+        <voice_guidence>010C</voice_guidence>
+        <popup>yes</popup>
+        <icon>yes</icon>
+        <led>yes</led>
+        <speech>yes</speech>
     </event>
 </eventlist>

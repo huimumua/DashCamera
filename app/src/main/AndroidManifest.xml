@@ -58,11 +58,6 @@
             </intent-filter>
         </service>
 
-        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.RecordingFileReceiver">
-            <intent-filter android:priority="1000">
-                <action android:name="com.askey.dvr.cdr7010.dashcam.limit" />
-            </intent-filter>
-        </receiver>
         <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.GPSReceiver">
             <intent-filter>
                 <action android:name="android.location.GPS_FIX_CHANGE" />

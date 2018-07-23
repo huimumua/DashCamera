@@ -93,7 +93,7 @@ public class FileManager {
         return buildFilePath(timeStamp, "PICTURE", ".jpg");
     }
 
-    public boolean isSdcardAvailable() throws RemoteException {
+    public int checkSdcardAvailable() throws RemoteException {
         if (mService == null) {
             throw new RemoteException("No FileManagement service.");
         }

@@ -35,6 +35,7 @@ import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.RecordHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
@@ -43,7 +44,14 @@ import org.json.JSONObject;
 
 import java.util.EnumMap;
 
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_REACH_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT_EXIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT_EXIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
@@ -62,11 +70,23 @@ public class MainActivity extends DialogActivity {
     public static final String CMD_SHOW_SDCARD_INIT_FAIL ="show_sdcard_init_fail";//init 失败
     public static final String CMD_SHOW_SDCARD_INIT_SUCC = "show_sdcard_init_success";//init成功
     public static final String CMD_SHOW_SDCARD_UNRECOGNIZABLE ="show_sdcard_unrecognizable";//不被识别
+    public static final String CMD_SHOW_SDCARD_NOT_EXIST ="show_sdcard_not_exist";//sdcard 拔卡
+    public static final String CMD_SHOW_SDCARD_MOUNTED ="show_sdcard_mounted";//sdcard 挂载成功
+    public static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
+    public static final String CMD_SHOW_REACH_EVENT_FILE_LIMIT ="show_reach_event_file_limit";//超过限制
+    public static final String CMD_SHOW_UNREACH_EVENT_FILE_LIMIT = "show_unreach_event_file_limit";//限制解除
+    public static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT ="show_reach_event_file_over_limit";
+    public static final String CMD_SHOW_REACH_PARKING_FILE_LIMIT = "show_reach_parking_file_limit";//超过限制
+    public static final String CMD_SHOW_UNREACH_PARKING_FILE_LIMIT = "show_unreach_parking_file_limit";//限制解除
+    public static final String CMD_SHOW_REACH_PICTURE_FILE_LIMIT ="show_reach_picture_file_limit";//超过限制
+    public static final String CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT = "show_unreach_picture_file_limit";//限制解除
+    public static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT ="show_reach_picture_file_over_limit";
+    public static final String CMD_SHOW_SDCARD_FULL_LIMIT ="show_sdcard_full_limit";//超过限制
+    public static final String CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT = "show_unreach_sdcard_full_limit";//限制解除
     private static final int FROM_MAINAPP =0;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
     private CameraRecordFragment fragment;
-    private boolean isFromOtherApp =false;
     private ContentResolver contentResolver;
     private int setUpWizardType;
     private final DvrShutDownReceiver mDvrShutDownBroadCastReceiver = new DvrShutDownReceiver();
@@ -86,14 +106,9 @@ public class MainActivity extends DialogActivity {
             maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
-        filter.addAction(Intent.ACTION_MEDIA_EJECT);
-        filter.addDataScheme("file");
-        registerReceiver(mSdCardMountAndRemoveListener, filter);
-
         IntentFilter sdcardFilter = new IntentFilter();
         sdcardFilter.addAction(ACTION_SDCARD_STATUS);
+        sdcardFilter.addAction(ACTION_SDCARD_LIMT);
         registerReceiver(mSdCardStatusListener, sdcardFilter);
 
         EventManager.getInstance().registPopUpEventCallback(popUpEventCallback);
@@ -113,12 +128,7 @@ public class MainActivity extends DialogActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Logg.d(TAG,"isFromOtherApp="+isFromOtherApp);
-        if(!isFromOtherApp){
-            SDcardHelper.checkSdCardExist();
-        }else {
-            SDcardHelper.handleSdcardAbnormalEvent();
-        }
+        SDcardHelper.checkSdcardState(this);
     }
     @Override
     protected  void onPause(){
@@ -133,7 +143,6 @@ public class MainActivity extends DialogActivity {
     @Override
     public void onDestroy() {
         removeListeners();
-        unregisterReceiver(mSdCardMountAndRemoveListener);
         unregisterReceiver(mSdCardStatusListener);
         if (timeFinishApp != null) {
             timeFinishApp.cancel();
@@ -179,6 +188,8 @@ public class MainActivity extends DialogActivity {
                 case Event.EVENT_RECORDING_END:
                 case Event.RECORDING_STOP:
                 case Event.HIGH_TEMPERATURE_THRESHOLD_LV2:
+                case Event.SDCARD_SPACE_INSUFFICIENT:
+                case Event.EQUIPMENT_FAILURE:
                     LedMananger.getInstance().setLedRecStatus(true, false, eventInfo.getPriority());
                     break;
                 case Event.SDCARD_UNMOUNTED:
@@ -340,7 +351,7 @@ public class MainActivity extends DialogActivity {
                     if (currentLocation != null && currentLocation.getSpeed() > 0.0f) { //有GPS信号，且速度大于0
                         //
                     } else {
-                        isFromOtherApp = true;
+                        SDcardHelper.disMissSdcardDialog();
                         MainAppSending.menuTransition(FROM_MAINAPP);
                         ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
                     }
@@ -366,28 +377,6 @@ public class MainActivity extends DialogActivity {
                 break;
         }
     }
-    private BroadcastReceiver mSdCardMountAndRemoveListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            Logg.d(TAG, "action=" + action);
-            if(action.equals(Intent.ACTION_MEDIA_MOUNTED)){
-                GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_MOUNTED);
-                if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
-                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
-                }else{
-                    DialogManager.getIntance().setSdcardInserted(true);
-                }
-            }else if(action.equals(Intent.ACTION_MEDIA_EJECT )){
-                GlobalLogic.getInstance().setSDCardCurrentStatus(SDCARD_REMOVED);
-                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
-                if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
-                    EventManager.getInstance().handOutEventInfo(110);
-                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
-                }
-            }
-        }
-    };
     private BroadcastReceiver mSdCardStatusListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -397,23 +386,63 @@ public class MainActivity extends DialogActivity {
                 String data = intent.getStringExtra("data");
                 Logg.d(TAG, "action=" + action+",data="+data);
                 if (data.equals(CMD_SHOW_SDCARD_NOT_SUPPORTED)) {
-                    handleSdCardEvent(context,SDCARD_UNSUPPORTED,112);
+                    handleSdCardEvent(context,SDCARD_UNSUPPORTED,111);
                 } else if (data.equals(CMD_SHOW_SDCARD_SUPPORTED)) {
                     handleSdCardEvent(context,SDCARD_SUPPORTED,-1);
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_FAIL)) {
-                    handleSdCardEvent(context,SDCARD_INIT_FAIL,111);
+                    handleSdCardEvent(context,SDCARD_INIT_FAIL,112);
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_SUCC)) {
                     LedMananger.getInstance().setLedRecStatus(true, false, 0);
                     handleSdCardEvent(context,SDCARD_INIT_SUCCESS,-1);
                 } else if (data.equals(CMD_SHOW_SDCARD_UNRECOGNIZABLE)) {
                     handleSdCardEvent(context,SDCARD_UNRECOGNIZABLE,113);
+                } else if(data.equals(CMD_SHOW_SDCARD_NOT_EXIST)){
+                    handleSdCardEvent(context,SDCARD_REMOVED,110);
+                } else if(data.equals(CMD_SHOW_SDCARD_MOUNTED)){
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
+                }
+            } else if(action.equals(ACTION_SDCARD_LIMT)){
+                String cmd_ex = intent.getStringExtra("cmd_ex");
+                Logg.d(TAG, "action=" + action+",cmd_ex="+cmd_ex);
+                if(CMD_SHOW_REACH_EVENT_FILE_LIMIT.equals(cmd_ex)){
+                    if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
+                                Event.EventCode.EVENT_RECORDING_FILE_LIMIT, EVENT_RECORDING_REACH_LIMIT_CONDITION));
+                    }
+                }else if(CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(cmd_ex)){
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
+                            Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
+                } else if(CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT.equals(cmd_ex)){
+                    if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                        EventManager.getInstance().handOutEventInfo(115); // defined to 115 in assets
+                    }
+                } else if(CMD_SHOW_REACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.ParkingRecordingLimitStatusType>(
+                            Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_REACH_LIMIT_CONDITION));
+                } else if(CMD_SHOW_UNREACH_PARKING_FILE_LIMIT.equals(cmd_ex)){
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.ParkingRecordingLimitStatusType>(
+                            Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION));
+                } else if(CMD_SHOW_SDCARD_FULL_LIMIT.equals(cmd_ex)){
+                    RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT);
+                    if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                        EventManager.getInstance().handOutEventInfo(116); // defined to 116 in assets
+                    }
+                } else if(CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT.equals(cmd_ex)) {
+                    RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
+                } else if(CMD_SHOW_REACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
+
+                } else if(CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT.equals(cmd_ex)){
+                    if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
+                        EventManager.getInstance().handOutEventInfo(129); // defined to 129 in assets
+                    }
+                }else if(CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
+
                 }
             }
         }
     };
 
     private void handleSdCardEvent(Context context,UIElementStatusEnum.SDcardStatusType sdCardStatus,int eventType){
-        GlobalLogic.getInstance().setSDCardCurrentStatus(sdCardStatus);
         if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)){
             EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, sdCardStatus));
             if(eventType >= 0){

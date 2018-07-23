@@ -84,6 +84,7 @@ public class DialogManager{
             int dialogType = eventInfo.getDialogType();
             String message = eventInfo.getEventDescription();
             if (mContext != null && (mContext instanceof Activity) && dialogType > 0) {
+                Logg.d(TAG,"lastDisplay="+lastDisplay+",priority="+priority+",lastPriority="+lastPriority);
                 if((lastDisplay && priority <= lastPriority)||!lastDisplay){
                     dialogLogic.onFilter(dialogType,eventType,priority,showTime,message);
                 }
@@ -102,6 +103,36 @@ public class DialogManager{
             ((DialogActivity) mContext).dismissDialog();
             ((DialogActivity) mContext).resetDialogType();
         }
+    }
+    public void setSdcardInvisible(boolean isInvisible){
+        if(eventList != null && eventList.contains(Event.SDCARD_UNFORMATTED)){
+            eventList.remove(Event.SDCARD_UNFORMATTED);
+        }
+        if(eventList != null && eventList.contains(Event.SDCARD_UNSUPPORTED)){
+            eventList.remove(Event.SDCARD_UNSUPPORTED);
+        }
+        if(eventList != null && eventList.contains(Event.SDCARD_ERROR)){
+            eventList.remove(Event.SDCARD_ERROR);
+        }
+        if(eventList != null && eventList.contains(Event.SDCARD_SPACE_INSUFFICIENT)){
+            eventList.remove(Event.SDCARD_SPACE_INSUFFICIENT);
+        }
+        if(eventList != null && eventList.contains(Event.RECORDING_EVENT_FAILED)){
+            eventList.remove(Event.RECORDING_EVENT_FAILED);
+        }
+        if(eventList != null && eventList.contains(Event.RECORDING_PIC_FAILED)){
+            eventList.remove(Event.RECORDING_PIC_FAILED);
+        }
+        if(eventList != null && eventList.contains(Event.SDCARD_UNMOUNTED)){
+            eventList.remove(Event.SDCARD_UNMOUNTED);
+        }
+        if((Event.contains(Event.sdCardAbnormalEvent,lastEventType)
+                || Event.contains(Event.limitRecordingFileEvent,lastEventType)
+                || Event.contains(Event.sdCardUnMountedEvent,lastEventType))&&lastDisplay){
+            dialogLogic.setSdcardInvisible(isInvisible);
+            dialogLogic.refreshDialogDisplay(lastDialogType,lastEventType);
+        }
+
     }
     public void setSdcardPulledOut(boolean isSdcardPulledOut){
         if(eventList != null && eventList.contains(Event.SDCARD_UNFORMATTED)){
@@ -218,9 +249,11 @@ public class DialogManager{
                 eventList.remove(eventType);
                if(Event.contains(Event.sdCardUnMountedEvent,eventType)){
                    dialogLogic.setSdcardInserted(false);
+                   dialogLogic.setSdcardInvisible(false);
                 }else if(Event.contains(Event.sdCardAbnormalEvent,eventType)){
                    dialogLogic.setSdcardPulledOut(false);
                    dialogLogic.setSdcardInitSuccess(false);
+                   dialogLogic.setSdcardInvisible(false);
                }else if(Event.contains(Event.highTemperatureLv3Event,eventType)){
                    dialogLogic.setPowerOff(false);
                }else if(Event.contains(Event.highTemperatureLv2Event,eventType)){
@@ -230,6 +263,8 @@ public class DialogManager{
                    dialogLogic.setStartRecording(false);
                }else if(Event.contains(Event.noticeEvent,eventType)){
                    dialogLogic.setSpeechCompleted(false);
+               }else if(Event.contains(Event.limitRecordingFileEvent,eventType)){
+                   dialogLogic.setSdcardInvisible(false);
                }
                 eventItem = eventList.getNextEventItem();
             }

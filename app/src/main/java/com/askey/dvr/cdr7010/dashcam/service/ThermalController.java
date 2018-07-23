@@ -72,7 +72,7 @@ public class ThermalController{
        @Override
        public void run(){
            int cpu_temp = getSensorTemp(CPU_THERMAL_ZONE_PATH);
-           int lcd_temp = getSensorTemp(LCD_THERMAL_ZONE_PATH);
+           int lcd_temp = getSensorTemp(LCD_THERMAL_ZONE_PATH) ;
            Logg.d(TAG,"lcd_temp="+lcd_temp+",cpu_temp="+cpu_temp);
            if(thermalListener != null){
                if(cpu_temp > CPU_HIGH_TEMP_THRESHOLD){

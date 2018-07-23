@@ -17,6 +17,7 @@ import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SetUtils;
 
 import java.util.EnumSet;
@@ -383,8 +384,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
     private void prepareRecorder() throws Exception {
         Logg.v(TAG, "prepareRecorder");
 
-        boolean sdcardAvailable = FileManager.getInstance(mContext).isSdcardAvailable();
-        if (!sdcardAvailable) {
+        int sdcardStatus = FileManager.getInstance(mContext).checkSdcardAvailable();
+        if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }

@@ -38,6 +38,7 @@ public class DialogLogic{
     private boolean isResumeRecording;
     private boolean isSpeechCompleted;
     private boolean isSdcardInitSuccess;
+    private boolean isSdcardInvisible;
     private Handler handler;
     private CancelableRunnable mCancelableRunnable;
     private DialogCallBack dialogCallBack;
@@ -89,6 +90,10 @@ public class DialogLogic{
       if(Event.contains(Event.nomalEvent,eventType)
               || Event.contains(Event.highTemperatureLv1Event,eventType)
               || Event.contains(Event.limitRecordingFileEvent,eventType)){
+          if(isSdcardInvisible && Event.contains(Event.limitRecordingFileEvent,eventType)){
+              setCancelableRunnable(true);
+              onDismiss(dialogType,eventType);
+          }
           if(showTime >0){
               if(System.currentTimeMillis() -showTime < DELAY_TIME) {
                   delayHideDialogDisplay(System.currentTimeMillis() - showTime, dialogType, eventType);
@@ -99,11 +104,11 @@ public class DialogLogic{
               delayHideDialogDisplay(DELAY_TIME, dialogType, eventType);
           }
       } else if(Event.contains(Event.sdCardUnMountedEvent,eventType)){
-          if(isSdcardInserted){
+          if(isSdcardInserted || isSdcardInvisible){
               onDismiss(dialogType,eventType);
           }
       } else if(Event.contains(Event.sdCardAbnormalEvent,eventType)){
-          if(isSdcardPulledOut || isSdcardInitSuccess){
+          if(isSdcardPulledOut || isSdcardInitSuccess || isSdcardInvisible){
               onDismiss(dialogType,eventType);
           }
       } else if(Event.contains(Event.highTemperatureLv3Event,eventType)){
@@ -159,6 +164,7 @@ public class DialogLogic{
         isResumeRecording = false;
         isSpeechCompleted =false;
         isSdcardInitSuccess = false;
+        isSdcardInvisible = false;
         if(mCancelableRunnable != null){
             mCancelableRunnable._cancel();
             mCancelableRunnable = null;
@@ -186,6 +192,9 @@ public class DialogLogic{
     }
     public void setSdcardInitSuccess(boolean isSdcardInitSuccess){
         this.isSdcardInitSuccess =isSdcardInitSuccess;
+    }
+    public void setSdcardInvisible(boolean isSdcardInvisible){
+        this.isSdcardInvisible = isSdcardInvisible;
     }
     private void delayHideDialogDisplay(long waitTime,final int dialogType,final int eventType){
         CancelableRunnable cancelableRunnable = mCancelableRunnable;

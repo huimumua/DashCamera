@@ -59,19 +59,19 @@ public class MainApp {
     public static MainApp getInstance(){
         if(mMainApp == null)
             mMainApp = new MainApp();
-         countDownLatch = new CountDownLatch(3);
-         new Thread(new Runnable() {
-             @Override
-             public void run() {
-                 try {
-                     countDownLatch.await();
-                 } catch (InterruptedException e) {
-                     e.printStackTrace();
-                 }
-                 sendStatUpNotify();
-                 Log.d(LOG_TAG,"countDownLatch.await()~！");
-             }
-         }).start();
+        countDownLatch = new CountDownLatch(3);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                sendStatUpNotify();
+                Log.d(LOG_TAG,"countDownLatch.await()~！");
+            }
+        }).start();
 
         return mMainApp;
     }
@@ -95,14 +95,14 @@ public class MainApp {
         @Override
         public void reportInsuranceTerm(int oos, String response) {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
-                if (oos!=0){
-                    sendStatUpNotify();
-                }else {
-                    EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
-                    enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
-                    enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-                    LocalJvcStatusManager.setInsuranceTerm(enumMap);
-                }
+            if (oos!=0){
+                sendStatUpNotify();
+            }else {
+                EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+                enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+                enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+                LocalJvcStatusManager.setInsuranceTerm(enumMap);
+            }
         }
 
         @Override

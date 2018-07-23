@@ -67,10 +67,21 @@ interface IFileManagerAidlInterface {
      * */
      boolean checkNewSystemVersion();
 
-     /**
-     *检测sdcard是否可用
-     * */
-     boolean checkSdcardAvailable();
+        /**
+        * sdcard状态
+         * show_sdcard_not_supported   0
+         * show_sdcard_unrecognizable  1
+         * show_sdcard_not_exist       2
+         * show_sdcard_mounted         3
+         * show_sdcard_init_success    4
+         * show_sdcard_init_fail       5
+         * show_reach_event_file_limit           6
+         * show_reach_event_file_over_limit      7
+         * show_reach_picture_file_limit         8
+         * show_reach_picture_file_over_limit    9
+         * show_sdcard_full_limit                10
+         * */
+     int checkSdcardAvailable();
 
 
 
