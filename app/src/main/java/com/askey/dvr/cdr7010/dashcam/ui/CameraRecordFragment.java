@@ -810,7 +810,7 @@ public class CameraRecordFragment extends Fragment {
                     false,
                     mMicphoneSettingsObserver);
         } else {
-            throw new RuntimeException("startVideoRecord because: " + reason  );
+            throw new RuntimeException(RecordHelper.getErrorString());
         }
     }
 
