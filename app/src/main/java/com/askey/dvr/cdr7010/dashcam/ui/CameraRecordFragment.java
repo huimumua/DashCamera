@@ -780,7 +780,7 @@ public class CameraRecordFragment extends Fragment {
             throw new RuntimeException("sd card unavailable");
         } else {
             RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);
-      //      onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_SUCCESS));
+            onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_SUCCESS));
         }
 
         if (mMainCam == null) {
