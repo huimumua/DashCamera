@@ -17,15 +17,11 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
-import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
-
-public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener, UpdateFragment.UpdateListener {
+public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener, UpdateFragment.UpdateListener, VersionUpReceiver.PowerOnRelativeCallback {
     private static final String TAG = "NoticeActivity";
     private NoticeFragment noticeFragment;
     private UpdateFragment updateFragment;
@@ -45,8 +41,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
                 String soundver = intent.getStringExtra("soundver");
                 Logg.i(TAG,"onReceive: STARTUP: bootinfo=" + bootinfo + ", updateInfo=" + updateInfo);
                 if(updateInfo == 0) {//None
-                    VersionUpReceiver.StartUpInfo startUpInfo = new VersionUpReceiver.StartUpInfo(bootinfo, updateInfo, farmver, soundver);
-                    EventUtil.sendEvent(startUpInfo);
+                    onStartUp(bootinfo, updateInfo, farmver, soundver);
                 }
             }
         }
@@ -64,6 +59,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         filter.addAction(ACTION_EVENT_STARTUP);
         registerReceiver(receiver, filter);
         //end add
+        VersionUpReceiver.registerPowerOnRelativeCallback(this);
     }
 
     @Override
@@ -119,52 +115,52 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onHandleEvent(Object eventType) {
-        if (eventType instanceof VersionUpReceiver.StartUpInfo || eventType instanceof VersionUpReceiver.UpdateCompleteInfo
-                || eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
-            updateInfos = new UpdateInfos();
-            if (eventType instanceof VersionUpReceiver.StartUpInfo && ((VersionUpReceiver.StartUpInfo) eventType).updateInfo == 0) {//None
-                Logg.i(TAG, "=system_update=None=");
-                updateInfos.updateType = Const.NONE_UPDATE;
-            } else if (eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
-                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-                    updateInfos.updateResultState = Const.UPDATE_SUCCESS;
-                    Logg.i(TAG, "=system_update_success==");
-                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-                    updateInfos.updateResultState = Const.UPDATE_FAIL;
-                    Logg.i(TAG, "=system_update_fail==");
-                }
-//                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
-////                    updateInfo.updateType = Const.OTA_UPDATE;
-//                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-//                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
-//                        Logg.i(TAG, "=system_update_success=OTA_UPDATE=");
-//                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-//                        updateInfo.updateResultState = Const.UPDATE_FAIL;
-//                        Logg.i(TAG, "=system_update_fail=OTA_UPDATE=");
-//                    }
-//
-//                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 2) {//SDカード
-////                    updateInfo.updateType = Const.SDCARD_UPDATE;
-//                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
-//                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
-//                        Logg.i(TAG, "=system_update_success=SDCARD_UPDATE=");
-//                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
-//                        updateInfo.updateResultState = Const.UPDATE_FAIL;
-//                        Logg.i(TAG, "=system_update_fail=SDCARD_UPDATE=");
-//                    }
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onHandleEvent(Object eventType) {
+//        if (eventType instanceof VersionUpReceiver.StartUpInfo || eventType instanceof VersionUpReceiver.UpdateCompleteInfo
+//                || eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
+//            updateInfos = new UpdateInfos();
+//            if (eventType instanceof VersionUpReceiver.StartUpInfo && ((VersionUpReceiver.StartUpInfo) eventType).updateInfo == 0) {//None
+//                Logg.i(TAG, "=system_update=None=");
+//                updateInfos.updateType = Const.NONE_UPDATE;
+//            } else if (eventType instanceof VersionUpReceiver.UpdateCompleteInfo) {
+//                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+//                    updateInfos.updateResultState = Const.UPDATE_SUCCESS;
+//                    Logg.i(TAG, "=system_update_success==");
+//                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+//                    updateInfos.updateResultState = Const.UPDATE_FAIL;
+//                    Logg.i(TAG, "=system_update_fail==");
 //                }
-            } else if (eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
-                updateInfos.updateResultState = Const.UPDATE_READY;
-            }
-            Logg.i(TAG, "=onHandleEvent=isNoticeFinish=" + isNoticeFinish);
-            if (isNoticeFinish) {
-                noticeJump();
-                isNoticeFinish = false;
-            }
-        }
-    }
+////                if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 0) {//OTA
+//////                    updateInfo.updateType = Const.OTA_UPDATE;
+////                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+////                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+////                        Logg.i(TAG, "=system_update_success=OTA_UPDATE=");
+////                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+////                        updateInfo.updateResultState = Const.UPDATE_FAIL;
+////                        Logg.i(TAG, "=system_update_fail=OTA_UPDATE=");
+////                    }
+////
+////                } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).type == 2) {//SDカード
+//////                    updateInfo.updateType = Const.SDCARD_UPDATE;
+////                    if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == 0) {//成功
+////                        updateInfo.updateResultState = Const.UPDATE_SUCCESS;
+////                        Logg.i(TAG, "=system_update_success=SDCARD_UPDATE=");
+////                    } else if (((VersionUpReceiver.UpdateCompleteInfo) eventType).result == -1) {//アップデート失敗
+////                        updateInfo.updateResultState = Const.UPDATE_FAIL;
+////                        Logg.i(TAG, "=system_update_fail=SDCARD_UPDATE=");
+////                    }
+////                }
+//            } else if (eventType instanceof VersionUpReceiver.UpdateReadyInfo) {
+//                updateInfos.updateResultState = Const.UPDATE_READY;
+//            }
+//            Logg.i(TAG, "=onHandleEvent=isNoticeFinish=" + isNoticeFinish);
+//            if (isNoticeFinish) {
+//                noticeJump();
+//                isNoticeFinish = false;
+//            }
+//        }
+//    }
 
     @Override
     public void onBackPressed() {
@@ -258,7 +254,51 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         //add by Mark for PUCDR-1262
         unregisterReceiver(receiver);
         //end add
+        VersionUpReceiver.unRegisterPowerOnRelativeCallback(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onUpdateReady() {
+        updateInfos = new UpdateInfos();
+        updateInfos.updateResultState = Const.UPDATE_READY;
+
+        Logg.i(TAG, "onUpdateReady: isNoticeFinish=" + isNoticeFinish);
+        if (isNoticeFinish) {
+            noticeJump();
+            isNoticeFinish = false;
+        }
+    }
+
+    @Override
+    public void onUpdateCompleted(int type, int result) {
+        Logg.i(TAG, "onUpdateCompleted: type=" + type + ", result=" + result);
+        updateInfos = new UpdateInfos();
+        if (result == 0) {//成功
+            updateInfos.updateResultState = Const.UPDATE_SUCCESS;
+        } else if (result == -1) {//アップデート失敗
+            updateInfos.updateResultState = Const.UPDATE_FAIL;
+        }
+
+        Logg.i(TAG, "onUpdateCompleted: isNoticeFinish=" + isNoticeFinish);
+        if (isNoticeFinish) {
+            noticeJump();
+            isNoticeFinish = false;
+        }
+    }
+
+    @Override
+    public void onStartUp(int bootinfo, int updateInfo, String farmver, String soundver) {
+        updateInfos = new UpdateInfos();
+        if (updateInfo == 0) {//None
+            updateInfos.updateType = Const.NONE_UPDATE;
+        }
+
+        Logg.i(TAG, "onStartUp: isNoticeFinish=" + isNoticeFinish);
+        if (isNoticeFinish) {
+            noticeJump();
+            isNoticeFinish = false;
+        }
     }
 
     private class UpdateInfos {

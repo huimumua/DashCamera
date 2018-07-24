@@ -5,12 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
-import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class VersionUpReceiver extends BroadcastReceiver{
     public static final String PREFERENCE_KEY_UPDATE_COMPLETED = "updateCompleted";
@@ -23,6 +26,8 @@ public class VersionUpReceiver extends BroadcastReceiver{
 
     public static final String ACTION_FOTA_STATUS = "action_fota_status";
     public static final String ACTION_UPDATE_CHECK = "action_update_check";
+
+    private static List<PowerOnRelativeCallback> mPowerOnRelativeCallbackList = Collections.synchronizedList(new ArrayList<PowerOnRelativeCallback>());
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -40,10 +45,9 @@ public class VersionUpReceiver extends BroadcastReceiver{
             broadcastIntent.putExtra("length", length);
             context.sendStickyBroadcastAsUser(broadcastIntent, android.os.Process.myUserHandle());
         }else if(action.equals(ACTION_EVENT_UPDATE_READY)){ //null params
-            Logg.i(LOG_TAG,"==ACTION_EVENT_UPDATE_READY===");
-            UpdateReadyInfo updateReadyInfo = new UpdateReadyInfo();
-            EventUtil.sendEvent(updateReadyInfo);
             MainAppSending.updateReadyCompleted();
+            for(PowerOnRelativeCallback callback : mPowerOnRelativeCallbackList)
+                callback.onUpdateReady();
         }else if(action.equals(ACTION_EVENT_UPDATE_COMPLETED)){
             int type = intent.getIntExtra("type", -1);
             int result = intent.getIntExtra("result", -10); //-1被正常使用
@@ -58,8 +62,8 @@ public class VersionUpReceiver extends BroadcastReceiver{
             } catch (JSONException e) {
                 Logg.e(LOG_TAG, "Save UPDATE_COMPLETED information error: " + e.getMessage());
             }
-            UpdateCompleteInfo updateCompleteInfo = new UpdateCompleteInfo(type,result);
-            EventUtil.sendEvent(updateCompleteInfo);
+            for(PowerOnRelativeCallback callback : mPowerOnRelativeCallbackList)
+                callback.onUpdateCompleted(type,result);
         }else if(action.equals(ACTION_EVENT_UPDATE_CHECK)){
             int result = intent.getIntExtra("result", 1);
             Intent broadcastIntent = new Intent(ACTION_UPDATE_CHECK);
@@ -76,34 +80,22 @@ public class VersionUpReceiver extends BroadcastReceiver{
         return true;
     }
 
-    public static class StartUpInfo{
-        public int bootinfo;
-        public int updateInfo;
-        public String farmver;
-        public String soundver;
-
-        public StartUpInfo(int bootinfo, int updateInfo, String farmver, String soundver) {
-            this.bootinfo = bootinfo;
-            this.updateInfo = updateInfo;
-            this.farmver = farmver;
-            this.soundver = soundver;
-        }
+    public static void registerPowerOnRelativeCallback(PowerOnRelativeCallback callback){
+        if (callback == null) return;
+        Logg.i(LOG_TAG, "registerPowerOnRelativeCallback: ");
+        mPowerOnRelativeCallbackList.add(callback);
     }
 
-    public class UpdateCompleteInfo{
-        public int type;
-        public int result;
-
-        public UpdateCompleteInfo(int type, int result) {
-            this.type = type;
-            this.result = result;
-        }
+    public static void unRegisterPowerOnRelativeCallback(PowerOnRelativeCallback callback){
+        if (callback == null) return;
+        Logg.i(LOG_TAG, "unRegisterPowerOnRelativeCallback: ");
+        mPowerOnRelativeCallbackList.remove(callback);
     }
 
-    public class UpdateReadyInfo{
-        public UpdateReadyInfo(){
-
-        }
+    public interface PowerOnRelativeCallback{
+        void onUpdateReady();
+        void onUpdateCompleted(int type, int result);
+        void onStartUp(int bootinfo, int updateInfo, String farmver, String soundver);
     }
 
 }
