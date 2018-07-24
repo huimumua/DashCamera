@@ -728,10 +728,13 @@ public class CameraRecordFragment extends Fragment {
                     } else if (lteRsrp >= -140) {
                         lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
                     }
-                    GlobalLogic.getInstance().setLTEStatus(lteLevel);
-                    osdView.invalidateView();
                 }
                 Logg.i(TAG, "SignalStrengthLevel: " + Integer.toString(strength) + ",lteStatusType=" + lteLevel);
+                if(lteLevel ==  GlobalLogic.getInstance().getLTEStatus()){
+                    return;
+                }
+                GlobalLogic.getInstance().setLTEStatus(lteLevel);
+                osdView.invalidateView();
             } catch (Exception ignored) {
                 Logg.e(TAG, "Exception: " + ignored.toString());
             }
