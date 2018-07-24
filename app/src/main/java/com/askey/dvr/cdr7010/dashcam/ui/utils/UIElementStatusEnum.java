@@ -81,7 +81,10 @@ public class UIElementStatusEnum{
         SDCARD_UNRECOGNIZABLE(6),
         SDCARD_UNMOUNTED(7),
         SDCARD_FULL_LIMIT(8),
-        SDCARD_FULL_LIMIT_EXIT(9);
+        SDCARD_FULL_LIMIT_EXIT(9),
+        SDCARD_EVENT_FILE_LIMIT(10),
+        SDCARD_EVENT_PICTURE_LIMIT(11),
+        SDCARD_ASKEY_NOT_SUPPORTED(12);
 
         public final int value;
         SDcardStatusType(int value){
@@ -186,10 +189,14 @@ public class UIElementStatusEnum{
         SDCARD_UNAVAILABLE(3),
         SDCARD_RECORDING_FULL_LIMIT(4),
         SDCARD_RECORDING_FULL_LIMIT_EXIT(5),
-        SWITCH_USER_STARTED(6),
-        SWITCH_USER_COMPLETED(7),
-        LOW_TEMPERATURE(8),
-        HIGH_TEMPERATURE(9);
+        SDCARD_EVENT_FILE_OVER_LIMIT(6),
+        SDCARD_UNREACH_EVENT_FILE_LIMIT(7),
+        SDCARD_PICTURE_FILE_OVER_LIMIT(8),
+        SDCARD_UNREACH_PICTURE_LIMIT(9),
+        SWITCH_USER_STARTED(10),
+        SWITCH_USER_COMPLETED(11),
+        LOW_TEMPERATURE(12),
+        HIGH_TEMPERATURE(13);
 
         public final int value;
         RecordingPreconditionStatus(int value){

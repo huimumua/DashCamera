@@ -87,9 +87,13 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.HIGH_TEMPERATURE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.LOW_TEMPERATURE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_AVAILABLE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_EVENT_FILE_OVER_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_PICTURE_FILE_OVER_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT_EXIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_UNAVAILABLE;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_UNREACH_EVENT_FILE_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_UNREACH_PICTURE_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SWITCH_USER_COMPLETED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SWITCH_USER_STARTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_CONTINUOUS;
@@ -122,6 +126,10 @@ public class CameraRecordFragment extends Fragment {
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
     private static final String SDCARD_FULL_LIMIT_EXIT = "show_unreach_sdcard_full_limit";
     private static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
+    private static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT ="show_reach_picture_file_over_limit";
+    private static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT ="show_reach_event_file_over_limit";
+    private static final String CMD_SHOW_UNREACH_EVENT_FILE_LIMIT = "show_unreach_event_file_limit";//限制解除
+    private static final String CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT = "show_unreach_picture_file_limit";//限制解除
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1001;
     private static final int REQUEST_GPS_PERMISSIONS = 1002;
@@ -168,6 +176,30 @@ public class CameraRecordFragment extends Fragment {
                     try {
                         RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                         startVideoRecord("SDCARD_FULL_LIMIT_EXIT");
+                    } catch (Exception e) {
+                        Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+                    }
+                } else if(CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT.equals(ex)){
+                    Logg.d(TAG, "SDCARD_REACH_PICTURE_FILE_OVER_LIMIT");
+                    RecordHelper.setRecordingPrecondition(SDCARD_PICTURE_FILE_OVER_LIMIT);
+                    stopVideoRecord("SDCARD_REACH_PICTURE_FILE_OVER_LIMIT");
+                } else if(CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(ex)){
+                    Logg.d(TAG, "SDCARD_UNREACH_PICTURE_FILE_LIMIT");
+                    try {
+                        RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_PICTURE_LIMIT);
+                        startVideoRecord("SDCARD_UNREACH_PICTURE_FILE_LIMIT");
+                    } catch (Exception e) {
+                        Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
+                    }
+                } else if(CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT.equals(ex)){
+                    Logg.d(TAG, "SDCARD_REACH_EVENT_FILE_OVER_LIMIT");
+                    RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
+                    stopVideoRecord("SDCARD_REACH_EVENT_FILE_OVER_LIMIT");
+                } else if(CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(ex)){
+                    Logg.d(TAG, "SDCARD_UNREACH_EVENT_FILE_LIMIT.");
+                    try {
+                        RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
+                        startVideoRecord("SDCARD_UNREACH_EVENT_FILE_LIMIT");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }

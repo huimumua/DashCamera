@@ -48,6 +48,9 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_EVENT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_STOP;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_ASKEY_NOT_SUPPORTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_FILE_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_PICTURE_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
@@ -427,15 +430,19 @@ public class OSDView extends View {
             canvas.drawBitmap(sdcard_error, null, sdCardRectF, null);
         } else if ((osdProvider.getRecordingStatus() == RECORDING_CONTINUOUS
                 || osdProvider.getRecordingStatus() == RECORDING_EVENT)
-                && osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS) {
+                && (osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS
+                || osdProvider.getSDCardStatus() == SDCARD_EVENT_FILE_LIMIT
+                || osdProvider.getSDCardStatus() == SDCARD_EVENT_PICTURE_LIMIT)) {
             canvas.drawBitmap(sdcard_recording, null, sdCardRectF, null);
         } else if ((osdProvider.getRecordingStatus() == RECORDING_STOP || osdProvider.getRecordingStatus() == RECORDING_UNKNOWN)
                 && (osdProvider.getSDCardStatus() == SDCARD_MOUNTED || osdProvider.getSDCardStatus() == SDCARD_SUPPORTED
-                || osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS)) {
+                || osdProvider.getSDCardStatus() == SDCARD_INIT_SUCCESS || osdProvider.getSDCardStatus() == SDCARD_EVENT_FILE_LIMIT
+                || osdProvider.getSDCardStatus() == SDCARD_EVENT_PICTURE_LIMIT)) {
             canvas.drawBitmap(sdcard_testing, null, sdCardRectF, null);
         } else if (osdProvider.getSDCardStatus() == SDCARD_INIT_FAIL
                 || osdProvider.getSDCardStatus() == SDCARD_UNRECOGNIZABLE
                 || osdProvider.getSDCardStatus() == SDCARD_UNSUPPORTED
+                || osdProvider.getSDCardStatus() == SDCARD_ASKEY_NOT_SUPPORTED
                 ) {
             canvas.drawBitmap(sdcard_error, null, sdCardRectF, null);
         } else if (osdProvider.getSDCardStatus() == SDCARD_REMOVED ||

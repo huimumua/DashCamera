@@ -110,7 +110,8 @@ public class DialogLogic{
           if(isSdcardPulledOut || isSdcardInitSuccess || isSdcardInvisible){
               onDismiss(dialogType,eventType);
           }
-      } else if(Event.contains(Event.highTemperatureLv3Event,eventType)){
+      } else if(Event.contains(Event.highTemperatureLv3Event,eventType)
+              || Event.contains(Event.equipmentFailureEvent,eventType)){
           if(isPowerOFF){
               onDismiss(dialogType,eventType);
           }

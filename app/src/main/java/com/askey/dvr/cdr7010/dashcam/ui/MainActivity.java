@@ -50,6 +50,9 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Parking
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.SDCARD_RECORDING_FULL_LIMIT_EXIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_ASKEY_NOT_SUPPORTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_FILE_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_PICTURE_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT_EXIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
@@ -83,6 +86,7 @@ public class MainActivity extends DialogActivity {
     public static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT ="show_reach_picture_file_over_limit";
     public static final String CMD_SHOW_SDCARD_FULL_LIMIT ="show_sdcard_full_limit";//超过限制
     public static final String CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT = "show_unreach_sdcard_full_limit";//限制解除
+    public static final String CMD_SHOW_SDCARD_ASKEY_NOT_SUPPORTED ="show_sdcard_askey_not_supported";//askey 7010不支持此卡
     private static final int FROM_MAINAPP =0;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
@@ -390,7 +394,7 @@ public class MainActivity extends DialogActivity {
                 } else if (data.equals(CMD_SHOW_SDCARD_SUPPORTED)) {
                     handleSdCardEvent(context,SDCARD_SUPPORTED,-1);
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_FAIL)) {
-                    handleSdCardEvent(context,SDCARD_INIT_FAIL,112);
+                    handleSdCardEvent(context,SDCARD_INIT_FAIL,-1);
                 } else if (data.equals(CMD_SHOW_SDCARD_INIT_SUCC)) {
                     LedMananger.getInstance().setLedRecStatus(true, false, 0);
                     handleSdCardEvent(context,SDCARD_INIT_SUCCESS,-1);
@@ -400,6 +404,8 @@ public class MainActivity extends DialogActivity {
                     handleSdCardEvent(context,SDCARD_REMOVED,110);
                 } else if(data.equals(CMD_SHOW_SDCARD_MOUNTED)){
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
+                } else if(data.equals(CMD_SHOW_SDCARD_ASKEY_NOT_SUPPORTED)){
+                    handleSdCardEvent(context,SDCARD_ASKEY_NOT_SUPPORTED,112);
                 }
             } else if(action.equals(ACTION_SDCARD_LIMT)){
                 String cmd_ex = intent.getStringExtra("cmd_ex");
@@ -408,6 +414,7 @@ public class MainActivity extends DialogActivity {
                     if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
                         EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
                                 Event.EventCode.EVENT_RECORDING_FILE_LIMIT, EVENT_RECORDING_REACH_LIMIT_CONDITION));
+                        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_EVENT_FILE_LIMIT));
                     }
                 }else if(CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(cmd_ex)){
                     EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
@@ -430,7 +437,7 @@ public class MainActivity extends DialogActivity {
                 } else if(CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT.equals(cmd_ex)) {
                     RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                 } else if(CMD_SHOW_REACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
-
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_EVENT_PICTURE_LIMIT));
                 } else if(CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT.equals(cmd_ex)){
                     if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
                         EventManager.getInstance().handOutEventInfo(129); // defined to 129 in assets
