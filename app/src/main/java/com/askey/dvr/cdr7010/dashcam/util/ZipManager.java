@@ -21,10 +21,17 @@ public class ZipManager {
 			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
 			byte data[] = new byte[BUFFER];
 			for (int i = 0; i < zipFilePathList.size(); i++) {
-				Logg.v(LOG_TAG, "zip: " + zipFilePathList.get(i));
-				FileInputStream fi = new FileInputStream(zipFilePathList.get(i));
+				String filePath = zipFilePathList.get(i);
+				Logg.v(LOG_TAG, "zip: " + filePath);
+				FileInputStream fi = new FileInputStream(filePath);
 				origin = new BufferedInputStream(fi, BUFFER);
-				ZipEntry entry = new ZipEntry(zipFilePathList.get(i).substring(zipFilePathList.get(i).lastIndexOf("/") + 1));
+
+				String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+				String fileParentPath = filePath.substring(0, filePath.lastIndexOf("/"));
+				String fileParentName = fileParentPath.substring(fileParentPath.lastIndexOf("/") + 1);
+				String zipInFileName = fileParentName + "_" + fileName;
+
+				ZipEntry entry = new ZipEntry(zipInFileName);
 				out.putNextEntry(entry);
 				int count;
 				while ((count = origin.read(data, 0, BUFFER)) != -1) {
