@@ -106,6 +106,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardA
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START;
+import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCARD_NOT_EXIST;
 
 public class CameraRecordFragment extends Fragment {
     private static final String TAG = CameraRecordFragment.class.getSimpleName();
@@ -771,7 +772,11 @@ public class CameraRecordFragment extends Fragment {
 
         if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
             RecordHelper.setRecordingPrecondition(SDCARD_UNAVAILABLE);
-            onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_FAIL));
+            if(sdcardStatus == SDCARD_NOT_EXIST ){
+                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_REMOVED));
+            }else{
+                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_FAIL));
+            }
             throw new RuntimeException("sd card unavailable");
         } else {
             RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);

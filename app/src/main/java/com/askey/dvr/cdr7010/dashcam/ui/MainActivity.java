@@ -431,9 +431,7 @@ public class MainActivity extends DialogActivity {
                             Event.EventCode.EVENT_PARKING_RECODING_FILE_LIMIT,PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 } else if(CMD_SHOW_SDCARD_FULL_LIMIT.equals(cmd_ex)){
                     RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT);
-                    if(AppUtils.isActivityTop(context,ACTIVITY_CLASSNAME)) {
-                        EventManager.getInstance().handOutEventInfo(116); // defined to 116 in assets
-                    }
+                    handleSdCardEvent(context,SDCARD_INIT_FAIL,116);
                 } else if(CMD_SHOW_UNREACH_SDCARD_FULL_LIMIT.equals(cmd_ex)) {
                     RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                 } else if(CMD_SHOW_REACH_PICTURE_FILE_LIMIT.equals(cmd_ex)){
