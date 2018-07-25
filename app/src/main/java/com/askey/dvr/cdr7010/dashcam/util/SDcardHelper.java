@@ -56,9 +56,16 @@ public class SDcardHelper{
         }
         return false;
     }
-    public static boolean isSDCardEnable()
+    public static boolean isSDCardEnable(Context context)
     {
-        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        int sdcardStatus = SDcardStatus.SDCARD_NOT_EXIST;
+        try {
+            sdcardStatus = FileManager.getInstance(context).checkSdcardAvailable();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Logg.d(TAG,"isSDCardEnable sdcardStatus="+sdcardStatus);
+        return isSDCardAvailable(sdcardStatus);
 
     }
     public static void checkSdcardState(Context context){

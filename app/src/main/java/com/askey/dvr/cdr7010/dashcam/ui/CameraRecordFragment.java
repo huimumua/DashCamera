@@ -709,9 +709,14 @@ public class CameraRecordFragment extends Fragment {
             try {
                 Method method;
                 int strength = 0;
+                int simState = SimCardManager.getInstant().getSimState();
+                if (simState == TelephonyManager.SIM_STATE_ABSENT
+                        || simState == SimCardManager.SIM_STATE_NOT_READY) {
+                    return;
+                }
                 int networkType = mTelephonyManager.getNetworkType();
                 // if networkType is LTE, using custom dbm to distinguish signal strength level
-                UIElementStatusEnum.LTEStatusType lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
+                UIElementStatusEnum.LTEStatusType lteLevel = LTE_NONE;
                 if (networkType == TelephonyManager.NETWORK_TYPE_LTE) {
                     method = sStrength.getClass().getDeclaredMethod("getLteDbm");
                     int lteRsrp = (int) method.invoke(sStrength);

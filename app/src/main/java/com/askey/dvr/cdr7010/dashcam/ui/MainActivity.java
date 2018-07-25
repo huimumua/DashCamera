@@ -141,9 +141,7 @@ public class MainActivity extends DialogActivity {
     @Override
     protected  void onPause(){
         super.onPause();
-        UIElementStatusEnum.SDcardStatusType sdcardStatus = GlobalLogic.getInstance().getSDCardCurrentStatus();
-        if(sdcardStatus != SDCARD_MOUNTED && sdcardStatus != SDCARD_SUPPORTED
-                && sdcardStatus != SDCARD_INIT_SUCCESS) {
+        if(!SDcardHelper.isSDCardEnable(this)){
             LedMananger.getInstance().setLedRecStatus(true, false, 0);
         }
     }
