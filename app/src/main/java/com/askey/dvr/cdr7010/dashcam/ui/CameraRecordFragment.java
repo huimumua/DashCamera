@@ -720,6 +720,7 @@ public class CameraRecordFragment extends Fragment {
                 if (networkType == TelephonyManager.NETWORK_TYPE_LTE) {
                     method = sStrength.getClass().getDeclaredMethod("getLteDbm");
                     int lteRsrp = (int) method.invoke(sStrength);
+                    lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
                     if (lteRsrp > -44) {
                         lteLevel = LTE_SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
                     } else if (lteRsrp >= -97) {
