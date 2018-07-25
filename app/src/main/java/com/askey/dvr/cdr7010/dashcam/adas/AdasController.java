@@ -34,7 +34,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final boolean DEBUG = false;
     private static final int ADAS_IMAGE_WIDTH = 1280;
     private static final int ADAS_IMAGE_HEIGHT = 720;
-    private static final int BUFFER_NUM = 6;
+    private static final int BUFFER_NUM = 12;
     private boolean DEBUG_FPS;
     private boolean ADAS_DISABLED;
     /* Handler Messages */
@@ -171,7 +171,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         return result;
     }
 
-    public void process(Image image) {
+    private void process(Image image) {
         if (DEBUG_FPS) mTpsc.update();
         if (ADAS_DISABLED) {
             image.close();
@@ -271,9 +271,15 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         if (mImageReader == null) {
             mImageReader = ImageReader.newInstance(ADAS_IMAGE_WIDTH, ADAS_IMAGE_HEIGHT, ImageFormat.YUV_420_888, BUFFER_NUM);
             mImageReader.setOnImageAvailableListener(reader -> {
-                Image image = reader.acquireLatestImage();
-                if (image != null) {
-                    process(image);
+                Image image = null;
+                try {
+                    image = reader.acquireLatestImage();
+                    if (image != null) {
+                        process(image);
+                    }
+                } catch (IllegalStateException e) {
+                    // FIXME: find the root cause
+                    Log.e(TAG, "onImageAvailable: FIXME, " + e.getMessage());
                 }
             }, null);
         }
