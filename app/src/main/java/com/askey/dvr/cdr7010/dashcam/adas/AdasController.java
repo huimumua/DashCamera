@@ -19,8 +19,10 @@ import com.jvckenwood.adas.util.Constant;
 import com.jvckenwood.adas.util.FC_PARAMETER;
 import com.jvckenwood.adas.util.Util;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
@@ -35,13 +37,18 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final int ADAS_IMAGE_WIDTH = 1280;
     private static final int ADAS_IMAGE_HEIGHT = 720;
     private static final int BUFFER_NUM = 12;
-    private boolean DEBUG_FPS;
-    private boolean ADAS_DISABLED;
+
+    /* Properties for debug */
+    private static boolean EXCEPTION_WHEN_ERROR;
+    private static boolean DEBUG_FPS;
+    private static boolean ADAS_DISABLED;
+
     /* Handler Messages */
     private static final int MSG_PROCESS = 0;
     private static final int MSG_DID_ADAS_DETECT = 1;
     private static final String PROP_DEBUG_FPS = "persist.dvr.adas.debug_fps";
     private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
+    private static final String PROP_EXCEPTION = "persist.dvr.adas.exception";
 
     private static AdasController sInstance;
 
@@ -53,15 +60,22 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private FC_INPUT mFcInput;
     private Image mProcessingImage;
     private Handler mHandler;
-    private List<AdasStateListener> mListeners;
+    private List<WeakReference<AdasStateListener>> mListeners;
     private ImageReader mImageReader;
     private boolean mEnabled = true; // TODO: false default
     private AdasStateControl mStateControl;
+
+    private enum State {
+        Uninitialized, Initialized
+    }
+
+    private State mState;
 
     private AdasController() {
         if (sInstance != null) {
             throw new RuntimeException("Singleton instance is already created!");
         }
+        mState = State.Uninitialized;
         mAdasImpl = Util.getInstance();
         mGlobalSetting = GlobalLogic.getInstance();
         mTpsc = new TimesPerSecondCounter(TAG);
@@ -79,6 +93,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "AdasController: ADAS_DISABLED = " + ADAS_DISABLED);
         DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, false);
         Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
+        EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, false);
+        Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
     }
 
     public static AdasController getsInstance() {
@@ -92,10 +108,14 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         return sInstance;
     }
 
-    public void start(Context context) {
-        Log.i(TAG, "start");
+    public void init(Context context) {
+        Log.i(TAG, "init");
+        if (mState != State.Uninitialized) {
+            handleError("finish", "Unexpected mState = " + mState);
+        }
+        mState = State.Initialized;
         if (ADAS_DISABLED) {
-            Log.e(TAG, "start: not start because ADAS_DISABLED");
+            Log.w(TAG, "init: not init because ADAS_DISABLED");
             return;
         }
         if (INSTALLATION_HEIGHTS.length != CAR_TYPE_NUM) {
@@ -134,9 +154,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "initAdas: FC_PARAMETER = " + fp);
         int result = mAdasImpl.initAdas(fp, context, this);
         if (result != 0) {
-            Log.e(TAG, "start: initAdas() failed with return value = " + result);
+            handleError("init", "initAdas() failed with return value = " + result);
         }
-        mStateControl.start();
     }
     private int getVehiclePointDistance(int carType) {
         return VEHICLE_POINT_DISTANCES[carType];
@@ -212,14 +231,22 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             mProcessingImage = image;
         }
     }
-    public void stop() {
-        Log.v(TAG, "stop");
+
+    public void finish() {
+        Log.v(TAG, "finish");
         if (ADAS_DISABLED) {
             return;
         }
+
+        if (mState != State.Initialized) {
+            handleError("finish", "Unexpected mState = " + mState);
+        }
+        mState = State.Uninitialized;
+
         int result = mAdasImpl.finishAdas();
         if (result != Constant.ADAS_SUCCESS) {
-            Log.e(TAG, "start: finishAdas() failed with return value = " + result);
+            handleError("finish",
+                    "finishAdas() failed with return value = " + result);
         }
     }
 
@@ -256,14 +283,39 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
 
     public void addListener(AdasStateListener listener) {
+        // Log.v(TAG, "addListener: " + listener);
+        WeakReference<AdasStateListener> weakListener =
+                new WeakReference<>(listener);
         synchronized (mListeners) {
-            mListeners.add(listener);
+            if (mListeners.contains(weakListener)) {
+                handleError("addListener", "Add a listener multi-times");
+                return;
+            }
+
+            mListeners.add(weakListener);
+            // Log.v(TAG, "addListener: listeners size = " + mListeners.size());
         }
     }
 
     public void removeListener(AdasStateListener listener) {
+        // Log.v(TAG, "removeListener: " + listener);
+        boolean found = false;
         synchronized (mListeners) {
-            mListeners.remove(listener);
+            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
+            while (iterator.hasNext()) {
+                WeakReference<AdasStateListener> weakRef = iterator.next();
+                if (weakRef.get() == null) {
+                    iterator.remove();
+                    continue;
+                }
+                if (weakRef.get() == listener) {
+                    iterator.remove();
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            handleError("removeListener", listener + " never added");
         }
     }
 
@@ -279,7 +331,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
                     }
                 } catch (IllegalStateException e) {
                     // FIXME: find the root cause
-                    Log.e(TAG, "onImageAvailable: FIXME, " + e.getMessage());
+                    handleError( "onImageAvailable", "FIXME, " + e.getMessage());
                 }
             }, null);
         }
@@ -295,10 +347,15 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "onAdasStarted");
         mEnabled = true;
         synchronized (mListeners) {
-            for (AdasStateListener listener : mListeners) {
-                listener.onAdasStarted();
+            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
+            while (iterator.hasNext()) {
+                WeakReference<AdasStateListener> weakRef = iterator.next();
+                if (weakRef.get() == null) {
+                    iterator.remove();
+                    continue;
+                }
+                weakRef.get().onAdasStarted();
             }
-
         }
         //TODO: start thread?
     }
@@ -308,10 +365,15 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "onAdasStopped");
         mEnabled = false;
         synchronized (mListeners) {
-            for (AdasStateListener listener : mListeners) {
-                listener.onAdasStopped();
+            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
+            while (iterator.hasNext()) {
+                WeakReference<AdasStateListener> weakRef = iterator.next();
+                if (weakRef.get() == null) {
+                    iterator.remove();
+                    continue;
+                }
+                weakRef.get().onAdasStopped();
             }
-
         }
         //TODO: stop thread?
     }
@@ -335,5 +397,13 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
                     break;
             }
         }
+    }
+
+    private void handleError(String func, String message) {
+        String completeMessage = func + ", " + message;
+        if (EXCEPTION_WHEN_ERROR) {
+            throw new RuntimeException(completeMessage);
+        }
+        Log.e(TAG, completeMessage);
     }
 }

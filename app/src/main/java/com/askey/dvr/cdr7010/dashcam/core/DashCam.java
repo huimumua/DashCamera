@@ -120,8 +120,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
         mMainThreadHandler = new Handler(Looper.getMainLooper());
         mAdasController = AdasController.getsInstance();
         mAdasController.addListener(this);
-        mAdasController.start(mContext);
-        // TODO: find a place to stop ADAS
+        mAdasController.init(mContext);
     }
 
     public boolean isBusy() {
@@ -143,6 +142,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
             enableFunction(Function.ADAS);
         } else {
             disableFunction(Function.ADAS);
+            mAdasController.removeListener(this);
+            mAdasController.finish();
         }
     }
 
