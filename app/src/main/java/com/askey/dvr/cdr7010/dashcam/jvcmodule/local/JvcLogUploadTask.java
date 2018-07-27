@@ -25,7 +25,7 @@ public class JvcLogUploadTask  extends AsyncTask<String, Integer, Boolean> {
 
     @Override
     protected Boolean doInBackground(String... strings) {
-        String logAppRootPath = "/data/log/";
+        String logAppRootPath = "/jkc/log/";
         File logAppRootFile = new File(logAppRootPath);
         if(logAppRootFile.exists()){
             //zip
