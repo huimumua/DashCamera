@@ -81,10 +81,12 @@ public class DashCam implements DashCamControl, AdasStateListener {
         void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
     }
 
+    private boolean mRecording = false;
     private Recorder.StateCallback mRecorderCallback = new Recorder.StateCallback() {
         @Override
         public void onStarted() {
             Logg.d(TAG, "RecorderStateCallback: onStarted");
+            mRecording = true;
             if (mStateCallback != null) {
                 mStateCallback.onStarted();
             }
@@ -93,6 +95,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
         @Override
         public void onStoped() {
             Logg.d(TAG, "RecorderStateCallback: onStoped");
+            mRecording = false;
+            checkCloseSuccess();
             if (mStateCallback != null) {
                 mStateCallback.onStoped();
             }
@@ -101,7 +105,9 @@ public class DashCam implements DashCamControl, AdasStateListener {
         @Override
         public void onInterrupted() {
             Logg.d(TAG, "RecorderStateCallback: onInterrupted");
-            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, ""));
+            mRecording = false;
+            mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR,
+                    "RecorderStateCallback: onInterrupted"));
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
@@ -133,8 +139,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
         mMainThreadHandler = new Handler(Looper.getMainLooper());
         if (config.adasEnable()) {
             mAdasController = AdasController.getsInstance();
-            mAdasController.addListener(this);
-            mAdasController.init(mContext);
         }
     }
 
@@ -154,6 +158,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     public void enableAdas(boolean enabled) {
         if (enabled) {
+            mAdasController.init(mContext);
+            mAdasController.addListener(this);
             enableFunction(Function.ADAS);
         } else {
             disableFunction(Function.ADAS);
@@ -168,10 +174,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
             return;
         }
         mSetEnabledFunctions.add(function);
-        mMainThreadHandler.post(() -> {
-            Logg.v(TAG, "enableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
-            checkEnabledFunctions();
-        });
+        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
+        mMainThreadHandler.postDelayed(checkEnabledFunctions, 100);
     }
 
     private synchronized void disableFunction(Function function) {
@@ -180,10 +184,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
             return;
         }
         mSetEnabledFunctions.remove(function);
-        mMainThreadHandler.post(() -> {
-            Logg.v(TAG, "disableFunction: mSetEnabledFunctions = " + mSetEnabledFunctions);
-            checkEnabledFunctions();
-        });
+        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
+        mMainThreadHandler.postDelayed(checkEnabledFunctions, 100);
     }
 
     private synchronized void clearFunctionReady() {
@@ -219,40 +221,36 @@ public class DashCam implements DashCamControl, AdasStateListener {
     /**
      * Check the changes of functions to change the state of StateMachine
      */
-    private synchronized void checkEnabledFunctions() {
+    private Runnable checkEnabledFunctions = () -> {
         Logg.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
-        mMainThreadHandler.postDelayed(() -> {
-            synchronized (this) {
-                Logg.v(TAG, "checkEnabledFunctions: currentTimeMillis=" + System.currentTimeMillis());
-                Logg.v(TAG, "checkEnabledFunctions: mSetEnabledFunctions=" + mSetEnabledFunctions + ", mEnabledFunctions=" + mEnabledFunctions);
-                if (SetUtils.equals(mSetEnabledFunctions, mEnabledFunctions)) {
-                    return;
-                }
+        Logg.v(TAG, "checkEnabledFunctions: mSetEnabledFunctions=" + mSetEnabledFunctions + ", mEnabledFunctions=" + mEnabledFunctions);
+        if (SetUtils.equals(mSetEnabledFunctions, mEnabledFunctions)) {
+            return;
+        }
 
-                StateMachine.EEvent pendingEvent = null;
-                if (!mEnabledFunctions.contains(Function.RECORD) && mSetEnabledFunctions.contains(Function.RECORD)) {
-                    // No-RECORD --> RECORD
-                    pendingEvent = StateMachine.EEvent.OPEN;
-                    mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN, mSetEnabledFunctions.toString()));
-                } else if (mEnabledFunctions.contains(Function.RECORD) && !mSetEnabledFunctions.contains(Function.RECORD)) {
-                    // RECORD --> No-RECORD
-                    pendingEvent = StateMachine.EEvent.CLOSE;
-                    mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE, mSetEnabledFunctions.toString()));
-                } else if (mSetEnabledFunctions.contains(Function.RECORD) || mSetEnabledFunctions.contains(Function.ADAS)) {
-                    pendingEvent = StateMachine.EEvent.OPEN;
-                } else if (mSetEnabledFunctions.size() == 0) {
-                    pendingEvent = StateMachine.EEvent.CLOSE;
-                }
+        StateMachine.EEvent event = null;
+        String reason = null;
+        if (!mEnabledFunctions.contains(Function.RECORD) && mSetEnabledFunctions.contains(Function.RECORD)) {
+            event = StateMachine.EEvent.OPEN;
+            reason = "No-RECORD --> RECORD";
+        } else if (mEnabledFunctions.contains(Function.RECORD) && !mSetEnabledFunctions.contains(Function.RECORD)) {
+            event = StateMachine.EEvent.CLOSE;
+            reason = "RECORD --> No-RECORD";
+        } else if (mSetEnabledFunctions.contains(Function.RECORD) || mSetEnabledFunctions.contains(Function.ADAS)) {
+            event = StateMachine.EEvent.OPEN;
+            reason = "RECORD or ADAS is enabled: " + mSetEnabledFunctions;
+        } else if (mSetEnabledFunctions.size() == 0) {
+            event = StateMachine.EEvent.CLOSE;
+            reason = "RECORD and ADAS are both disabled";
+        }
 
-                if (pendingEvent != null) {
-                    mStateMachine.dispatchEvent(new StateMachine.Event(pendingEvent, mSetEnabledFunctions.toString()));
-                }
+        if (event != null) {
+            mStateMachine.dispatchEvent(new StateMachine.Event(event, reason));
+        }
 
-                mEnabledFunctions.clear();
-                mEnabledFunctions.addAll(mSetEnabledFunctions);
-            }
-        }, 100);
-    }
+        mEnabledFunctions.clear();
+        mEnabledFunctions.addAll(mSetEnabledFunctions);
+    };
 
     public void mute() {
         mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.MUTE, ""));
@@ -276,8 +274,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
     public void onCameraClosed() {
         Logg.v(TAG, "onCameraClosed");
         if (mSetEnabledFunctions.size() != 0) {
-            // Open again if any function is enabled
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN, mSetEnabledFunctions.toString()));
+            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN,
+                    "onCameraClosed, but mSetEnabledFunctions = " + mSetEnabledFunctions));
         }
     }
 
@@ -338,9 +336,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
             mRecorder.startRecording();
         }
 
-        if (mCamera2Controller != null) {
-            mCamera2Controller.startRecordingVideo();
-        }
+        mCamera2Controller.startRecordingVideo();
     }
 
     @Override
@@ -349,7 +345,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
         try {
             mCamera2Controller.stopRecordingVideo();
             mCamera2Controller.closeCamera();
-            mCamera2Controller = null;
 
             if (mRenderer != null) {
                 mRenderer.stop();
@@ -423,9 +418,16 @@ public class DashCam implements DashCamControl, AdasStateListener {
         @Override
         public void onCaptureStopped() {
             Logg.v(TAG, "onCaptureStopped");
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "onCaptureStopped"));
+            checkCloseSuccess();
         }
     };
+
+    private void checkCloseSuccess() {
+        if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
+                && !mRecording) {
+            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "checkCloseSuccess"));
+        }
+    }
 
     private void prepareRecorder() throws Exception {
         Logg.v(TAG, "prepareRecorder");

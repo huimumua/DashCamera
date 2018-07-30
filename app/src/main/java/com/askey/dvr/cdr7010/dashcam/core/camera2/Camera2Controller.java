@@ -33,6 +33,15 @@ public class Camera2Controller {
     private ImageReader mImageReader;
     private SurfaceTexture mSurfaceTexture;
 
+    public enum State {
+        STOPPED, CAPTURING
+    }
+
+    private State mState;
+    public State getState() {
+        return mState;
+    }
+
     private Context mContext;
     private CameraManager mCameraManager;
     private CameraDevice mCameraDevice;
@@ -51,6 +60,7 @@ public class Camera2Controller {
         mImageReader = null;
         mListener = listener;
         mListenerHandler = handler;
+        mState = State.STOPPED;
     }
 
     public void setImageReader(@NonNull ImageReader imageReader) {
@@ -148,6 +158,7 @@ public class Camera2Controller {
                 mCaptureSession.stopRepeating();
                 mCaptureSession.close();
                 mCaptureSession = null;
+                mState = State.STOPPED;
                 mListenerHandler.post(mListener::onCaptureStopped);
             }
             if (null != mCameraDevice) {
@@ -217,6 +228,7 @@ public class Camera2Controller {
             HandlerThread thread = new HandlerThread("CameraPreview");
             thread.start();
             mCaptureSession.setRepeatingRequest(mCaptureBuilder.build(), null, mBackgroundHandler);
+            mState = State.CAPTURING;
             mListenerHandler.post(mListener::onCaptureStarted);
         } catch (CameraAccessException e) {
             e.printStackTrace();
