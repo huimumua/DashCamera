@@ -19,6 +19,9 @@ import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
+import com.askey.platform.LogoSelect;
+
+import java.io.File;
 
 
 public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener, UpdateFragment.UpdateListener, VersionUpReceiver.PowerOnRelativeCallback {
@@ -60,6 +63,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         registerReceiver(receiver, filter);
         //end add
         VersionUpReceiver.registerPowerOnRelativeCallback(this);
+        setSystemLogo();
     }
 
     @Override
@@ -304,5 +308,20 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     private class UpdateInfos {
         public int updateType = -1;
         public int updateResultState = -1;
+    }
+    private void setSystemLogo(){
+
+        String logoImgPath = "/storage/self/primary/splash.img";
+        String logoImgPath1 = "/storage/self/primary/splash1.img";
+        File fileLogo = new File(logoImgPath);
+        File fileLogo1 = new File(logoImgPath1);
+
+        if (fileLogo.exists()){
+            LogoSelect.setLogo(1);
+            LogoSelect.writeLogoImage(1);
+        }if (fileLogo1.exists()){
+            LogoSelect.setLogo(2);
+            LogoSelect.writeLogoImage(2);
+        }
     }
 }
