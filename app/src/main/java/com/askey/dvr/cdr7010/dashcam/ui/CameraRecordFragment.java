@@ -41,6 +41,7 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
+import com.askey.dvr.cdr7010.dashcam.service.LcdManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
@@ -394,16 +395,15 @@ public class CameraRecordFragment extends Fragment {
 
         @Override
         public void closeLcdPanel() {
-            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
-                Logg.d(TAG, "ThermalController closeLcdPanel");
-            }
-
+            Logg.d(TAG, "ThermalController closeLcdPanel");
+            LcdManager.getInstance().setLcdLightFlagStatus(false);
+            LcdManager.getInstance().setLcdLightStatus(false);
         }
         @Override
         public void startLcdPanel() {
-            if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
-                Logg.d(TAG, "ThermalController startLcdPanel");
-            }
+            Logg.d(TAG, "ThermalController startLcdPanel");
+            LcdManager.getInstance().setLcdLightFlagStatus(true);
+            LcdManager.getInstance().setLcdLightStatus(true);
         }
     };
 
