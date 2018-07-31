@@ -12,7 +12,6 @@ import android.database.ContentObserver;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -30,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.core.DashCam;
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
@@ -45,6 +45,7 @@ import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
+import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -91,7 +92,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNMOUNTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardAndSimCardCheckStatus.CHECK_START;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE;
@@ -118,8 +118,8 @@ public class CameraRecordFragment extends Fragment {
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
     private static final String SDCARD_FULL_LIMIT_EXIT = "show_unreach_sdcard_full_limit";
     private static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
-    private static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT ="show_reach_picture_file_over_limit";
-    private static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT ="show_reach_event_file_over_limit";
+    private static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT = "show_reach_picture_file_over_limit";
+    private static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT = "show_reach_event_file_over_limit";
     private static final String CMD_SHOW_UNREACH_EVENT_FILE_LIMIT = "show_unreach_event_file_limit";//限制解除
     private static final String CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT = "show_unreach_picture_file_limit";//限制解除
 
@@ -171,11 +171,11 @@ public class CameraRecordFragment extends Fragment {
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
-                } else if(CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT.equals(ex)){
+                } else if (CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_REACH_PICTURE_FILE_OVER_LIMIT");
                     RecordHelper.setRecordingPrecondition(SDCARD_PICTURE_FILE_OVER_LIMIT);
                     stopVideoRecord("SDCARD_REACH_PICTURE_FILE_OVER_LIMIT");
-                } else if(CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(ex)){
+                } else if (CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_UNREACH_PICTURE_FILE_LIMIT");
                     try {
                         RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_PICTURE_LIMIT);
@@ -183,11 +183,11 @@ public class CameraRecordFragment extends Fragment {
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
-                } else if(CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT.equals(ex)){
+                } else if (CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_REACH_EVENT_FILE_OVER_LIMIT");
                     RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
                     stopVideoRecord("SDCARD_REACH_EVENT_FILE_OVER_LIMIT");
-                } else if(CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(ex)){
+                } else if (CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_UNREACH_EVENT_FILE_LIMIT.");
                     try {
                         RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
@@ -267,11 +267,11 @@ public class CameraRecordFragment extends Fragment {
                     RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
                     stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
                     //关机
-                    Logg.d(TAG, "SHUT DOWN...");
-                    Intent intentShutDown = new Intent();
-                    intentShutDown.setAction(AskeyIntent.ACTION_DVR_SHUTDOWN);
-                    getContext().sendBroadcast(intentShutDown);
+                    handler.sendEmptyMessageDelayed(1, 2000);
                 }
+            } else if (msg.what == 1) {
+                Logg.d(TAG, "SHUT DOWN...");
+                ActivityUtils.shutDown(DashCamApplication.getAppContext());
             }
             return true;
         }
@@ -370,7 +370,7 @@ public class CameraRecordFragment extends Fragment {
             if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
                 Logg.d(TAG, "ThermalController startRecording");
                 try {
-                    if(RecordHelper.isHighTemperature()) {
+                    if (RecordHelper.isHighTemperature()) {
                         RecordHelper.setRecordingPrecondition(LOW_TEMPERATURE);
                         startVideoRecord("cpu low temperature");
                     }
@@ -399,6 +399,7 @@ public class CameraRecordFragment extends Fragment {
             }
 
         }
+
         @Override
         public void startLcdPanel() {
             if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
@@ -694,7 +695,7 @@ public class CameraRecordFragment extends Fragment {
                     }
                 }
                 Logg.i(TAG, "SignalStrengthLevel: " + Integer.toString(strength) + ",lteStatusType=" + lteLevel);
-                if(lteLevel ==  GlobalLogic.getInstance().getLTEStatus()){
+                if (lteLevel == GlobalLogic.getInstance().getLTEStatus()) {
                     return;
                 }
                 GlobalLogic.getInstance().setLTEStatus(lteLevel);
@@ -735,19 +736,19 @@ public class CameraRecordFragment extends Fragment {
 
     private void startVideoRecord(String reason) throws Exception {
         int sdcardStatus = FileManager.getInstance(getContext()).checkSdcardAvailable();
-        Logg.d(TAG,"startVideoRecord sdcardStatus="+sdcardStatus);
+        Logg.d(TAG, "startVideoRecord sdcardStatus=" + sdcardStatus);
 
         if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
             RecordHelper.setRecordingPrecondition(SDCARD_UNAVAILABLE);
-            if(sdcardStatus == SDCARD_NOT_EXIST ){
-                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_REMOVED));
-            }else{
-                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_FAIL));
+            if (sdcardStatus == SDCARD_NOT_EXIST) {
+                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_REMOVED));
+            } else {
+                onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_FAIL));
             }
             throw new RuntimeException("sd card unavailable");
         } else {
             RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);
-            onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD,SDCARD_INIT_SUCCESS));
+            onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_SUCCESS));
         }
 
         if (mMainCam == null) {
