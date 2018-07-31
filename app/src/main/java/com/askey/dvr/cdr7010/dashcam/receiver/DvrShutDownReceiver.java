@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeyIntent;
 
@@ -26,6 +27,7 @@ public class DvrShutDownReceiver extends BroadcastReceiver {
         Logg.d(LOG_TAG, "onReceive: action=" + action);
         if(action.equals(AskeyIntent.ACTION_DVR_SHUTDOWN)){
             setShutDown(true);
+            DialogManager.getIntance().setPowerOff(true);
         }else {
 
         }

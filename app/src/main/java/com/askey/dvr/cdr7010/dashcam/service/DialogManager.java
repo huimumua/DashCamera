@@ -167,12 +167,16 @@ public class DialogManager{
         }
     }
     public void setPowerOff(boolean isPowerOff){
-        if(Event.contains(Event.highTemperatureLv3Event,lastEventType)&&lastDisplay){
+        if((Event.contains(Event.highTemperatureLv3Event,lastEventType)
+                || Event.contains(Event.equipmentFailureEvent,lastEventType))&&lastDisplay){
             dialogLogic.setPowerOff(isPowerOff);
             dialogLogic.refreshDialogDisplay(lastDialogType,lastEventType);
         }else{
             if(eventList != null && eventList.contains(Event.HIGH_TEMPERATURE_THRESHOLD_LV3)){
                 eventList.remove(Event.HIGH_TEMPERATURE_THRESHOLD_LV3);
+            }
+            if(eventList != null && eventList.contains(Event.EQUIPMENT_FAILURE)){
+                eventList.remove(Event.EQUIPMENT_FAILURE);
             }
         }
     }
