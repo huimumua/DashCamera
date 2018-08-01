@@ -14,8 +14,12 @@ import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper;
 import com.askey.dvr.cdr7010.dashcam.core.encoder.MediaVideoEncoder;
 import com.askey.dvr.cdr7010.dashcam.core.nmea.NmeaRecorder;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
+import com.askey.dvr.cdr7010.dashcam.util.AESCryptUtil;
+import com.askey.dvr.cdr7010.dashcam.util.FileUtils;
+import com.askey.dvr.cdr7010.dashcam.util.HashUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,6 +27,7 @@ import java.util.List;
 
 public class Recorder implements IFrameListener {
     private final static String TAG = "Recorder";
+    private static final String AES_KEY = "CaH5U?<5no_z3S,0Zx,8Ua<0Qo&5Ep/0";
 
     private Context mContext;
     private RecordConfig mConfig;
@@ -197,6 +202,7 @@ public class Recorder implements IFrameListener {
         public void segmentCompletedAsync(int event, final long eventTimeMs, final String path, final long startTimeMs, long durationMs) {
             Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " " + path);
             if (event != 0) {
+                saveHash(path, startTimeMs, true);
                 Snapshot.take3Pictures(path, mConfig.cameraId(), startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
                     if (pictures != null) {
                         for (String pic : pictures) {
@@ -207,6 +213,8 @@ public class Recorder implements IFrameListener {
                         mStateCallback.onEventCompleted(event, startTimeMs, pictures, path);
                     }
                 });
+            } else {
+                saveHash(path, startTimeMs, false);
             }
         }
 
@@ -222,6 +230,39 @@ public class Recorder implements IFrameListener {
             }
         }
     };
+
+    private void saveHash(String path, long time, boolean isEvent) {
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                String sha256 = HashUtil.getSHA256(new File(path));
+                Logg.d(TAG, "sha256==" + sha256);
+//        String des = (String) SPUtils.get(mContext, SPUtils.STR_ENCODE, "");
+//        Logg.d(TAG, "des==" + des);
+//        if (!TextUtils.isEmpty(des)) {
+                try {
+//            String aesKey = KeyStoreUtils.getInstance().decryptByPrivateKey(des);
+//            Logg.d(TAG, "aesKey==" + aesKey);
+                    String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
+                    Logg.d(TAG, "encrypt==" + encrypt);
+                    String desPath;
+                    if (isEvent) {
+                        desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
+                    } else {
+                        desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
+                    }
+                    Logg.d(TAG, "desPath==" + desPath);
+                    if (desPath != null) {
+                        FileUtils.writeFile(desPath, encrypt, false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+//        }
+            }
+        }.start();
+    }
 
     private MediaMuxerWrapper.StateCallback mMuxerStateCallback = new MediaMuxerWrapper.StateCallback() {
         @Override

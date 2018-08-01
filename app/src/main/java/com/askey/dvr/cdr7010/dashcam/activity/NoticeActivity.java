@@ -17,7 +17,9 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
+import com.askey.dvr.cdr7010.dashcam.util.KeyStoreUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 import com.askey.platform.LogoSelect;
 
@@ -37,13 +39,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Logg.d(TAG, "onReceive: " + action);
-            if(ACTION_EVENT_STARTUP.equals(action)){
+            if (ACTION_EVENT_STARTUP.equals(action)) {
                 int bootinfo = intent.getIntExtra("bootinfo", -1);
                 int updateInfo = intent.getIntExtra("updateInfo", -10);
                 String farmver = intent.getStringExtra("farmver");
                 String soundver = intent.getStringExtra("soundver");
-                Logg.i(TAG,"onReceive: STARTUP: bootinfo=" + bootinfo + ", updateInfo=" + updateInfo);
-                if(updateInfo == 0) {//None
+                Logg.i(TAG, "onReceive: STARTUP: bootinfo=" + bootinfo + ", updateInfo=" + updateInfo);
+                if (updateInfo == 0) {//None
                     onStartUp(bootinfo, updateInfo, farmver, soundver);
                 }
             }
@@ -54,6 +56,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notice);
+//        initEncryptKey();
         noticeFragment = NoticeFragment.newInstance(null);
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                 noticeFragment, R.id.contentFrame);
@@ -65,6 +68,18 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         VersionUpReceiver.registerPowerOnRelativeCallback(this);
         setSystemLogo();
     }
+
+//    public static final String AES_KEY = "CaH5U?<5no_z3S,0Zx,8Ua<0Qo&5Ep/0";
+
+//    private void initEncryptKey() {
+//        try {
+//            String encrypt = KeyStoreUtils.getInstance().encryptByPublicKey(AES_KEY);
+//            Logg.d(TAG, "encrypt==" + encrypt);
+//            SPUtils.put(this, SPUtils.STR_ENCODE, encrypt);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void onKeyShortPressed(int keyCode) {

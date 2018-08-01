@@ -8,7 +8,8 @@ import java.util.Map;
 
 public class SPUtils {
 
-    public static final String FILE_NAME = "dvr_share_data";
+    private static final String FILE_NAME = "dvr_share_data";
+    public static final String STR_ENCODE = "str_encode";
 
     /**
      * @param context

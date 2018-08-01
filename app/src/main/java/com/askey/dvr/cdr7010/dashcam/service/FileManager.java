@@ -127,4 +127,12 @@ public class FileManager {
     public String getFilePathForNmeaEvent(long timeStamp) throws RemoteException {
         return buildNmeaFilePath(timeStamp, "NMEA_EVENT", ".nmea");
     }
+
+    public String getFilePathForHashNormal(long timeStamp) throws RemoteException {
+        return buildNmeaFilePath(timeStamp, "HASH_NORMAL", ".hash");
+    }
+
+    public String getFilePathForHashEvent(long timeStamp) throws RemoteException {
+        return buildNmeaFilePath(timeStamp, "HASH_EVENT", ".hash");
+    }
 }
