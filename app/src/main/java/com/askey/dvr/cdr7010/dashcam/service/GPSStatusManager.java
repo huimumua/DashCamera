@@ -38,6 +38,7 @@ public class GPSStatusManager {
     private static GPSStatusManager mnLocationManager;
     private int mGpsUsedInFix;
     private ArrayList<GpsSvInfo> gpsStatusList;
+    private boolean mHaveGPSSignal =false;
 
     LocationListener[] mLocationListeners = new LocationListener[]{
             new LocationListener(android.location.LocationManager.GPS_PROVIDER)/*,
@@ -362,14 +363,16 @@ public class GPSStatusManager {
                 mLastLocationCash.set(mLastLocation);
             }
 
-            return (mValid && haveSatelUsedInFix) ? mLastLocation : null;
+            return (mValid && haveSatelUsedInFix && mHaveGPSSignal) ? mLastLocation : null;
         }
 
         public void setHaveSatelUsedInFix(boolean haveSatelUsedInFix) {
             this.haveSatelUsedInFix = haveSatelUsedInFix;
         }
-
     }
 
+    public void setHaveGpsSignal(boolean haveGpsSignal){
+        mHaveGPSSignal = haveGpsSignal;
+    }
 
 }

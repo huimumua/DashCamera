@@ -9,14 +9,16 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
+import android.os.Handler;
+import android.os.Message;
 
+import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.LocationUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GnssOSD extends BaseOSD {
     private static int WIDTH = 225;
@@ -29,10 +31,30 @@ public class GnssOSD extends BaseOSD {
     private Bitmap mBitmap;
     private final Canvas mCanvas;
     private final Paint mPaint;
-    private LocationManager mLocationManager;
     private double mLatitude;
     private double mLongitude;
     private StringBuilder mStringBuilder = new StringBuilder(10);
+    private TimerTask mTask;
+    private final Timer mTimer = new Timer();
+    private GnssRenderHandler gnssRenderHandler;
+
+    static class GnssRenderHandler extends Handler {
+        WeakReference<GnssOSD> weakParent;
+
+        GnssRenderHandler(GnssOSD parent) {
+            weakParent = new WeakReference<>(parent);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            GnssOSD gnss = weakParent.get();
+            if (gnss != null) {
+                gnss.setGpsLocation();
+                gnss.update();
+            }
+            super.handleMessage(msg);
+        }
+    }
 
     public GnssOSD(Context context) {
         mContext = context.getApplicationContext();
@@ -47,41 +69,20 @@ public class GnssOSD extends BaseOSD {
         mPaint.setTextAlign(Paint.Align.LEFT);
         mPaint.setColor(Color.WHITE);
         setPosition(new float[]{-0.98f, -1.0f, -0.1f, -1.0f, -0.98f, -0.8f, -0.1f, -0.8f});
-        initLocation();
+        init();
     }
 
-    private void initLocation() {
-        mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = mLocationManager.getProviders(true);
-        String locationProvider;
-        if (providers.contains(LocationManager.GPS_PROVIDER)) {
-            locationProvider = LocationManager.GPS_PROVIDER;
-        } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-            locationProvider = LocationManager.NETWORK_PROVIDER;
-        } else {
-            return;
-        }
-
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return;
-        }
-
-        Location location = mLocationManager.getLastKnownLocation(locationProvider);
-        if (location != null) {
-            mLatitude = location.getLatitude();
-            mLongitude = location.getLongitude();
-        }
-        update();
-
-        mLocationManager.requestLocationUpdates(locationProvider, 1000, 10, locationListener);
+    private void init() {
+        gnssRenderHandler = new GnssRenderHandler(this);
+        mTask = new TimerTask() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = 1;
+                gnssRenderHandler.sendMessage(message);
+            }
+        };
+        mTimer.schedule(mTask, 100, 500);
     }
 
     @Override
@@ -97,43 +98,20 @@ public class GnssOSD extends BaseOSD {
         mBitmap.eraseColor(Color.TRANSPARENT);
         mCanvas.drawText(mStringBuilder.toString(), 2, TEXT_HEIGHT - 3, mPaint);
     }
-
-    private LocationListener locationListener =  new LocationListener() {
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle arg2) {
-
+    private void setGpsLocation(){
+        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+        if (currentLocation != null) {
+            mLatitude = currentLocation.getLatitude();
+            mLongitude = currentLocation.getLongitude();
+        }else{
+            mLatitude = 0.0;
+            mLongitude = 0.0;
         }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            double diffLati = latitude - mLatitude;
-            double diffLongi = longitude - mLongitude;
-            boolean refresh = false;
-            if (diffLati < 0.001 || diffLati > -0.001) {
-                mLatitude = latitude;
-                refresh = true;
-            }
-            if (diffLongi < 0.001 || diffLongi > -0.001) {
-                mLongitude = longitude;
-                refresh = true;
-            }
-
-            if (refresh) {
-                update();
-            }
-        }
-    };
+    }
+    @Override
+    public void release() {
+        mTask.cancel();
+        mTimer.cancel();
+        super.release();
+    }
 }
