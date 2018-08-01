@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.askey.dvr.cdr7010.dashcam.R;
@@ -17,13 +19,16 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
-import com.askey.dvr.cdr7010.dashcam.util.KeyStoreUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
 import com.askey.platform.AskeySettings;
 import com.askey.platform.LogoSelect;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.InputStream;
 
 
 public class NoticeActivity extends DialogActivity implements NoticeFragment.NoticeListener, UpdateFragment.UpdateListener, VersionUpReceiver.PowerOnRelativeCallback {
@@ -324,19 +329,110 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         public int updateType = -1;
         public int updateResultState = -1;
     }
+
     private void setSystemLogo(){
 
-        String logoImgPath = "/storage/self/primary/splash.img";
-        String logoImgPath1 = "/storage/self/primary/splash1.img";
-        File fileLogo = new File(logoImgPath);
-        File fileLogo1 = new File(logoImgPath1);
+        String filePath = "/storage/self/primary/";
 
-        if (fileLogo.exists()){
-            LogoSelect.setLogo(1);
-            LogoSelect.writeLogoImage(1);
-        }if (fileLogo1.exists()){
-            LogoSelect.setLogo(2);
-            LogoSelect.writeLogoImage(2);
+        FileFilter fileFilter = null;
+        File fileLogo = new File(filePath);
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            matchFileAndSetLogo(fileLogo);
+        }
+//        writeSystemFile("/storage/8986-8FD7/EVENT/testabby.txt","/system/media/testabby.txt/");
+    }
+
+    private void matchFileAndSetLogo(File fileLogo) {
+        String logRegEx = ".AD_";
+        String log1RegEx = ".AD_REWRITE";
+        String imgRegEx= ".MD_";
+        String img1RegEx= ".MS_REWRITE";
+        File[] fileList = fileLogo.listFiles();
+        if (fileList!=null && fileList.length>0){
+            for (File file : fileList) {
+                if (file.getName().startsWith(log1RegEx)){
+                    LogoSelect.writeLogoImage(1);
+                } else if (file.getName().startsWith(logRegEx)) {
+                    LogoSelect.setLogo(1);
+                }
+                if (file.getName().startsWith(img1RegEx)) {
+                    LogoSelect.writeLogoImage(2);
+                } else if (file.getName().startsWith(imgRegEx)) {
+                    LogoSelect.setLogo(2);
+                }
+            }
         }
     }
+
+    class FileFilter implements FilenameFilter {
+        private String mRegEx;
+        public FileFilter(String regEx) {
+            this.mRegEx = regEx;
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().startsWith(mRegEx);
+        }
+
+    }
+
+    private void writeSystemFile(String oldPath, String newPath){
+        exusecmd("mount -o rw,remount /system");
+        exusecmd("chmod 777 /system/media");
+        try {
+            int bytesum = 0;
+            int byteread = 0;
+            File oldfile = new File(oldPath);
+            if (oldfile.exists()) { //文件存在时
+                InputStream inStream = new FileInputStream(oldPath);
+                FileOutputStream fs = new FileOutputStream(newPath);
+                byte[] buffer = new byte[1444];
+                int length;
+                while ( (byteread = inStream.read(buffer)) != -1) {
+                    bytesum += byteread; //字节数 文件大小
+                    System.out.println(bytesum);
+                    fs.write(buffer, 0, byteread);
+                }
+                inStream.close();
+                Log.d(TAG,"writeSystemFile   success~");
+            }
+        }
+        catch (Exception e) {
+            Log.d(TAG,"writeSystemFile  exception=="+e.getMessage());
+            e.printStackTrace();
+
+        }
+
+    }
+
+    public static boolean exusecmd(String command) {
+        Process process = null;
+        DataOutputStream os = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes(command + "\n");
+            os.writeBytes("exit\n");
+            os.flush();
+            Log.e("updateFile", "======000==writeSuccess======");
+            process.waitFor();
+        } catch (Exception e) {
+            Log.e("updateFile", "======111=writeError======" + e.toString());
+            return false;
+        } finally {
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                if (process != null) {
+                    process.destroy();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
+    }
+
 }
