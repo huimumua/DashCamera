@@ -389,6 +389,8 @@ public class MainActivity extends DialogActivity {
                     RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
                     RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                     handleSdCardEvent(context,SDCARD_INIT_SUCCESS,-1);
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                            EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 } else if (data.equals(CMD_SHOW_SDCARD_UNRECOGNIZABLE)) {
                     handleSdCardEvent(context,SDCARD_UNRECOGNIZABLE,113);
                 } else if(data.equals(CMD_SHOW_SDCARD_NOT_EXIST)){

@@ -96,6 +96,8 @@ public class SDcardHelper{
                 RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_PICTURE_LIMIT);
                 RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
                 RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD,
                         UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS));
