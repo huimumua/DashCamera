@@ -70,7 +70,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private AdasStateControl mStateControl;
 
     private enum State {
-        Uninitialized, Initialized
+        Uninitialized, Initialing, Initialized, Stopping
     }
 
     private State mState;
@@ -119,7 +119,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         if (mState != State.Uninitialized) {
             handleError("finish", "Unexpected mState = " + mState);
         }
-        mState = State.Initialized;
+
         if (ADAS_DISABLED) {
             Log.w(TAG, "init: not init because ADAS_DISABLED");
             return;
@@ -134,6 +134,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             throw new RuntimeException("VEHICLE_WIDTHS not defined well");
         }
 
+        mState = State.Initialing;
         FC_PARAMETER fp = new FC_PARAMETER();
         fp.PitchAngle = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PITCH_ANGLE);
         fp.YawhAngle = mGlobalSetting.getInt(AskeySettings.Global.ADAS_YAW_ANGLE);
@@ -162,6 +163,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         if (result != 0) {
             handleError("init", "initAdas() failed with return value = " + result);
         }
+
+        mHandler.postDelayed(() -> mState = State.Initialized, 300);
     }
     private int getVehiclePointDistance(int carType) {
         return VEHICLE_POINT_DISTANCES[carType];
@@ -253,7 +256,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
     }
 
-    public void finish() {
+    public synchronized void finish() {
         Log.v(TAG, "finish");
         if (ADAS_DISABLED) {
             return;
@@ -262,7 +265,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         if (mState != State.Initialized) {
             handleError("finish", "Unexpected mState = " + mState);
         }
-        mState = State.Uninitialized;
+        mState = State.Stopping;
 
         int result = mAdasImpl.finishAdas();
         if (result != Constant.ADAS_SUCCESS) {
@@ -282,7 +285,13 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Message msg = mHandler.obtainMessage(MSG_DID_ADAS_DETECT, 0, 0, captureTime);
         msg.sendToTarget();
     }
-    
+
+    @Override
+    public synchronized void didAdasFinish(int i) {
+        mState = State.Uninitialized;
+        Log.v(TAG, "didAdasFinish");
+    }
+
     private void didAdasDetect_internal(long captureTime) {
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "didAdasDetect_internal: captureTime = " + captureTime);
