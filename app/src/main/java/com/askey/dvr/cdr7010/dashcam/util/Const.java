@@ -8,6 +8,7 @@ public class Const {
     public static final String LCD_THERMAL_STATUS_PATH="/sys/class/graphics/fb0/askey_lcd_thermal_protection_state";
     public static final String STR_BUTTON_CONFIRM = "OK";
     public static final String STR_BUTTON_CANCEL = "X";
+    public static final String ACTIVITY_CLASSNAME ="com.askey.dvr.cdr7010.dashcam.ui.MainActivity";
 
     public static final String IS_START_RECORD = "is_start_record";
     public static final String EXTRA_INFO = "extra_info";

@@ -41,6 +41,7 @@ public abstract class DialogActivity extends AppCompatActivity {
     public static final int DIALOG_TYPE_UPDATE =6;
     private Dialog dialog = null;
     private int dialogType = 0;
+    private int eventType =-2;
     private AudioManager audioManager;
     private int maxVolume,currentVolume;
 
@@ -101,6 +102,7 @@ public abstract class DialogActivity extends AppCompatActivity {
     protected Dialog onCreateDialog(int id, Bundle args) {
         Logg.d(TAG, "onCreateDialog id=" + id);
         final int dialogMode = id;
+        eventType = args.getInt("EventType",-2);
         DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -167,6 +169,7 @@ public abstract class DialogActivity extends AppCompatActivity {
     protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
         super.onPrepareDialog(id, dialog, args);
         dialogType = id;
+        eventType = args.getInt("EventType",-2);
         this.dialog = dialog;
         if (id == DIALOG_TYPE_SDCARD) {
             CommDialog sdCardDialog = (CommDialog) dialog;
@@ -206,7 +209,12 @@ public abstract class DialogActivity extends AppCompatActivity {
             dialog.dismiss();
         }
     }
-
+    public int getEventType(){
+        return eventType;
+    }
+    public void resetEventType(){
+        eventType =-2;
+    }
     public int getDialogType() {
         return dialogType;
     }

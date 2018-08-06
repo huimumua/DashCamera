@@ -11,6 +11,7 @@ import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.GpsHelper;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.GPSStatusType.GPS_STRENGTH_FIXES;
@@ -30,32 +31,40 @@ public class GPSReceiver extends BroadcastReceiver{
         final int svCount = intent.getIntExtra(LocationManager.KEY_STATUS_CHANGED, 0);
         Logg.i(TAG, "onReceive: " + intent.getAction()+",enabled="+enabled+",svCount="+svCount);
         if (action.equals(GPS_FIX_CHANGE_ACTION) && enabled) {
+            GpsHelper.processGpsSignal(context,GpsHelper.GPS_SIGNAL_STRENGTH_GOOD,Event.GPS_LOCATION_INFORMATION);
+            gpsStatus = 4;
             // GPS is getting fixes
-            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_FIXES));
-            //add by Mark 20180518 for handout gps information
-            handoutLocationMessage();
-            GPSStatusManager.getInstance().setHaveGpsSignal(true);
+//            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_FIXES));
+//            //add by Mark 20180518 for handout gps information
+//            handoutLocationMessage();
+//            GPSStatusManager.getInstance().setHaveGpsSignal(true);
             //end add
         } else if (action.equals(GPS_ENABLED_CHANGE_ACTION) && !enabled) {
             // GPS is off
-            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NONE));
-            //add by Mark 20180518 for handout gps information error
-            handoutLocationMessageError();
-            GPSStatusManager.getInstance().setHaveGpsSignal(false);
-            //end add
+            GpsHelper.processGpsSignal(context,GpsHelper.GPS_SIGNAL_STRENGTH_NONE,Event.GPS_LOCATION_INFORMATION_ERROR);
+            gpsStatus = 0;
+//            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NONE));
+//            //add by Mark 20180518 for handout gps information error
+//            handoutLocationMessageError();
+//            GPSStatusManager.getInstance().setHaveGpsSignal(false);
+//            //end add
         } else {
             // GPS is on, but not receiving fixes
             if(svCount > 0) {
-                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NOT_FIXES));
-                //add by Mark 20180518 for handout gps information error
-                handoutLocationMessageError();
-                GPSStatusManager.getInstance().setHaveGpsSignal(false);
+                GpsHelper.processGpsSignal(context,GpsHelper.GPS_SIGNAL_STRENGTH_POOR,Event.GPS_LOCATION_INFORMATION_ERROR);
+                gpsStatus =1;
+//                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NOT_FIXES));
+//                //add by Mark 20180518 for handout gps information error
+//                handoutLocationMessageError();
+//                GPSStatusManager.getInstance().setHaveGpsSignal(false);
                 //end add
             } else {
-                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NONE));
-                //add by Mark 20180518 for handout gps information error
-                handoutLocationMessageError();
-                GPSStatusManager.getInstance().setHaveGpsSignal(false);
+                GpsHelper.processGpsSignal(context,GpsHelper.GPS_SIGNAL_STRENGTH_NONE,Event.GPS_LOCATION_INFORMATION_ERROR);
+                gpsStatus = 0;
+//                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NONE));
+//                //add by Mark 20180518 for handout gps information error
+//                handoutLocationMessageError();
+//                GPSStatusManager.getInstance().setHaveGpsSignal(false);
                 //end add
             }
         }

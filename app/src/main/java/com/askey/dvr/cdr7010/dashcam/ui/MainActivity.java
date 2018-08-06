@@ -34,6 +34,7 @@ import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.GpsHelper;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.RecordHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
@@ -137,6 +138,7 @@ public class MainActivity extends DialogActivity {
     protected void onResume() {
         super.onResume();
         SDcardHelper.checkSdcardState(this);
+        GpsHelper.checkGpsSignalStrength();
     }
     @Override
     protected  void onPause(){

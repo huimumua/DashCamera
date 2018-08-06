@@ -71,6 +71,7 @@ public class DialogLogic{
         if(mContext != null && (mContext instanceof Activity)){
             Bundle bundle = new Bundle();
             bundle.putString("Message", curMessage);
+            bundle.putInt("EventType", curEventType);
             ((DialogActivity) mContext).showDialog(curDialogType, bundle);
             if(((DialogActivity)mContext).isDialogShowing()){
                 if(dialogCallBack != null){

@@ -65,6 +65,7 @@ public class DialogManager{
         if(mContext != null && (mContext instanceof Activity)){
             Bundle bundle = new Bundle();
             bundle.putString("Message",message);
+            bundle.putInt("EventType",-1);
             if(resize){
                 bundle.putInt("Width",240);
                 bundle.putInt("Height",136);
@@ -102,7 +103,17 @@ public class DialogManager{
         if(mContext != null && (mContext instanceof Activity)){
             ((DialogActivity) mContext).dismissDialog();
             ((DialogActivity) mContext).resetDialogType();
+            ((DialogActivity) mContext).resetEventType();
         }
+    }
+    public boolean isDialogShowing(int eventType){
+        if(mContext != null && (mContext instanceof Activity)){
+            if(((DialogActivity) mContext).getEventType() == eventType
+                    && ((DialogActivity) mContext).isDialogShowing()){
+                return true;
+            }
+        }
+        return false;
     }
     public void setSdcardInvisible(boolean isInvisible){
         if(eventList != null && eventList.contains(Event.SDCARD_UNFORMATTED)){
