@@ -45,7 +45,11 @@ public class NmeaRecorder {
     private static LinkedHashMap<Integer, String> sensorNodePool = new LinkedHashMap<Integer, String>();
 
     private static String[] currentDatas = new String[5];
-    private static float[] currentGsensors = new float[3];
+    private static float[] currentGsensors = new float[3]; //TYPE_GYROSCOPE
+    private static float[] currentAsensors = new float[3]; //TYPE_ACCELEROMETER
+    private static float[] currentMsensors = new float[3]; //TYPE_MAGNETIC_FIELD
+    private static float[] currentPsensors = new float[3]; //TYPE_PRESSURE
+
 
     private RecorderState mState;
     private FileOutputStream mOutputStream;
@@ -188,7 +192,10 @@ public class NmeaRecorder {
 
     public static boolean deinit(Context context) {
         SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        sensorManager.unregisterListener(sensorEventListener);
+        sensorManager.unregisterListener(accEventListener);
+        sensorManager.unregisterListener(gEventListener);
+        sensorManager.unregisterListener(mEventListener);
+        sensorManager.unregisterListener(pEventListener);
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.removeUpdates(locationListener);
         locationManager.removeNmeaListener(nmeaListener);
@@ -329,11 +336,48 @@ public class NmeaRecorder {
         }
     };
 
-    private static SensorEventListener sensorEventListener = new SensorEventListener() {
+    private static SensorEventListener accEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            //Log.i(LOG_TAG, "value = " + "$GSENS," + showXYZ);
+            // Log.i(LOG_TAG, "event acc = " + event);
+            System.arraycopy(event.values, 0, currentAsensors, 0, currentAsensors.length);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
+    private static SensorEventListener gEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // Log.i(LOG_TAG, "event g x= " + event.values[0] + ",y = " + event.values[1] + ",z = " + event.values[2]);
             System.arraycopy(event.values, 0, currentGsensors, 0, currentGsensors.length);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
+    private static SensorEventListener mEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // Log.i(LOG_TAG, "event m x= " + event.values[0] + ",y = " + event.values[1] + ",z = " + event.values[2]);
+            System.arraycopy(event.values, 0, currentMsensors, 0, currentMsensors.length);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
+
+    private static SensorEventListener pEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // Log.i(LOG_TAG, "event m x= " + event.values[0] + ",y = " + event.values[1] + ",z = " + event.values[2]);
+            System.arraycopy(event.values, 0, currentPsensors, 0, currentPsensors.length);
         }
 
         @Override
@@ -344,7 +388,11 @@ public class NmeaRecorder {
 
     private static void initSensorManager(Context context) {
         SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(accEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(gEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(mEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(pEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), SensorManager.SENSOR_DELAY_UI);
+
     }
 
     private static Runnable sensorRunnable = new Runnable() {
@@ -354,11 +402,17 @@ public class NmeaRecorder {
                 int keyNumber = sensorNodePool.entrySet().iterator().next().getKey();
                 sensorNodePool.remove(keyNumber);
                 String sensorData;
-                if (currentGsensors[0] == 0.0 && currentGsensors[1] == 0.0 && currentGsensors[2] == 0.0) {
+                String gSensorData = String.format("$GSENSG,%.3f,%.3f,%.3f", currentGsensors[0], currentGsensors[1], currentGsensors[2]) + newLineSymbol;;
+                String mSensorData = String.format("$GSENSM,%.3f,%.3f,%.3f", currentMsensors[0], currentMsensors[1], currentMsensors[2]) + newLineSymbol;;
+                String pSensorData = String.format("$GSENSP,%.3f", currentPsensors[0]) + newLineSymbol;;
+
+                if (currentAsensors[0] == 0.0 && currentAsensors[1] == 0.0 && currentAsensors[2] == 0.0) {
                     sensorData = "$GSENS,999.999,999.999,999.999" + newLineSymbol;
                 } else {
-                    sensorData = String.format("$GSENS,%.3f,%.3f,%.3f", currentGsensors[0], currentGsensors[1], currentGsensors[2]) + newLineSymbol;
+                    sensorData = String.format("$GSENS,%.3f,%.3f,%.3f", currentAsensors[0], currentAsensors[1], currentAsensors[2])
+                            + newLineSymbol + gSensorData + mSensorData + pSensorData;
                 }
+
                 sensorNodePool.put(keyNumber, sensorData);
             }
         }
