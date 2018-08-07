@@ -10,10 +10,10 @@ import com.askey.dvr.cdr7010.dashcam.util.NMEAUtils;
 
 import net.sf.marineapi.nmea.util.Position;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,24 +54,41 @@ public class Snapshot {
         long pos = firstTime;
         final List<String> fileNames = new ArrayList<>(3);
         for (int i = 0; i < 3; i++) {
+            String image;
             try {
-                String image = fileManager.getFilePathForPicture(cameraId, pts);
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(image));
-                Bitmap bmp = retriever.getFrameAtTime(pos);
-                if (bmp != null) {
+                image = fileManager.getFilePathForPicture(cameraId, pts);
+            } catch (Exception e) {
+                pts += 3000;
+                pos += SEEK_STEP;
+                continue;
+            }
+
+            Bitmap bmp = retriever.getFrameAtTime(pos);
+            if (bmp != null) {
+                FileOutputStream bos = null;
+                try {
+                    bos = new FileOutputStream(image);
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                    bmp.recycle();
                     bos.flush();
-                    bos.close();
+                    bmp.recycle();
                     ExifHelper.build(image, pts);
                     fileNames.add(image);
-                }
-            } catch (Exception e) {
+                } catch (IOException e) {
 
+                } finally {
+                    if (bos != null) {
+                        try {
+                            bos.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
             }
+
             pts += 3000;
             pos += SEEK_STEP;
         }
+        retriever.release();
 
         String nmeaPath = videoFilePath.replace("EVENT", "SYSTEM/NMEA/EVENT").replace("mp4", "nmea");
         try {
