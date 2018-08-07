@@ -15,6 +15,7 @@ import android.view.KeyEvent;
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.activity.DialogActivity;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
@@ -67,6 +68,8 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardS
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_SUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNRECOGNIZABLE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_UNSUPPORTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.DISCONNECTED;
 
 
 public class MainActivity extends DialogActivity {
@@ -139,6 +142,8 @@ public class MainActivity extends DialogActivity {
         super.onResume();
         SDcardHelper.checkSdcardState(this);
         GpsHelper.checkGpsSignalStrength();
+        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SecondCameraStatusType>
+                (Event.EventCode.EVENT_SECOND_CAMERIA, CameraHelper.hasExtCamera() ? CONNECTED:DISCONNECTED));
     }
     @Override
     protected  void onPause(){

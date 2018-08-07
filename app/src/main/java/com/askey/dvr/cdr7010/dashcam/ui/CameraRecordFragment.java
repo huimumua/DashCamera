@@ -642,6 +642,8 @@ public class CameraRecordFragment extends Fragment {
             if (messageEvent.getData() == CHECK_START) {
                 checkSdcardAndSimcardStatus();
             }
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_SECOND_CAMERIA) {
+            GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType)messageEvent.getData());
         }
         osdView.invalidateView();
     }

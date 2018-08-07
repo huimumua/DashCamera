@@ -15,6 +15,7 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Parking
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
+import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.DISCONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
 
 public class GlobalLogic {
@@ -27,7 +28,7 @@ public class GlobalLogic {
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_NONE;
     private UIElementStatusEnum.EventRecordingLimitStatusType eventRecordingLimitStatus = EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION;
     private UIElementStatusEnum.ParkingRecordingLimitStatusType parkingRecordingLimitStatus = PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
-    private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = CONNECTED;
+    private UIElementStatusEnum.SecondCameraStatusType secondCameraStatus = DISCONNECTED;
     private UIElementStatusEnum.GPSStatusType gpsStatus = GPS_STRENGTH_NONE;
     private UIElementStatusEnum.SDcardStatusType sdCardStatus = SDCARD_REMOVED;
     private UIElementStatusEnum.FOTAFileStatus fotaFileStatus = FOTA_FILE_NOT_EXIST;
