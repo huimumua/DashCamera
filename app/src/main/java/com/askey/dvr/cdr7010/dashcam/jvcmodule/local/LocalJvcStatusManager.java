@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -40,10 +41,10 @@ public class LocalJvcStatusManager {
         if (isInsuranceTermArriving) {
             Logg.d(LOG_TAG, "getInsuranceTerm: start callback. ");
             EnumMap<JvcStatusParam, Object> localInsuranceTerm = getLocalInsuranceTerm();
-            if(localInsuranceTerm == null){ //report的oos不在圈内或者status不为success
+            if (localInsuranceTerm == null) { //report的oos不在圈内或者status不为success
                 if (callback != null) callback.onDataArriving(mReportMap);
                 return mReportMap;
-            }else {
+            } else {
                 if (callback != null) callback.onDataArriving(localInsuranceTerm);
                 return localInsuranceTerm;
             }
@@ -55,21 +56,21 @@ public class LocalJvcStatusManager {
         return null;
     }
 
-    public synchronized static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap){
+    public synchronized static void setInsuranceTerm(EnumMap<JvcStatusParam, Object> enumMap) {
         Logg.d(LOG_TAG, "setInsuranceTerm: ");
         mReportMap = enumMap;
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
-        if(enumMap != null){
+        if (enumMap != null) {
             isInsuranceTermArriving = true;
-            int oos = (int)enumMap.get(JvcStatusParam.OOS);
+            int oos = (int) enumMap.get(JvcStatusParam.OOS);
             //圏外の場合は取得できなかったことを通知するのでMainAPPで保持している設定値(前回値)を使用すること
-            if(oos == 0) { // 0:圈内
-                String response = (String)enumMap.get(JvcStatusParam.RESPONSE);
+            if (oos == 0) { // 0:圈内
+                String response = (String) enumMap.get(JvcStatusParam.RESPONSE);
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
-                    if(status == 0) { // 0:成功
+                    if (status == 0) { // 0:成功
                         String sdate = jsonObject.getString("sdate");
                         String edate = jsonObject.getString("edate");
                         String gdate = jsonObject.getString("gdate");
@@ -78,6 +79,16 @@ public class LocalJvcStatusManager {
                         Settings.Global.putString(contentResolver, AskeySettings.Global.CONTRACT_START, sdate);
                         Settings.Global.putString(contentResolver, AskeySettings.Global.CONTRACT_END, edate);
                         Settings.Global.putString(contentResolver, AskeySettings.Global.CONTRACT_GRACE_PERIOD, gdate);
+                        Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_STARTUP_INFO, flg);
+                        Calendar c = Calendar.getInstance();
+                        int year = c.get(Calendar.YEAR);
+                        int rtcInfo;
+                        if (year < 2018) {
+                            rtcInfo = 0;
+                        } else {
+                            rtcInfo = 1;
+                        }
+                        Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_RTCINFO, rtcInfo);
                         SPUtils.put(appContext, PREFER_KEY_CONTRACT_FLG, flg);
                     }
                 } catch (JSONException e) {
@@ -94,7 +105,7 @@ public class LocalJvcStatusManager {
                         callback.onDataArriving(enumMap);
 //                    mCallbacks.remove(callback); //返回后移除该callback
                     }
-                //圈外且本地有保存
+                    //圈外且本地有保存
                 } else if (oos == 1 && localInsuranceTerm != null) { // 1:圏外
                     Logg.d(LOG_TAG, "setInsuranceTerm: start callback local data, insuranceCallbacks=" + mInsuranceCallbacks.size());
                     for (LocalJvcStatusCallback callback : mInsuranceCallbacks) {
@@ -129,11 +140,11 @@ public class LocalJvcStatusManager {
                 jsonObject.put("gdate", gdate);
 //                @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
 //                Date sDate = simpleDateFormat.parse(sdate);
-                jsonObject.put("flg", (int)SPUtils.get(appContext, PREFER_KEY_CONTRACT_FLG, 2));
+                jsonObject.put("flg", (int) SPUtils.get(appContext, PREFER_KEY_CONTRACT_FLG, 2));
                 String response = jsonObject.toString();
                 Logg.d(LOG_TAG, "getLocalInsuranceTerm: response=" + response);
                 enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            }else {
+            } else {
                 Logg.d(LOG_TAG, "getLocalInsuranceTerm: CONTRACT_INFO=" + info);
             }
         } catch (Exception e) {
@@ -143,13 +154,12 @@ public class LocalJvcStatusManager {
         return enumMap;
     }
 
-    public static void removeInsuranceCallback(LocalJvcStatusCallback callback){
+    public static void removeInsuranceCallback(LocalJvcStatusCallback callback) {
         mInsuranceCallbacks.remove(callback);
     }
 
 
-
-    public interface LocalJvcStatusCallback{
+    public interface LocalJvcStatusCallback {
         void onDataArriving(EnumMap<JvcStatusParam, Object> enumMap);
     }
 
