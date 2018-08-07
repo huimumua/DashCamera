@@ -1,11 +1,13 @@
 package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -18,7 +20,7 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.SystemSettingManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.UserSettingManager;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
-import com.askey.dvr.cdr7010.dashcam.util.SPUtils;
+import com.askey.platform.AskeySettings;
 import com.jvckenwood.communication.IMainApp;
 import com.jvckenwood.communication.IMainAppCallback;
 
@@ -26,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -357,13 +358,16 @@ public class MainApp {
     }
     private static void sendStatUpNotify(){
         Log.d(LOG_TAG,"sendStatUpNotify~~~~!");
-        startUp = (int) SPUtils.get(mAppContext, PREFER_KEY_CONTRACT_FLG, 0);
-        Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        if (year<2018){
-            rtcInfo = 0;
-        }else {
-            rtcInfo = 1;
+        ContentResolver contentResolver = mAppContext.getContentResolver();
+        try {
+            rtcInfo = Settings.Global.getInt(contentResolver,AskeySettings.Global.SYSSET_RTCINFO);
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            startUp = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_STARTUP_INFO);
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
         }
         MainAppSending.startupNotify(startUp,rtcInfo);
     }
