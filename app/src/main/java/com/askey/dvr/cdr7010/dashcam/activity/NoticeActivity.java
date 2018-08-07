@@ -23,7 +23,6 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
 import com.askey.platform.LogoSelect;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -332,6 +331,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     private void setSystemLogo(){
 
+        Log.d(TAG,"setSystemLogo~~~~");
         String filePath = "/storage/self/primary/";
 
         FileFilter fileFilter = null;
@@ -339,7 +339,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             matchFileAndSetLogo(fileLogo);
         }
-//        writeSystemFile("/storage/8986-8FD7/EVENT/testabby.txt","/system/media/testabby.txt/");
+
     }
 
     private void matchFileAndSetLogo(File fileLogo) {
@@ -351,11 +351,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         if (fileList!=null && fileList.length>0){
             for (File file : fileList) {
                 if (file.getName().startsWith(log1RegEx)){
+                    writeSystemFile("/storage/self/primary/bootanimation1.zip","/persist/bootanimation.zip");
                     LogoSelect.writeLogoImage(1);
                 } else if (file.getName().startsWith(logRegEx)) {
                     LogoSelect.setLogo(1);
                 }
                 if (file.getName().startsWith(img1RegEx)) {
+                    writeSystemFile("/storage/self/primary/bootanimation2.zip","/persist/bootanimation.zip/");
                     LogoSelect.writeLogoImage(2);
                 } else if (file.getName().startsWith(imgRegEx)) {
                     LogoSelect.setLogo(2);
@@ -378,13 +380,11 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     }
 
     private void writeSystemFile(String oldPath, String newPath){
-        exusecmd("mount -o rw,remount /system");
-        exusecmd("chmod 777 /system/media");
         try {
             int bytesum = 0;
             int byteread = 0;
             File oldfile = new File(oldPath);
-            if (oldfile.exists()) { //文件存在时
+            if (oldfile.exists()) {
                 InputStream inStream = new FileInputStream(oldPath);
                 FileOutputStream fs = new FileOutputStream(newPath);
                 byte[] buffer = new byte[1444];
@@ -404,35 +404,6 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
         }
 
-    }
-
-    public static boolean exusecmd(String command) {
-        Process process = null;
-        DataOutputStream os = null;
-        try {
-            process = Runtime.getRuntime().exec("su");
-            os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes(command + "\n");
-            os.writeBytes("exit\n");
-            os.flush();
-            Log.e("updateFile", "======000==writeSuccess======");
-            process.waitFor();
-        } catch (Exception e) {
-            Log.e("updateFile", "======111=writeError======" + e.toString());
-            return false;
-        } finally {
-            try {
-                if (os != null) {
-                    os.close();
-                }
-                if (process != null) {
-                    process.destroy();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return true;
     }
 
 }
