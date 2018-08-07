@@ -61,13 +61,8 @@ public class Recorder implements IFrameListener {
     }
 
     public void prepare() throws IOException {
+        mMuxer = new MediaMuxerWrapper(mContext, mConfig, mSegmentCallback, mMuxerStateCallback);
 
-        try {
-            mMuxer = new MediaMuxerWrapper(mContext, mConfig, mSegmentCallback, mMuxerStateCallback);
-        } catch (IOException e) {
-            Logg.e(TAG, "Exception: " + e.getMessage());
-            throw new IOException("create muxer error.");
-        }
         mVideoEncoder = new MediaVideoEncoder(mMuxer,
                 mMediaEncoderListener,
                 mConfig.videoWidth(),
@@ -79,14 +74,10 @@ public class Recorder implements IFrameListener {
             mAudioEncoder = new MediaAudioEncoder(mMuxer, mConfig.audioMute(), mMediaEncoderListener);
         }
 
-        try {
-            mMuxer.prepare();
-            if (mConfig.nmeaRecordEnable()) {
-                mNmeaMap = new LinkedHashMap<>();
-                NmeaRecorder.init(mContext);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        mMuxer.prepare();
+        if (mConfig.nmeaRecordEnable()) {
+            mNmeaMap = new LinkedHashMap<>();
+            NmeaRecorder.init(mContext);
         }
     }
 

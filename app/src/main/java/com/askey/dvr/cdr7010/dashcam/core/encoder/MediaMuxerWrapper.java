@@ -107,10 +107,6 @@ public class MediaMuxerWrapper {
 
         registerReceiver();
 
-        if (!SDCardUtils.isSDCardEnable()) {
-            throw new IOException("SD Card unmounted");
-        }
-
         mEncoderCount = mStatredCount = 0;
         mIsStarted = false;
 
