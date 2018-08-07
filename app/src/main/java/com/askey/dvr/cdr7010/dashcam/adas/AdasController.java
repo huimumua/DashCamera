@@ -38,7 +38,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final boolean DEBUG = false;
     private static final int ADAS_IMAGE_WIDTH = 1280;
     private static final int ADAS_IMAGE_HEIGHT = 720;
-    protected static final int BUFFER_NUM = 12;
+    protected static final int BUFFER_NUM = 3;
 
     /* Properties for debug */
     private static boolean EXCEPTION_WHEN_ERROR;
@@ -216,9 +216,10 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
 
         mFcInput.VehicleSpeed = 70; // TODO: get real value
-        mFcInput.CaptureMilliSec = image.getTimestamp(); // TODO: confirm the parameter
-        mFcInput.CaptureTime = image.getTimestamp(); // TODO: confirm the parameter
-        ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureTime, image);
+        long timestamp = image.getTimestamp() / 1000000; // nano to ms
+        mFcInput.CaptureTime = timestamp / 1000;
+        mFcInput.CaptureMilliSec = timestamp % 1000;
+        ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureMilliSec, image);
 
         if (Detection.isRunningDetection()) {
             if (DEBUG_FPS) {
@@ -292,14 +293,14 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "didAdasFinish");
     }
 
-    private void didAdasDetect_internal(long captureTime) {
+    private void didAdasDetect_internal(long captureTimeMs) {
         if (DEBUG_IMAGE_PROCESS) {
-            Log.v(TAG, "didAdasDetect_internal: captureTime = " + captureTime);
+            Log.v(TAG, "didAdasDetect_internal: captureTimeMs = " + captureTimeMs);
         }
 
         ImageRecord imageRecord = mProcessingImages.remove();
-        if (imageRecord.getTimestamp() != captureTime) {
-            throw new RuntimeException("callback captureTime=" + captureTime + ", but oldest record timestamp=" + imageRecord.getTimestamp());
+        if (imageRecord.getTimestamp() != captureTimeMs) {
+            throw new RuntimeException("callback captureTimeMs=" + captureTimeMs + ", but oldest record timestamp=" + imageRecord.getTimestamp());
         }
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "didAdasDetect_internal: close image = " + imageRecord);
