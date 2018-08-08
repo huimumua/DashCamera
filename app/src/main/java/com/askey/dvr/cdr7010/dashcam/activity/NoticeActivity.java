@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -396,6 +397,16 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
                 }
                 inStream.close();
                 Log.d(TAG,"writeSystemFile   success~");
+                try {
+                    String command = "chmod 777 " +newPath;
+                    Log.i(TAG, "command = " + command);
+                    Runtime runtime = Runtime.getRuntime();
+
+                    Process proc = runtime.exec(command);
+                } catch (IOException e) {
+                    Log.i(TAG,"chmod fail!!!!");
+                    e.printStackTrace();
+                }
             }
         }
         catch (Exception e) {
