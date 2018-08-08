@@ -502,7 +502,7 @@ public class CameraRecordFragment extends Fragment {
                     .videoHeight(720)
                     .videoFPS(15)
                     .videoBitRate(5 * 1024 * 1024) // 5Mbps
-                    .videoStampEnable(false)
+                    .videoStampEnable(stamp)
                     .audioRecordEnable(false)
                     .audioMute(true)
                     .adasEnable(false)
