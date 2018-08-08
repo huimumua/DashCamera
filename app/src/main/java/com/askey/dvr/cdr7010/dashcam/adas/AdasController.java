@@ -337,11 +337,11 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
 
     public float getXscale() {
-        return 6; // TODO: calculate the scale according to the ADAS image size & LCD resolution
+        return (float)ADAS_IMAGE_WIDTH / 320; // TODO: literal number = display width
     }
 
     public float getYscale() {
-        return 4.5f; // TODO: calculate the scale according to the ADAS image size & LCD resolution
+        return (float)ADAS_IMAGE_HEIGHT / 240; // TODO: literal number = display height
     }
 
     public void addListener(AdasStateListener listener) {
