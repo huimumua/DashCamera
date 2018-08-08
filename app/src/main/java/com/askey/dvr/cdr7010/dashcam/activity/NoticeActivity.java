@@ -351,13 +351,13 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         if (fileList!=null && fileList.length>0){
             for (File file : fileList) {
                 if (file.getName().startsWith(log1RegEx)){
-                    writeSystemFile("/storage/self/primary/bootanimation1.zip","/persist/bootanimation.zip");
+                    writeSystemFile("/storage/self/primary/bootanimation1.zip","/persist/media/bootanimation1.zip");
                     LogoSelect.writeLogoImage(1);
                 } else if (file.getName().startsWith(logRegEx)) {
                     LogoSelect.setLogo(1);
                 }
                 if (file.getName().startsWith(img1RegEx)) {
-                    writeSystemFile("/storage/self/primary/bootanimation2.zip","/persist/bootanimation.zip/");
+                    writeSystemFile("/storage/self/primary/bootanimation2.zip","/persist/media/bootanimation2.zip");
                     LogoSelect.writeLogoImage(2);
                 } else if (file.getName().startsWith(imgRegEx)) {
                     LogoSelect.setLogo(2);
