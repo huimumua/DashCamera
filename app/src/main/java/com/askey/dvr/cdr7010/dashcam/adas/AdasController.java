@@ -72,6 +72,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private boolean mEnabled = true; // TODO: false default
     private AdasStateControl mStateControl;
     private float mFakeSpeed = 0;
+    private float mLocationSpeed = 0;
 
     private enum State {
         Uninitialized, Initialing, Initialized, Stopping
@@ -268,10 +269,10 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             return mFakeSpeed;
         }
         Location location = GPSStatusManager.getInstance().getCurrentLocation();
-        if (location == null) {
-            return 0;
+        if (location != null) {
+            mLocationSpeed = location.getSpeed();
         }
-        return location.getSpeed();
+        return mLocationSpeed;
     }
 
     public synchronized void finish() {
