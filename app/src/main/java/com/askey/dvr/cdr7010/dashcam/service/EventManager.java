@@ -8,6 +8,7 @@ import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.DrivingSupportAlertSettingOnOffCheck;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.parser.sax.GetEventInfoSAXParser;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -160,6 +161,10 @@ public class EventManager {
                 Logg.d(LOG_TAG, "handOutEventInfo: start switch user, eventType=" + eventType);
                 return;
             }
+        }
+        if(!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)){
+            Logg.d(LOG_TAG, "checkDrivingSupportAlertSettingOnOff, eventType=" + eventType+" off");
+            return;
         }
         handOutEventInfo(eventInfo, timeStamp);
     }

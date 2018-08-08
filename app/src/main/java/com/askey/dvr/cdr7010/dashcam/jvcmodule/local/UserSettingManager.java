@@ -128,7 +128,7 @@ public class UserSettingManager {
             case 03:
             case 04:
             case 05:
-                String suffix = "_USER"+num;
+                String suffix = "_user"+num;
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID+suffix, userListInfo.userid);
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME+suffix, userListInfo.user_name);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.ADAS_FCWS+suffix, userListInfo.warn_coll);

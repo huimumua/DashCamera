@@ -7,6 +7,7 @@ import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.DrivingSupportAlertSettingOnOffCheck;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
@@ -69,6 +70,10 @@ public class JvcEventReceiver extends BroadcastReceiver{
             if(eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()){
                 return false;
             }
+        }
+        if(!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)){
+            Logg.d(LOG_TAG, "checkEventInfo checkDrivingSupportAlertSettingOnOff, eventType=" + eventType+" off");
+            return false;
         }
         return true;
     }

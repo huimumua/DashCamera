@@ -17,10 +17,10 @@ import com.askey.platform.AskeySettings;
  * @version:1.0
  * @see
  ***/
-public class EventTyeTtsOnOffCheck {
-    private static final String LOG_TAG = "EventTyeTtsOnOffCheck";
+public class DrivingSupportAlertSettingOnOffCheck {
+    private static final String LOG_TAG = "DrivingSupportAlertSettingOnOffCheck";
 
-    public static boolean checkTtsOnOff(int eventType) {
+    public static boolean checkDrivingSupportAlertSettingOnOff(int eventType) {
         int result = 1;
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
@@ -78,6 +78,8 @@ public class EventTyeTtsOnOffCheck {
             }else if (eventType == Event.GPS_LOCATION_INFORMATION ||
                     eventType == Event.GPS_LOCATION_INFORMATION_ERROR) {
                 result = Settings.Global.getInt(contentResolver, AskeySettings.Global.NOTIFY_LOCATION_INFO);
+            } else if(eventType == Event.EMERGENCY_CALL_BUTTON){
+                result = Settings.Global.getInt(contentResolver, AskeySettings.Global.COMM_EMERGENCY_AUTO);
             }
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
