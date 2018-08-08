@@ -41,7 +41,7 @@ public class AskySettingManager {
     private AskySettingManager(Context context) {
         mContext = context.getApplicationContext();
         Intent bindIntent = new Intent();
-        bindIntent.setAction("com.askey.filemanagerservice.action");
+        bindIntent.setAction("com.askey.askeysettingservice.action");
         bindIntent.setPackage("com.askey.dvr.cdr7010.filemanagement");
         context.bindService(bindIntent, mConn, Context.BIND_AUTO_CREATE);
     }

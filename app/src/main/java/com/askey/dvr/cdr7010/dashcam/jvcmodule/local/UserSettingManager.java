@@ -63,16 +63,15 @@ public class UserSettingManager {
                             EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE));
                             //保存五組用戶數據信息
                             setUserInfoLists(userListInfo);
-                            //回调通知到usersetting设置相应用户信息
-                            if (userInfoCallback!=null){
-                                userInfoCallback.notifyUserInfo(true, seletedUserId);
-                            }
-                            if (countDownLatch!=null){
-                                countDownLatch.countDown();
-                                Log.d(LOG_TAG,"abby countDown~~01~!");
-                            }
                         }
-
+                    }
+                    //回调通知到usersetting设置相应用户信息
+                    if (userInfoCallback!=null){
+                        userInfoCallback.notifyUserInfo(true, seletedUserId);
+                    }
+                    if (countDownLatch!=null){
+                        countDownLatch.countDown();
+                        Log.d(LOG_TAG,"abby countDown~~01~!");
                     }
                 }
             }
@@ -120,6 +119,7 @@ public class UserSettingManager {
         if (userListInfo == null) {
             return;
         }
+        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START));
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
         switch (num){
@@ -167,7 +167,6 @@ public class UserSettingManager {
                     countDownLatch.countDown();
                     Log.d(LOG_TAG,"abby countDown~~02~!");
                 }
-                Log.d(LOG_TAG,"setUserSettings==AskeySettings.Global.SYSSET_USER_ID+suffix="+AskeySettings.Global.SYSSET_USER_ID+suffix+"///userListInfo.userid=="+userListInfo.userid);
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
                 break;
         }
