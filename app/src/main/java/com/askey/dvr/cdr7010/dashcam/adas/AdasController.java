@@ -2,6 +2,7 @@ package com.askey.dvr.cdr7010.dashcam.adas;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.location.Location;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
+import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.TimesPerSecondCounter;
 import com.askey.platform.AskeySettings;
 import com.jvckenwood.adas.detection.Detection;
@@ -53,6 +55,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
     private static final String PROP_EXCEPTION = "persist.dvr.adas.exception";
     private static final String PROP_DEBUG_PROCESS = "persist.dvr.adas.dbg_proc";
+    private static final String PROP_FAKE_SPEED = "persist.dvr.adas.speed";
 
     private static AdasController sInstance;
 
@@ -68,6 +71,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private ImageReader mImageReader;
     private boolean mEnabled = true; // TODO: false default
     private AdasStateControl mStateControl;
+    private float mFakeSpeed = 0;
 
     private enum State {
         Uninitialized, Initialing, Initialized, Stopping
@@ -101,6 +105,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
         DEBUG_IMAGE_PROCESS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_PROCESS, false);
         Log.v(TAG, "AdasController: DEBUG_IMAGE_PROCESS = " + DEBUG_IMAGE_PROCESS);
+        mFakeSpeed = SystemPropertiesProxy.getInt(PROP_FAKE_SPEED, 700); // TODO: default 0 to get real speed by default
+        Log.v(TAG, "AdasController: mFakeSpeed = " + mFakeSpeed);
     }
 
     public static AdasController getsInstance() {
@@ -215,7 +221,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             Log.v(TAG, "process_internal: image = " + image);
         }
 
-        mFcInput.VehicleSpeed = 70; // TODO: get real value
+        mFcInput.VehicleSpeed = (int) (getSpeed() * 10);
         long timestamp = image.getTimestamp() / 1000000; // nano to ms
         mFcInput.CaptureTime = timestamp / 1000;
         mFcInput.CaptureMilliSec = timestamp % 1000;
@@ -251,10 +257,21 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             mProcessingImages.add(imageRecord);
             if (DEBUG_IMAGE_PROCESS) {
                 Log.v(TAG, "process_internal: new image queued: " + mProcessingImages.size()
-                        + ", " + imageRecord);
+                        + ", " + imageRecord + ", speed = " + mFcInput.VehicleSpeed);
             }
 
         }
+    }
+
+    private float getSpeed() {
+        if (mFakeSpeed != 0) {
+            return mFakeSpeed;
+        }
+        Location location = GPSStatusManager.getInstance().getCurrentLocation();
+        if (location == null) {
+            return 0;
+        }
+        return location.getSpeed();
     }
 
     public synchronized void finish() {
