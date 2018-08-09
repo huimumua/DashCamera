@@ -62,9 +62,10 @@ public class CommunicationReceiver extends BroadcastReceiver {
             String response = intent.getStringExtra("response");
             speakWeather(response);
         } else if (action.equals(ACTION_TRIPID_LOG_UPLOAD_RESPONSE)) {
-            int logupload = intent.getIntExtra("logupload", -1);
-
-            new JvcLogUploadTask().execute();
+            int logupload = intent.getIntExtra("logupload", -1); // 0:通知なし、1:通知あり
+            if(logupload == 1) {
+                new JvcLogUploadTask().execute();
+            }
         }
 
     }
