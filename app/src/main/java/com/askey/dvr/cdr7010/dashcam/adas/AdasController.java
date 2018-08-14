@@ -11,10 +11,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.TimesPerSecondCounter;
-import com.askey.platform.AskeySettings;
 import com.jvckenwood.adas.detection.Detection;
 import com.jvckenwood.adas.detection.FC_INPUT;
 import com.jvckenwood.adas.util.Constant;
@@ -25,22 +23,19 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
 
 public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static final String TAG = AdasController.class.getSimpleName();
-    private static final int CAR_TYPE_NUM = 7;
-    private static final int[] INSTALLATION_HEIGHTS = new int[] {120, 135, 120, 135, 120, 135, 200};
-    private static final int[] VEHICLE_WIDTHS = new int[] {148, 148, 170, 170, 180, 190, 200};
-    private static final int[] VEHICLE_POINT_DISTANCES = new int[] {130, 90, 180, 190, 180, 190, 50};
+
     private static final boolean DEBUG = false;
-    private static final int ADAS_IMAGE_WIDTH = 1280;
-    private static final int ADAS_IMAGE_HEIGHT = 720;
-    protected static final int BUFFER_NUM = 3;
+    static final int ADAS_IMAGE_WIDTH = 1280;
+    static final int ADAS_IMAGE_HEIGHT = 720;
+    static final int BUFFER_NUM = 3;
 
     /* Properties for debug */
     private static boolean EXCEPTION_WHEN_ERROR;
@@ -60,7 +55,6 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private static AdasController sInstance;
 
     private Util mAdasImpl;
-    private GlobalLogic mGlobalSetting;
     private final TimesPerSecondCounter mTpsc;
     private final TimesPerSecondCounter mTpscDidAdas;
     private final TimesPerSecondCounter mTpscFrameDrop;
@@ -86,7 +80,6 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
         mState = State.Uninitialized;
         mAdasImpl = Util.getInstance();
-        mGlobalSetting = GlobalLogic.getInstance();
         mTpsc = new TimesPerSecondCounter(TAG);
         mTpscDidAdas = new TimesPerSecondCounter(TAG + "_didAdas");
         mTpscFrameDrop = new TimesPerSecondCounter(TAG + "_frameDrop");
@@ -131,40 +124,11 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             Log.w(TAG, "init: not init because ADAS_DISABLED");
             return;
         }
-        if (INSTALLATION_HEIGHTS.length != CAR_TYPE_NUM) {
-            throw new RuntimeException("INSTALLATION_HEIGHTS not defined well");
-        }
-        if (VEHICLE_POINT_DISTANCES.length != CAR_TYPE_NUM) {
-            throw new RuntimeException("VEHICLE_POINT_DISTANCES not defined well");
-        }
-        if (VEHICLE_WIDTHS.length != CAR_TYPE_NUM) {
-            throw new RuntimeException("VEHICLE_WIDTHS not defined well");
-        }
+
 
         mState = State.Initialing;
-        FC_PARAMETER fp = new FC_PARAMETER();
-        fp.PitchAngle = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PITCH_ANGLE);
-        fp.YawhAngle = mGlobalSetting.getInt(AskeySettings.Global.ADAS_YAW_ANGLE);
-        fp.HorizonY = (int) (mGlobalSetting.getInt(AskeySettings.Global.ADAS_SKYLINE_RANGE) * getYscale());
-        fp.BonnetY = (int) (mGlobalSetting.getInt(AskeySettings.Global.ADAS_BONNETY) * getYscale());
-        fp.CenterX = (int) (mGlobalSetting.getInt(AskeySettings.Global.ADAS_CENTERX) * getXscale());
-        int carType = mGlobalSetting.getInt(AskeySettings.Global.CAR_TYPE);
-        fp.InstallationHeight = getInstallationHeight(carType);
-        fp.CenterDiff = mGlobalSetting.getInt(AskeySettings.Global.ADAS_MOUNT_POSITION);
-        fp.VehicleWidth = getVehicleWidth(carType);
-        fp.VehiclePointDistance = getVehiclePointDistance(carType);
-        fp.SelectIP = getSelectIP();
-        fp.CarCollisionSpeed = mGlobalSetting.getInt(AskeySettings.Global.ADAS_CAR_COLLISION_SPEED);
-        fp.CarCollisionTime = mGlobalSetting.getInt(AskeySettings.Global.ADAS_CAR_COLLISION_TIME);
-        fp.LaneDepartureSpeed = mGlobalSetting.getInt(AskeySettings.Global.ADAS_LANE_DEPARTURE_SPEED);
-        fp.LaneDepartureRange = mGlobalSetting.getInt(AskeySettings.Global.ADAS_LANE_DEPARTURE_RANGE);
-        fp.LaneDepartureTime = mGlobalSetting.getInt(AskeySettings.Global.ADAS_LANE_DEPARTURE_TIME);
-        fp.DepartureDelay = mGlobalSetting.getInt(AskeySettings.Global.ADAS_DELAY_START_DISTANCE);
-        fp.DepartureRange = mGlobalSetting.getInt(AskeySettings.Global.ADAS_DELAY_START_RANGE);
-        fp.PedCollisionSpeed = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PED_COLLISION_TIME);
-        fp.PedCollisionWidth = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PED_COLLISION_WIDTH);
-        fp.PedCollisionLowSpeed = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PED_COLLISION_SPEED_LOW);
-        fp.PedCollisionHighSpeed = mGlobalSetting.getInt(AskeySettings.Global.ADAS_PED_COLLISION_SPEED_HIGH);
+        FC_PARAMETER fp = FcGetter.getFCParam();
+
         Log.v(TAG, "initAdas: FC_PARAMETER = " + fp);
         int result = mAdasImpl.initAdas(fp, context, this);
         if (result != 0) {
@@ -172,38 +136,6 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
 
         mHandler.postDelayed(() -> mState = State.Initialized, 300);
-    }
-    private int getVehiclePointDistance(int carType) {
-        return VEHICLE_POINT_DISTANCES[carType];
-    }
-
-    private int getVehicleWidth(int carType) {
-        return VEHICLE_WIDTHS[carType];
-    }
-
-    private int getInstallationHeight(int carType) {
-        return INSTALLATION_HEIGHTS[carType];
-    }
-
-    private int getSelectIP() {
-        int result = 0;
-        boolean bFCWS = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_FCWS));
-        boolean bLDS = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_LDS));
-        boolean bDelayStart = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_DELAY_START));
-        boolean bPedColl = (1 == mGlobalSetting.getInt(AskeySettings.Global.ADAS_PEDESTRIAN_COLLISION));
-        if (bFCWS) {
-            result |= 0x01;
-        }
-        if (bLDS) {
-            result |= 0x02;
-        }
-        if (bDelayStart) {
-            result |= 0x04;
-        }
-        if (bPedColl) {
-            result |= 0x08;
-        }
-        return result;
     }
 
     private void process(Image image) {
@@ -227,6 +159,12 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         mFcInput.CaptureTime = timestamp / 1000;
         mFcInput.CaptureMilliSec = timestamp % 1000;
         ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureMilliSec, image);
+
+        if (mState != State.Initialized) {
+            Log.v(TAG, "process_internal: not Initialized = " + image);
+            imageRecord.recycle();
+            return;
+        }
 
         if (Detection.isRunningDetection()) {
             if (DEBUG_FPS) {
@@ -334,14 +272,6 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             sb.append(ir + ", ");
         }
         return sb.toString();
-    }
-
-    public float getXscale() {
-        return (float)ADAS_IMAGE_WIDTH / 320; // TODO: literal number = display width
-    }
-
-    public float getYscale() {
-        return (float)ADAS_IMAGE_HEIGHT / 240; // TODO: literal number = display height
     }
 
     public void addListener(AdasStateListener listener) {
