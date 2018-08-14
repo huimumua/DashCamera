@@ -121,6 +121,7 @@ public class CameraRecordFragment extends Fragment {
     private static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
     private static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT = "show_reach_picture_file_over_limit";
     private static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT = "show_reach_event_file_over_limit";
+    public static  final String CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT ="show_both_event_and_picture_file_over_limit";//超过限制
     private static final String CMD_SHOW_UNREACH_EVENT_FILE_LIMIT = "show_unreach_event_file_limit";//限制解除
     private static final String CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT = "show_unreach_picture_file_limit";//限制解除
 
@@ -150,6 +151,7 @@ public class CameraRecordFragment extends Fragment {
                 if ("show_sdcard_init_success".equals(ex)) {
                     Logg.d(TAG, "SD Card available");
                     try {
+                        LedMananger.getInstance().setLedRecStatus(true, false, 0);
                         RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);
                         startVideoRecord("SD become available");
                     } catch (Exception e) {
@@ -167,6 +169,7 @@ public class CameraRecordFragment extends Fragment {
                 } else if (SDCARD_FULL_LIMIT_EXIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_FULL_LIMIT_EXIT");
                     try {
+                        LedMananger.getInstance().setLedRecStatus(true, false, 0);
                         RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
                         startVideoRecord("SDCARD_FULL_LIMIT_EXIT");
                     } catch (Exception e) {
@@ -179,6 +182,7 @@ public class CameraRecordFragment extends Fragment {
                 } else if (CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_UNREACH_PICTURE_FILE_LIMIT");
                     try {
+                        LedMananger.getInstance().setLedRecStatus(true, false, 0);
                         RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_PICTURE_LIMIT);
                         startVideoRecord("SDCARD_UNREACH_PICTURE_FILE_LIMIT");
                     } catch (Exception e) {
@@ -191,11 +195,17 @@ public class CameraRecordFragment extends Fragment {
                 } else if (CMD_SHOW_UNREACH_EVENT_FILE_LIMIT.equals(ex)) {
                     Logg.d(TAG, "SDCARD_UNREACH_EVENT_FILE_LIMIT.");
                     try {
+                        LedMananger.getInstance().setLedRecStatus(true, false, 0);
                         RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
                         startVideoRecord("SDCARD_UNREACH_EVENT_FILE_LIMIT");
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
+                } else if(CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT.equals(ex)){
+                    Logg.d(TAG, "CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT");
+                    RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
+                    RecordHelper.setRecordingPrecondition(SDCARD_PICTURE_FILE_OVER_LIMIT);
+                    stopVideoRecord("CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT");
                 }
             }
         }
@@ -369,9 +379,9 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void startRecording() {
             if (AppUtils.isActivityTop(getActivity(), ACTIVITY_CLASSNAME)) {
-                Logg.d(TAG, "ThermalController startRecording");
                 try {
                     if (RecordHelper.isHighTemperature()) {
+                        Logg.d(TAG, "ThermalController startRecording");
                         RecordHelper.setRecordingPrecondition(LOW_TEMPERATURE);
                         startVideoRecord("cpu low temperature");
                     }

@@ -30,6 +30,7 @@ import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCAR
 import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCARD_NOT_SUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCARD_PICTURE_FILE_REACH_LIMIT;
+import static com.askey.dvr.cdr7010.dashcam.util.SDcardHelper.SDcardStatus.SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_LIMIT;
 
 public class SDcardHelper{
     private static final String TAG = SDcardHelper.class.getSimpleName();
@@ -47,11 +48,14 @@ public class SDcardHelper{
         public static final int SDCARD_PICTURE_FILE_OVER_LIMIT = 9;
         public static final int SDCARD_FULL_LIMIT =10;
         public static final int SDCARD_ASKEY_NOT_SUPPORTED =11;
+        public static final int SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_LIMIT = 12;
+        public static final int SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_OVER_LIMIT =13;
     }
     public static boolean isSDCardAvailable(int sdcardStatus){
         if(sdcardStatus == SDCARD_INIT_SUCCESS
                 || sdcardStatus == SDCARD_EVENT_FILE_REACH_LIMIT
-                || sdcardStatus == SDCARD_PICTURE_FILE_REACH_LIMIT){
+                || sdcardStatus == SDCARD_PICTURE_FILE_REACH_LIMIT
+                || sdcardStatus == SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_LIMIT){
             return true;
         }
         return false;
@@ -79,9 +83,13 @@ public class SDcardHelper{
         switch (sdcardStatus) {
             case SDcardStatus.SDCARD_NOT_SUPPORTED:
                 EventManager.getInstance().handOutEventInfo(111);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDcardStatus.SDCARD_UNRECOGNIZABLE:
                 EventManager.getInstance().handOutEventInfo(113);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDcardStatus.SDCARD_NOT_EXIST:
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
@@ -92,7 +100,7 @@ public class SDcardHelper{
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_MOUNTED));
                 break;
             case SDcardStatus.SDCARD_INIT_SUCCESS:
-                LedMananger.getInstance().setLedRecStatus(true, false, 0);
+//              LedMananger.getInstance().setLedRecStatus(true, false, 0);
                 RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_PICTURE_LIMIT);
                 RecordHelper.setRecordingPrecondition(SDCARD_UNREACH_EVENT_FILE_LIMIT);
                 RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT_EXIT);
@@ -104,9 +112,13 @@ public class SDcardHelper{
                 break;
             case SDcardStatus.SDCARD_ASKEY_NOT_SUPPORTED:
                 EventManager.getInstance().handOutEventInfo(112);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDcardStatus.SDCARD_INIT_FAIL:
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_FAIL));
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDCARD_EVENT_FILE_REACH_LIMIT:
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
@@ -116,17 +128,38 @@ public class SDcardHelper{
             case SDcardStatus.SDCARD_EVENT_FILE_OVER_LIMIT:
                 RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
                 EventManager.getInstance().handOutEventInfo(115);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDCARD_PICTURE_FILE_REACH_LIMIT:
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_EVENT_PICTURE_LIMIT));
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDcardStatus.SDCARD_PICTURE_FILE_OVER_LIMIT:
                 RecordHelper.setRecordingPrecondition(SDCARD_PICTURE_FILE_OVER_LIMIT);
                 EventManager.getInstance().handOutEventInfo(129);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             case SDcardStatus.SDCARD_FULL_LIMIT:
                 RecordHelper.setRecordingPrecondition(SDCARD_RECORDING_FULL_LIMIT);
                 EventManager.getInstance().handOutEventInfo(116);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
+                break;
+            case SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_LIMIT:
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SDcardStatusType>(Event.EventCode.EVENT_SDCARD, SDCARD_EVENT_PICTURE_LIMIT));
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(
+                        Event.EventCode.EVENT_RECORDING_FILE_LIMIT,EVENT_RECORDING_REACH_LIMIT_CONDITION));
+                break;
+            case SDcardStatus.SDCARD_REACH_BOTH_EVENT_AND_PICTURE_FILE_OVER_LIMIT:
+                RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
+                RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
+                EventManager.getInstance().handOutEventInfo(115);
+                EventManager.getInstance().handOutEventInfo(129);
+                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.EventRecordingLimitStatusType>(Event.EventCode.EVENT_RECORDING_FILE_LIMIT,
+                        EVENT_RECORDING_UNREACHABLE_LIMIT_CONDITION));
                 break;
             default:
         }
