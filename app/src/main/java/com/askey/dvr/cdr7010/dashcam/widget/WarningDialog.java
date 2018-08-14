@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 
 public class WarningDialog extends Dialog {
     private ImageView waringImg;
@@ -79,6 +80,29 @@ public class WarningDialog extends Dialog {
         this.msg = msg;
         if(messageText != null){
             messageText.setText(msg);
+        }
+    }
+    public void setImageResourceByEventType(int eventType){
+        if(waringImg != null) {
+            switch (eventType) {
+                case Event.ABRUPT_HANDLE:
+                    waringImg.setImageResource(R.drawable.dialog_handle);
+                    break;
+                case Event.RAPID_ACCELERATION:
+                    waringImg.setImageResource(R.drawable.dialog_speedup);
+                    break;
+                case Event.RAPID_DECELERATION:
+                    waringImg.setImageResource(R.drawable.dialog_speeddown);
+                    break;
+                case Event.REVERSE_RUN:
+                    waringImg.setImageResource(R.drawable.dialog_reverse);
+                    break;
+                case Event.DRIVING_OUTSIDE_THE_DESIGNATED_AREA:
+                    waringImg.setImageResource(R.drawable.dialog_outside);
+                    break;
+                default:
+                    waringImg.setImageResource(R.drawable.dialog_warning_img);
+            }
         }
     }
 

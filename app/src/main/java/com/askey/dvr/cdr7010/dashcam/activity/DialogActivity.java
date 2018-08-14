@@ -120,6 +120,7 @@ public abstract class DialogActivity extends AppCompatActivity {
             case DIALOG_TYPE_WARNING:
                 dialog = new WarningDialog(this, R.style.dialogNoTitle);
                 ((WarningDialog) dialog).setMessage(args.getString("Message"));
+                ((WarningDialog) dialog).setImageResourceByEventType(args.getInt("EventType"));
                 break;
             case DIALOG_TYPE_COMM_TEXT:
                 dialog = new CommDialog(this, R.style.dialogNoTitle);
@@ -173,6 +174,7 @@ public abstract class DialogActivity extends AppCompatActivity {
         if(id == DIALOG_TYPE_WARNING){
             WarningDialog warningDialog = (WarningDialog)dialog;
             warningDialog.setMessage(args.getString("Message"));
+            ((WarningDialog) dialog).setImageResourceByEventType(args.getInt("EventType"));
         }
         if(id == DIALOG_TYPE_COMM_TEXT){
             CommDialog sdCardDialog = (CommDialog) dialog;
