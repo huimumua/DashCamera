@@ -57,8 +57,8 @@ public class MainApp {
         mAppContext = DashCamApplication.getAppContext();
     }
 
-    public static MainApp getInstance(){
-        if(mMainApp == null)
+    public static MainApp getInstance() {
+        if (mMainApp == null)
             mMainApp = new MainApp();
         countDownLatch = new CountDownLatch(3);
         new Thread(new Runnable() {
@@ -70,7 +70,7 @@ public class MainApp {
                     e.printStackTrace();
                 }
                 sendStatUpNotify();
-                Log.d(LOG_TAG,"countDownLatch.await()~！");
+                Log.d(LOG_TAG, "countDownLatch.await()~！");
             }
         }).start();
 
@@ -96,13 +96,12 @@ public class MainApp {
         @Override
         public void reportInsuranceTerm(int oos, String response) {
             Logg.d(LOG_TAG, "reportInsuranceTerm: oos=" + oos + ", response=" + response);
-            if (oos!=0){
+            EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
+            enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
+            enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
+            LocalJvcStatusManager.setInsuranceTerm(enumMap);
+            if (oos != 0) {
                 sendStatUpNotify();
-            }else {
-                EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
-                enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
-                enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-                LocalJvcStatusManager.setInsuranceTerm(enumMap);
             }
         }
 
@@ -113,7 +112,7 @@ public class MainApp {
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            UserSettingManager.getUserList(enumMap,countDownLatch);
+            UserSettingManager.getUserList(enumMap, countDownLatch);
         }
 
         @Override
@@ -122,7 +121,7 @@ public class MainApp {
             EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
             enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-            SystemSettingManager.systemSetting(enumMap,countDownLatch);
+            SystemSettingManager.systemSetting(enumMap, countDownLatch);
         }
 
         @Override
@@ -131,11 +130,11 @@ public class MainApp {
             UserSettingManager.setUserListCallBack(new UserSettingManager.UserInfoCallback() {
                 @Override
                 public void notifyUserInfo(boolean isOk, int num) {
-                    if (isOk){
+                    if (isOk) {
                         EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
                         enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
                         enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-                        UserSettingManager.userSettings(enumMap,countDownLatch,num);
+                        UserSettingManager.userSettings(enumMap, countDownLatch, num);
                     }
                 }
             });
@@ -159,12 +158,12 @@ public class MainApp {
             int eventType = 101;
             JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
             info.setOos(oos);
-            if(oos == 0){
+            if (oos == 0) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
-                    if(status == 0){
+                    if (status == 0) {
                         int result = jsonObject.getInt("result");
                         info.setResult(result);
                     }
@@ -182,12 +181,12 @@ public class MainApp {
             int eventType = 102;
             JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
             info.setOos(oos);
-            if(oos == 0){
+            if (oos == 0) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
-                    if(status == 0){
+                    if (status == 0) {
                         int result = jsonObject.getInt("result");
                         info.setResult(result);
                     }
@@ -205,12 +204,12 @@ public class MainApp {
             int eventType = 100;
             JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
             info.setOos(oos);
-            if(oos == 0){
+            if (oos == 0) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
-                    if(status == 0){
+                    if (status == 0) {
                         int type = jsonObject.getInt("type");
                         info.setType(type);
                     }
@@ -228,12 +227,12 @@ public class MainApp {
             int eventType = 103;
             JvcEventHandoutInfo info = new JvcEventHandoutInfo(eventType);
             info.setOos(oos);
-            if(oos == 0){
+            if (oos == 0) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
-                    if(status == 0){
+                    if (status == 0) {
                         int code = jsonObject.getInt("code");
                         info.setCode(code);
                     }
@@ -255,7 +254,7 @@ public class MainApp {
         @Override
         public void reportTxManualProgress(int progress1, int total1, int progress2, int total2) {
             Logg.d(LOG_TAG, "reportTxManualProgress: progress1=" + progress1 + ", total1=" + total1 + ", progress2=" + progress2 + ", total2=" + total2);
-            ManualUploadService.reportTxManualProgress(progress1 ,total1, progress2, total2);
+            ManualUploadService.reportTxManualProgress(progress1, total1, progress2, total2);
         }
 
         @Override
@@ -287,9 +286,9 @@ public class MainApp {
      * ********************** API ****************************
      * **********************************************
      */
-    public void registerCallback(IMainAppCallback callback){
+    public void registerCallback(IMainAppCallback callback) {
         Logg.d(LOG_TAG, "registerCallback: ");
-        if(!checkConnection())
+        if (!checkConnection())
             return;
 
         try {
@@ -299,9 +298,9 @@ public class MainApp {
         }
     }
 
-    public void unregisterCallback(IMainAppCallback callback){
+    public void unregisterCallback(IMainAppCallback callback) {
         Logg.d(LOG_TAG, "unregisterCallback: ");
-        if(!checkConnection())
+        if (!checkConnection())
             return;
 
         try {
@@ -311,9 +310,9 @@ public class MainApp {
         }
     }
 
-    public void settingsUpdateRequest(String setings){
+    public void settingsUpdateRequest(String setings) {
         Logg.d(LOG_TAG, "settingsUpdateRequest: setings=" + setings);
-        if(!checkConnection())
+        if (!checkConnection())
             return;
 
         try {
@@ -323,9 +322,9 @@ public class MainApp {
         }
     }
 
-    public void manualUploadCancel(){
+    public void manualUploadCancel() {
         Logg.d(LOG_TAG, "manualUploadCancel: ");
-        if(!checkConnection())
+        if (!checkConnection())
             return;
 
         try {
@@ -335,9 +334,9 @@ public class MainApp {
         }
     }
 
-    public void logUpload(String zipPath){
+    public void logUpload(String zipPath) {
         Logg.d(LOG_TAG, "logUpload: zipPath=" + zipPath);
-        if(!checkConnection())
+        if (!checkConnection())
             return;
 
         try {
@@ -348,19 +347,20 @@ public class MainApp {
     }
 
 
-    private boolean checkConnection(){
-        if(mMainAppInterface == null){
+    private boolean checkConnection() {
+        if (mMainAppInterface == null) {
             Logg.e(LOG_TAG, "checkConnection: service not connected.");
             return false;
         }
 
         return true;
     }
-    private static void sendStatUpNotify(){
-        Log.d(LOG_TAG,"sendStatUpNotify~~~~!");
+
+    private static void sendStatUpNotify() {
+        Log.d(LOG_TAG, "sendStatUpNotify~~~~!");
         ContentResolver contentResolver = mAppContext.getContentResolver();
         try {
-            rtcInfo = Settings.Global.getInt(contentResolver,AskeySettings.Global.SYSSET_RTCINFO);
+            rtcInfo = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_RTCINFO);
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         }
@@ -369,6 +369,6 @@ public class MainApp {
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         }
-        MainAppSending.startupNotify(startUp,rtcInfo);
+        MainAppSending.startupNotify(startUp, rtcInfo);
     }
 }

@@ -28,13 +28,15 @@ public class ActivityUtils {
         transaction.add(frameId, fragment);
         transaction.commitAllowingStateLoss();
     }
-    public static void hideFragment(@NonNull FragmentManager fragmentManager,@NonNull Fragment fragment){
+
+    public static void hideFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         if (fragment != null) {
             transaction.hide(fragment);
         }
     }
-    public static void displayFragmentToActivtity(@NonNull FragmentManager fragmentManager,@NonNull Fragment fragment){
+
+    public static void displayFragmentToActivtity(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         if (fragment != null) {
             transaction.show(fragment);
@@ -42,10 +44,14 @@ public class ActivityUtils {
     }
 
     public static void startActivity(Context context, String packageName, String className, boolean isFinish) {
-        startActivity(context, packageName, className, null, isFinish);
+        startActivity(context, packageName, className, null, -1, isFinish);
     }
 
-    public static void startActivity(Context context, String packageName, String className, Bundle extraInfo, boolean isFinish) {
+    public static void startActivity(Context context, String packageName, String className, int flags, boolean isFinish) {
+        startActivity(context, packageName, className, null, flags, isFinish);
+    }
+
+    public static void startActivity(Context context, String packageName, String className, Bundle extraInfo, int flags, boolean isFinish) {
         if (TextUtils.isEmpty(packageName) || TextUtils.isEmpty(className) || context == null) {
             return;
         }
@@ -55,6 +61,9 @@ public class ActivityUtils {
             intent.setComponent(componetName);
             if (extraInfo != null) {
                 intent.putExtra(Const.EXTRA_INFO, extraInfo);
+            }
+            if (flags > 0) {
+                intent.setFlags(flags);
             }
             context.startActivity(intent);
             if (isFinish && (context instanceof Activity)) {

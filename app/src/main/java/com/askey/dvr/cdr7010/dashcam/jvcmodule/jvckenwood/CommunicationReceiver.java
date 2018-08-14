@@ -28,14 +28,14 @@ public class CommunicationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
-        if (action.equals(ACTION_VOIP_CALL)) {
+        if (ACTION_VOIP_CALL.equals(action)) {
             /*
              * 1:事故発生画面表示指示
              * 2:VoIP指示
              */
             int order = intent.getIntExtra("order", -1);
-            EcallUtils.startVoipActivity(order);
-        } else if (action.equals(ACTION_VOIP_INFORMATION_RESULT)) {
+            EcallUtils.startVoipActivity(context, order);
+        } else if (ACTION_VOIP_INFORMATION_RESULT.equals(action)) {
             int requestID = intent.getIntExtra("requestID", -1);
             int status = intent.getIntExtra("status", -1);
             long impactId = intent.getLongExtra("impactId", -1);
@@ -53,21 +53,20 @@ public class CommunicationReceiver extends BroadcastReceiver {
 
             EcallService.onVoipInformationResult(requestID, status, impactId, policyNo, policyBranchNo, authUserName, displayName,
                     outboundProxy, password, port, protocol, isSendKeepAlive, profileName, isAutoRegistration);
-        } else if (action.equals(ACTION_MANUAL_UPLOAD_COMPLETE)) {
+        } else if (ACTION_MANUAL_UPLOAD_COMPLETE.equals(action)) {
             int result = intent.getIntExtra("result", -2);
             String response = intent.getStringExtra("response");
             ManualUploadService.manualUploadComplete(result, response);
-        } else if (action.equals(ACTION_WEATHER_ALERT_RESPONSE)) {
+        } else if (ACTION_WEATHER_ALERT_RESPONSE.equals(action)) {
             // 将气象预警获取结果通知给主APP
             String response = intent.getStringExtra("response");
             speakWeather(response);
-        } else if (action.equals(ACTION_TRIPID_LOG_UPLOAD_RESPONSE)) {
+        } else if (ACTION_TRIPID_LOG_UPLOAD_RESPONSE.equals(action)) {
             int logupload = intent.getIntExtra("logupload", -1); // 0:通知なし、1:通知あり
-            if(logupload == 1) {
+            if (logupload == 1) {
                 new JvcLogUploadTask().execute();
             }
         }
-
     }
 
     private boolean checkEventInfo(EventInfo eventInfo, int eventType) {
@@ -101,5 +100,4 @@ public class CommunicationReceiver extends BroadcastReceiver {
             Logg.e(LOG_TAG, "speakWeather: " + e.getMessage());
         }
     }
-
 }

@@ -14,7 +14,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.ParkingRecordingLimitStatusType.PARKING_RECORDING_UNREACHABLE_LIMIT_CONDITION;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingStatusType.RECORDING_UNKNOWN;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_REMOVED;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.CONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SecondCameraStatusType.DISCONNECTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SimCardStatus.SIM_STATE_ABSENT;
 
@@ -23,6 +22,7 @@ public class GlobalLogic {
     private boolean isInRecording;
     private String userInfo;
     private volatile boolean isStartSwitchUser = false;
+    private boolean isAllowECall = true;
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_NONE;
@@ -194,4 +194,11 @@ public class GlobalLogic {
         return isStartSwitchUser;
     }
 
+    public boolean isNotAllowECall() {
+        return !isAllowECall;
+    }
+
+    public void setAllowECall(boolean allowECall) {
+        isAllowECall = allowECall;
+    }
 }
