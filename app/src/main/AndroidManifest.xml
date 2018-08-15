@@ -47,7 +47,9 @@
         <activity android:name="com.askey.dvr.cdr7010.dashcam.ui.MainActivity"
             android:screenOrientation="landscape"
             android:configChanges="keyboardHidden|orientation|screenSize|mcc|mnc"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask"
+            >
         </activity>
 
         <service
