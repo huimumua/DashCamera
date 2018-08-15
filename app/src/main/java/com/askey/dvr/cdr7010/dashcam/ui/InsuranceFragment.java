@@ -129,7 +129,7 @@ public class InsuranceFragment extends Fragment {
     }
 
     private void intContractDay() {
-        startRecordFragment(true);
+        getActivity().runOnUiThread(() -> startRecordFragment(true));
     }
 
     private void startRecordFragment(boolean recordEvent) {
@@ -139,7 +139,7 @@ public class InsuranceFragment extends Fragment {
         }
     }
 
-    private CountDownTimer timeFinishShow = new CountDownTimer(6000, 1000) {
+    private CountDownTimer timeFinishShow = new CountDownTimer(60000, 1000) {
 
         @Override
         public void onTick(long millisUntilFinished) {
@@ -152,7 +152,7 @@ public class InsuranceFragment extends Fragment {
         }
     };
 
-    private CountDownTimer timeFinishApp = new CountDownTimer(6000, 1000) {
+    private CountDownTimer timeFinishApp = new CountDownTimer(60000, 1000) {
 
         @Override
         public void onTick(long millisUntilFinished) {
