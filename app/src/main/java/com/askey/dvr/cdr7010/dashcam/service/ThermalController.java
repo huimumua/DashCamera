@@ -27,9 +27,10 @@ public class ThermalController{
     private static final String CPU_THERMAL_ZONE_PATH ="/sys/class/thermal/thermal_zone1/temp";
     private static final String LCD_POWER_STATUS_PATH ="/sys/class/graphics/fb0/askey_lcd_power_on_state";
     private static final String LCD_THERMAL_STATUS_PATH="/sys/class/graphics/fb0/askey_lcd_thermal_protection_state";
+    private static final int CPU_POWER_OFF_HIGH_TEMP_THRESHOLD = 100;
     private static final int CPU_HIGH_TEMP_THRESHOLD = 85;
     private static final int CPU_HIGH_TEMP_CRITICAL_POINT = 70;
-    private static final int LCD_HIGH_TEMP_THRESHOLD = 70;
+    private static final int LCD_HIGH_TEMP_THRESHOLD = 69;
     private static final int LCD_NORMAL_TEMP_THRESHOLD = 60;
     private static final int LCD_HIGH_TEMP_NOTIFY = 71;
     private HandlerThread mThermalMonitorThread;
@@ -37,6 +38,7 @@ public class ThermalController{
     private ThermalListener thermalListener;
     private boolean isCloseLcd;
     private boolean isFirstStart;
+    private int last_temp;
     public interface ThermalListener{
         void startRecording();
         void closeRecording();
@@ -69,45 +71,60 @@ public class ThermalController{
     }
 
     private  class ThermalMonitorRunnable implements Runnable {
-       @Override
-       public void run(){
-           int cpu_temp = getSensorTemp(CPU_THERMAL_ZONE_PATH);
-           int lcd_temp = getSensorTemp(LCD_THERMAL_ZONE_PATH) ;
-           Logg.d(TAG,"lcd_temp="+lcd_temp+",cpu_temp="+cpu_temp);
-           if(thermalListener != null){
-               if(cpu_temp > CPU_HIGH_TEMP_THRESHOLD){
-                   EventUtil.sendEvent(Integer.valueOf(CPU_HIGH_TEMP_THRESHOLD));
-               }else if(0 < cpu_temp &&  cpu_temp <= CPU_HIGH_TEMP_CRITICAL_POINT){
-                   EventUtil.sendEvent(Integer.valueOf(CPU_HIGH_TEMP_CRITICAL_POINT));
-               }
-               if(lcd_temp > LCD_HIGH_TEMP_THRESHOLD){
-                   if(!isCloseLcd()) {
-                       EventUtil.sendEvent(Integer.valueOf(LCD_HIGH_TEMP_NOTIFY));
-                   }
-               }
-               if(lcd_temp < LCD_NORMAL_TEMP_THRESHOLD){
-                   if(isCloseLcd()){
-                       EventUtil.sendEvent(Integer.valueOf(LCD_NORMAL_TEMP_THRESHOLD));
-                   }
-               }
-           }
-           mThermalMonitorHandler.postDelayed(this,1*60*1000);
-       }
+        @Override
+        public void run(){
+            int cpu_temp = getSensorTemp(CPU_THERMAL_ZONE_PATH);
+            int lcd_temp = getSensorTemp(LCD_THERMAL_ZONE_PATH) ;
+            if(last_temp != cpu_temp ){
+                Logg.d(TAG,"lcd_temp="+lcd_temp+",cpu_temp="+cpu_temp);
+                last_temp = cpu_temp;
+            }
+            if(thermalListener != null){
+                if(cpu_temp >= CPU_POWER_OFF_HIGH_TEMP_THRESHOLD){
+                    EventUtil.sendEvent(Integer.valueOf(CPU_POWER_OFF_HIGH_TEMP_THRESHOLD));
+                } else if((cpu_temp >= CPU_HIGH_TEMP_THRESHOLD) && (cpu_temp < CPU_POWER_OFF_HIGH_TEMP_THRESHOLD) ){
+                    EventUtil.sendEvent(Integer.valueOf(CPU_HIGH_TEMP_THRESHOLD));
+                }else if(0 < cpu_temp &&  cpu_temp <= CPU_HIGH_TEMP_CRITICAL_POINT){
+                    EventUtil.sendEvent(Integer.valueOf(CPU_HIGH_TEMP_CRITICAL_POINT));
+                }
+                if(lcd_temp >= LCD_HIGH_TEMP_THRESHOLD){
+                    if(!isCloseLcd()) {
+                        EventUtil.sendEvent(Integer.valueOf(LCD_HIGH_TEMP_NOTIFY));
+                    }
+                }
+                if(lcd_temp < LCD_NORMAL_TEMP_THRESHOLD){
+                    if(isCloseLcd()){
+                        EventUtil.sendEvent(Integer.valueOf(LCD_NORMAL_TEMP_THRESHOLD));
+                    }
+                }
+            }
+            mThermalMonitorHandler.postDelayed(this,1*5*1000);
+        }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onHandleHighTempEvent(Integer eventType){
-        Logg.d(TAG,"lcd_temp eventType="+eventType);
         if(eventType.intValue() == Event.HIGH_TEMPERATURE_THRESHOLD_LV1){
             if(thermalListener != null){
                 Logg.d(TAG,"lcd_temp closeLcdPanel");
                 thermalListener.closeLcdPanel();
             }
-        } else if(eventType.intValue() == CPU_HIGH_TEMP_THRESHOLD){
+        } else if(eventType.intValue() == CPU_POWER_OFF_HIGH_TEMP_THRESHOLD){
+            if(DialogManager.getIntance().isDialogShowing(Event.HIGH_TEMPERATURE_THRESHOLD_LV3)){
+                return;
+            }
+            EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV3);
+        }else if(eventType.intValue() == CPU_HIGH_TEMP_THRESHOLD){
+            if(DialogManager.getIntance().isDialogShowing(Event.HIGH_TEMPERATURE_THRESHOLD_LV2)){
+                return;
+            }
             EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV2);
             thermalListener.closeRecording();
         }else if(eventType.intValue() == CPU_HIGH_TEMP_CRITICAL_POINT){
             thermalListener.startRecording();
         }else if(eventType.intValue() == LCD_HIGH_TEMP_NOTIFY){
+            if(DialogManager.getIntance().isDialogShowing(Event.HIGH_TEMPERATURE_THRESHOLD_LV1)){
+                return;
+            }
             EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV1);
             setLcdCloseStatus(true);
         }else if(eventType.intValue() == LCD_NORMAL_TEMP_THRESHOLD){
