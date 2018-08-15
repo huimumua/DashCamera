@@ -58,8 +58,13 @@ public class MainApp {
     }
 
     public static MainApp getInstance() {
-        if (mMainApp == null)
-            mMainApp = new MainApp();
+        if (mMainApp == null) {
+            synchronized (MainApp.class) {
+                if (mMainApp == null) {
+                    mMainApp = new MainApp();
+                }
+            }
+        }
         countDownLatch = new CountDownLatch(3);
         new Thread(new Runnable() {
             @Override

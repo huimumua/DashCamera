@@ -38,7 +38,11 @@ public class GlobalLogic {
 
     public static GlobalLogic getInstance() {
         if (globalLogic == null) {
-            globalLogic = new GlobalLogic();
+            synchronized (GlobalLogic.class) {
+                if (globalLogic == null) {
+                    globalLogic = new GlobalLogic();
+                }
+            }
         }
         return globalLogic;
     }
