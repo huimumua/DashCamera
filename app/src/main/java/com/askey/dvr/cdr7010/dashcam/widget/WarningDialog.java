@@ -58,7 +58,7 @@ public class WarningDialog extends Dialog {
         param.topMargin = 18;
         param.gravity = Gravity.CENTER;
         waringImg.setLayoutParams(param);
-        waringImg.setImageResource(R.drawable.dialog_warning_img);
+        waringImg.setImageResource(R.drawable.dialog_warning);
 
         LinearLayout.LayoutParams messageParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,24);
         messageParam.topMargin = 10;
@@ -101,7 +101,7 @@ public class WarningDialog extends Dialog {
                     waringImg.setImageResource(R.drawable.dialog_outside);
                     break;
                 default:
-                    waringImg.setImageResource(R.drawable.dialog_warning_img);
+                    waringImg.setImageResource(R.drawable.dialog_warning);
             }
         }
     }
