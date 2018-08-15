@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -25,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.askey.dvr.cdr7010.dashcam.R;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -103,14 +105,15 @@ public class CameraRecordFragment extends Fragment {
     private DashCam mMainCam;
     private DashCam mExtCam;
     private OSDView osdView;
+    private TextView tvContent;
     private Handler mHandler;
     private ThermalController thermalController;
     private TelephonyManager mTelephonyManager;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
+    private boolean hasStopped;
     private boolean isEventRecording;
     private boolean isChargeDisconnect = false;//电源状态，默认是连接的
-    private boolean isECallAllowed = false;//是否允许ECall todo 需要确定在哪使用
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
@@ -292,7 +295,13 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     RECORDING_CONTINUOUS));
             isEventRecording = false;
-            mHandler.post(() -> EventManager.getInstance().handOutEventInfo(104));
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    EventManager.getInstance().handOutEventInfo(104);
+                }
+            });
+
         }
 
         @Override
@@ -301,10 +310,21 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
             if (!isEventRecording) {
-                mHandler.post(() -> EventManager.getInstance().handOutEventInfo(105));
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventManager.getInstance().handOutEventInfo(105);
+                    }
+                });
             } else {
-                mHandler.post(() -> EventManager.getInstance().handOutEventInfo(124));
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventManager.getInstance().handOutEventInfo(124);
+                    }
+                });
             }
+
         }
 
         @Override
@@ -312,7 +332,13 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onError");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR));
-            mHandler.post(() -> EventManager.getInstance().handOutEventInfo(114));
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    EventManager.getInstance().handOutEventInfo(114);
+                }
+            });
+
         }
 
         @Override
@@ -322,15 +348,18 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT : RECORDING_CONTINUOUS));
             final boolean event = isEventRecording;
-            mHandler.post(() -> {
-                if (on) { // event recording
-                    EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
-                    EventManager.getInstance().handOutEventInfo(123); // Event Recording start
-                } else { // Continuous recording
-                    if (event) {
-                        EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (on) { // event recording
+                        EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
+                        EventManager.getInstance().handOutEventInfo(123); // Event Recording start
+                    } else { // Continuous recording
+                        if (event) {
+                            EventManager.getInstance().handOutEventInfo(124); // Event Recording end
+                        }
+                        EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
                     }
-                    EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
                 }
             });
             isEventRecording = on;
@@ -397,9 +426,6 @@ public class CameraRecordFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logg.d(TAG, "onCreate");
-        isECallAllowed = getArguments().getBoolean("recordEvent");
-        Logg.d(TAG, "isECallAllowed.." + isECallAllowed);
-        GlobalLogic.getInstance().setAllowECall(isECallAllowed);
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
         thermalController = new ThermalController(thermalListener);
@@ -415,47 +441,21 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         osdView = (OSDView) view.findViewById(R.id.osd_view);
+        tvContent = (TextView) view.findViewById(R.id.tv_notice_content);
         requestVideoPermissions();
         requestGPSPermissions();
         requestSIMCardPermissions();
         GPSStatusManager.getInstance().recordLocation(true);
+        osdView.init(1000);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         IntentFilter simCardFilter = new IntentFilter();
         simCardFilter.addAction("android.intent.action.PHONE_STATE");
         simCardFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
         getActivity().registerReceiver(simCardReceiver, simCardFilter);
-        osdView.init(1000);
-        final boolean stamp = getRecordStamp();
-        final boolean audio = getMicphoneEnable();
-        RecordConfig mainConfig = RecordConfig.builder()
-                .cameraId(CameraHelper.CAMERA_MAIN)
-                .videoWidth(1920)
-                .videoHeight(1080)
-                .videoFPS(27)
-                .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
-                .videoStampEnable(stamp)
-                .audioRecordEnable(true)
-                .audioMute(!audio)
-                .adasEnable(true)
-                .nmeaRecordEnable(true)
-                .build();
-        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
-
-        if (CameraHelper.hasExtCamera()) {
-            RecordConfig extConfig = RecordConfig.builder()
-                    .cameraId(CameraHelper.CAMERA_EXT)
-                    .videoWidth(1280)
-                    .videoHeight(720)
-                    .videoFPS(15)
-                    .videoBitRate(5 * 1024 * 1024) // 5Mbps
-                    .videoStampEnable(stamp)
-                    .audioRecordEnable(false)
-                    .audioMute(true)
-                    .adasEnable(false)
-                    .nmeaRecordEnable(false)
-                    .build();
-            mExtCam = new DashCam(getActivity(), extConfig, null);
-        }
-        thermalController.startThermalMonitor();
     }
 
     @Override
@@ -488,37 +488,76 @@ public class CameraRecordFragment extends Fragment {
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
 
+        final boolean stamp = getRecordStamp();
+        final boolean audio = getMicphoneEnable();
+        RecordConfig mainConfig = RecordConfig.builder()
+                .cameraId(CameraHelper.CAMERA_MAIN)
+                .videoWidth(1920)
+                .videoHeight(1080)
+                .videoFPS(27)
+                .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
+                .videoStampEnable(stamp)
+                .audioRecordEnable(true)
+                .audioMute(!audio)
+                .adasEnable(true)
+                .nmeaRecordEnable(true)
+                .build();
+        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
         mMainCam.enableAdas(true);
+
+        if (CameraHelper.hasExtCamera()) {
+            RecordConfig extConfig = RecordConfig.builder()
+                    .cameraId(CameraHelper.CAMERA_EXT)
+                    .videoWidth(1280)
+                    .videoHeight(720)
+                    .videoFPS(15)
+                    .videoBitRate(5 * 1024 * 1024) // 5Mbps
+                    .videoStampEnable(stamp)
+                    .audioRecordEnable(false)
+                    .audioMute(true)
+                    .adasEnable(false)
+                    .nmeaRecordEnable(false)
+                    .build();
+            mExtCam = new DashCam(getActivity(), extConfig, null);
+        }
 
         try {
             startVideoRecord("Fragment onResume");
         } catch (Exception e) {
             Logg.e(TAG, "onResume: start video record fail with exception: " + e.getMessage());
         }
+        thermalController.startThermalMonitor();
     }
 
     @Override
     public void onPause() {
         Logg.d(TAG, "onPause");
         mMainCam.enableAdas(false);
-        stopVideoRecord("Fragment onPause");
-        getActivity().unregisterReceiver(mSdStatusListener);
-        getActivity().unregisterReceiver(mSdBadRemovalListener);
-        getActivity().unregisterReceiver(mShutdownReceiver);
-        getActivity().unregisterReceiver(mBatteryStateReceiver);
-        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
-        LedMananger.getInstance().setLedMicStatus(false);
+        if (!hasStopped) {
+            stopVideoRecord("Fragment onPause");
+            getActivity().unregisterReceiver(mSdStatusListener);
+            getActivity().unregisterReceiver(mSdBadRemovalListener);
+            getActivity().unregisterReceiver(mShutdownReceiver);
+            getActivity().unregisterReceiver(mBatteryStateReceiver);
+            mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+            LedMananger.getInstance().setLedMicStatus(false);
+        }
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
         Logg.d(TAG, "onDestroy");
-        EventUtil.unregister(this);
-        osdView.unInit();
-        thermalController.stopThermalMonitor();
-        GPSStatusManager.getInstance().recordLocation(false);
-        getActivity().unregisterReceiver(simCardReceiver);
+        if (!hasStopped) {
+            EventUtil.unregister(this);
+            osdView.unInit();
+            thermalController.stopThermalMonitor();
+            GPSStatusManager.getInstance().recordLocation(false);
+            getActivity().unregisterReceiver(simCardReceiver);
+        }
+        if (timeFinishShow != null) {
+            timeFinishShow.cancel();
+        }
         super.onDestroy();
     }
 
@@ -614,7 +653,7 @@ public class CameraRecordFragment extends Fragment {
                 checkSdcardAndSimcardStatus();
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SECOND_CAMERIA) {
-            GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType) messageEvent.getData());
+            GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType)messageEvent.getData());
         }
         osdView.invalidateView();
     }
@@ -765,19 +804,78 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onChange(boolean selfChange) {
             if (mMainCam != null && mExecutor != null) {
-                mExecutor.submit(() -> {
-                    if (getMicphoneEnable()) {
-                        mMainCam.demute();
-                        EventManager.getInstance().handOutEventInfo(106); //Audio recording ON
-                    } else {
-                        mMainCam.mute();
-                        EventManager.getInstance().handOutEventInfo(107); //Audio recording OFF
+                mExecutor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getMicphoneEnable()) {
+                            mMainCam.demute();
+                            EventManager.getInstance().handOutEventInfo(106); //Audio recording ON
+                        } else {
+                            mMainCam.mute();
+                            EventManager.getInstance().handOutEventInfo(107); //Audio recording OFF
+                        }
                     }
                 });
             }
             super.onChange(selfChange);
         }
     };
+
+    /**
+     * 合约开始日之前，停止界面更新，停止录像
+     */
+    public void beforeContractDayStart() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvContent.setVisibility(View.VISIBLE);
+                osdView.setVisibility(View.GONE);
+                tvContent.setText(getString(R.string.before_contract_day_start));
+                releaseAll();
+                timeFinishShow.start();
+            }
+        });
+    }
+
+    private CountDownTimer timeFinishShow = new CountDownTimer(60000, 1000) {
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+        }
+
+        @Override
+        public void onFinish() {
+            tvContent.setVisibility(View.GONE);
+            osdView.setVisibility(View.VISIBLE);
+        }
+    };
+
+    private void releaseAll() {
+        stopVideoRecord("Fragment onPause");
+        GPSStatusManager.getInstance().recordLocation(false);
+        getActivity().unregisterReceiver(mSdStatusListener);
+        getActivity().unregisterReceiver(mSdBadRemovalListener);
+        getActivity().unregisterReceiver(mShutdownReceiver);
+        getActivity().unregisterReceiver(mBatteryStateReceiver);
+        getActivity().unregisterReceiver(simCardReceiver);
+        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+        LedMananger.getInstance().setLedMicStatus(false);
+        EventUtil.unregister(this);
+        osdView.unInit();
+        hasStopped = true;
+    }
+
+    public void afterContractDayEnd() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvContent.setVisibility(View.VISIBLE);
+                osdView.setVisibility(View.GONE);
+                tvContent.setText(getString(R.string.after_contract_day_stop));
+                releaseAll();
+            }
+        });
+    }
 
     private void onSwitchUserPrepare() {
         GlobalLogic.getInstance().setStartSwitchUser(true);

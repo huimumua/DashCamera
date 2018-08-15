@@ -223,32 +223,36 @@ public class Recorder implements IFrameListener {
     };
 
     private void saveHash(String path, long time, boolean isEvent) {
-        Logg.d(TAG, "saveHash,startTime" + System.currentTimeMillis());
-        String sha256 = HashUtil.getSHA256(new File(path));
-        Logg.d(TAG, "sha256==" + sha256);
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                String sha256 = HashUtil.getSHA256(new File(path));
+                Logg.d(TAG, "sha256==" + sha256);
 //        String des = (String) SPUtils.get(mContext, SPUtils.STR_ENCODE, "");
 //        Logg.d(TAG, "des==" + des);
 //        if (!TextUtils.isEmpty(des)) {
-        try {
+                try {
 //            String aesKey = KeyStoreUtils.getInstance().decryptByPrivateKey(des);
 //            Logg.d(TAG, "aesKey==" + aesKey);
-            String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
-            Logg.d(TAG, "encrypt==" + encrypt);
-            String desPath;
-            if (isEvent) {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
-            } else {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
-            }
-            Logg.d(TAG, "desPath==" + desPath);
-            if (desPath != null) {
-                FileUtils.writeFile(desPath, encrypt, false);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                    String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
+                    Logg.d(TAG, "encrypt==" + encrypt);
+                    String desPath;
+                    if (isEvent) {
+                        desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
+                    } else {
+                        desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
+                    }
+                    Logg.d(TAG, "desPath==" + desPath);
+                    if (desPath != null) {
+                        FileUtils.writeFile(desPath, encrypt, false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 //        }
-        Logg.d(TAG, "saveHash,endTime" + System.currentTimeMillis());
+            }
+        }.start();
     }
 
     private MediaMuxerWrapper.StateCallback mMuxerStateCallback = new MediaMuxerWrapper.StateCallback() {

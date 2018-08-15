@@ -75,7 +75,7 @@ public class MainApp {
                     e.printStackTrace();
                 }
                 sendStatUpNotify();
-                Log.d(LOG_TAG, "countDownLatch.await()~！");
+                Log.d(LOG_TAG,"countDownLatch.await()~！");
             }
         }).start();
 

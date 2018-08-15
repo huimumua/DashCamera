@@ -145,7 +145,6 @@ MediaBuffer::~MediaBuffer()
     pthread_cond_destroy(&data_available);
     pthread_mutex_destroy(&mutex);
     delete [] buffer_ptr;
-    ALOGW("%s: %d", __FILE__, __LINE__);
 }
 
 void MediaBuffer::start()

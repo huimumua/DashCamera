@@ -156,16 +156,14 @@ public class EventManager {
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
             return;
         }
-        if (GlobalLogic.getInstance().isStartSwitchUser() || GlobalLogic.getInstance().isNotAllowECall()) {
+        if (GlobalLogic.getInstance().isStartSwitchUser()) {
             if (eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()) {
                 Logg.d(LOG_TAG, "handOutEventInfo: start switch user, eventType=" + eventType);
-                eventInfo.setSupportPopUpStatus(false);
-                eventInfo.setSupportSpeechStatus(false);
-//                return;
+                return;
             }
         }
-        if (!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)) {
-            Logg.d(LOG_TAG, "checkDrivingSupportAlertSettingOnOff, eventType=" + eventType + " off");
+        if(!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)){
+            Logg.d(LOG_TAG, "checkDrivingSupportAlertSettingOnOff, eventType=" + eventType+" off");
             return;
         }
         handOutEventInfo(eventInfo, timeStamp);

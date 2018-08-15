@@ -136,13 +136,6 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
                     updateFragment, R.id.contentFrame);
         } else {
             Logg.i(TAG, "=noticeJump=no update info===");
-//            Intent intent =new Intent(Intent.ACTION_BOOT_COMPLETED);
-//            sendBroadcast(intent);
-//            Intent intent2 = new Intent(Intent.ACTION_REBOOT);
-//            intent2.putExtra("nowait", 1);
-//            intent2.putExtra("interval", 1);
-//            intent2.putExtra("window", 0);
-//            sendBroadcast(intent2);
         }
     }
 
@@ -337,9 +330,9 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
         public int updateResultState = -1;
     }
 
-    private void setSystemLogo() {
+    private void setSystemLogo(){
 
-        Log.d(TAG, "setSystemLogo~~~~");
+        Log.d(TAG,"setSystemLogo~~~~");
         String filePath = "/storage/self/primary/";
 
         FileFilter fileFilter = null;
@@ -353,19 +346,19 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
     private void matchFileAndSetLogo(File fileLogo) {
         String logRegEx = ".AD_";
         String log1RegEx = ".AD_REWRITE";
-        String imgRegEx = ".MD_";
-        String img1RegEx = ".MS_REWRITE";
+        String imgRegEx= ".MD_";
+        String img1RegEx= ".MS_REWRITE";
         File[] fileList = fileLogo.listFiles();
-        if (fileList != null && fileList.length > 0) {
+        if (fileList!=null && fileList.length>0){
             for (File file : fileList) {
-                if (file.getName().startsWith(log1RegEx)) {
-                    writeSystemFile("/storage/self/primary/bootanimation1.zip", "/persist/media/bootanimation1.zip");
+                if (file.getName().startsWith(log1RegEx)){
+                    writeSystemFile("/storage/self/primary/bootanimation1.zip","/persist/media/bootanimation1.zip");
                     LogoSelect.writeLogoImage(1);
                 } else if (file.getName().startsWith(logRegEx)) {
                     LogoSelect.setLogo(1);
                 }
                 if (file.getName().startsWith(img1RegEx)) {
-                    writeSystemFile("/storage/self/primary/bootanimation2.zip", "/persist/media/bootanimation2.zip");
+                    writeSystemFile("/storage/self/primary/bootanimation2.zip","/persist/media/bootanimation2.zip");
                     LogoSelect.writeLogoImage(2);
                 } else if (file.getName().startsWith(imgRegEx)) {
                     LogoSelect.setLogo(2);
@@ -376,7 +369,6 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     class FileFilter implements FilenameFilter {
         private String mRegEx;
-
         public FileFilter(String regEx) {
             this.mRegEx = regEx;
         }
@@ -388,7 +380,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 
     }
 
-    private void writeSystemFile(String oldPath, String newPath) {
+    private void writeSystemFile(String oldPath, String newPath){
         try {
             int bytesum = 0;
             int byteread = 0;
@@ -398,7 +390,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
                 FileOutputStream fs = new FileOutputStream(newPath);
                 byte[] buffer = new byte[1444];
                 int length;
-                while ((byteread = inStream.read(buffer)) != -1) {
+                while ( (byteread = inStream.read(buffer)) != -1) {
                     bytesum += byteread; //字节数 文件大小
                     System.out.println(bytesum);
                     fs.write(buffer, 0, byteread);
