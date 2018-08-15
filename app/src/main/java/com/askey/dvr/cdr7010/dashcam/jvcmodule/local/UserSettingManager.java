@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.os.RemoteException;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
@@ -179,18 +180,42 @@ public class UserSettingManager {
         }
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME, infoLists.user99.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER1, infoLists.user01.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER2, infoLists.user02.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER3, infoLists.user03.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER4, infoLists.user04.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER5, infoLists.user05.name);
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID, String.valueOf(infoLists.user99.userid));
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER1, String.valueOf(infoLists.user01.userid));
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER2, String.valueOf(infoLists.user02.userid));
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER3, String.valueOf(infoLists.user03.userid));
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER4, String.valueOf(infoLists.user04.userid));
-        Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER5, String.valueOf(infoLists.user05.userid));
+        if (infoLists.user99!=null ) {
+            if (!TextUtils.isEmpty(infoLists.user99.name)) {
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME, infoLists.user99.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID, String.valueOf(infoLists.user99.userid));
+        }
+        if (infoLists.user01!=null) {
+            if (!TextUtils.isEmpty(infoLists.user01.name)){
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER1, infoLists.user01.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER1, String.valueOf(infoLists.user01.userid));
+        }
+        if (infoLists.user02!=null) {
+            if (!TextUtils.isEmpty(infoLists.user02.name)) {
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER2, infoLists.user02.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER2, String.valueOf(infoLists.user02.userid));
+        }
+        if (infoLists.user03!=null) {
+            if (!TextUtils.isEmpty(infoLists.user03.name)) {
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER3, infoLists.user03.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER3, String.valueOf(infoLists.user03.userid));
+        }
+        if (infoLists.user04!=null) {
+            if (!TextUtils.isEmpty(infoLists.user04.name)) {
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER4, infoLists.user04.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER4, String.valueOf(infoLists.user04.userid));
+        }
+        if (infoLists.user05!=null) {
+            if (!TextUtils.isEmpty(infoLists.user05.name)) {
+                Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER5, infoLists.user05.name);
+            }
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER5, String.valueOf(infoLists.user05.userid));
+        }
         Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NUM, String.valueOf(infoLists.num));
     }
 
