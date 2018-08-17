@@ -223,36 +223,26 @@ public class Recorder implements IFrameListener {
     };
 
     private void saveHash(String path, long time, boolean isEvent) {
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
+        try {
+            String desPath;
+            if (isEvent) {
+                desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
+            } else {
+                desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
+            }
+            Logg.d(TAG, "desPath==" + desPath);
+            if (desPath != null) {
                 String sha256 = HashUtil.getSHA256(new File(path));
                 Logg.d(TAG, "sha256==" + sha256);
-//        String des = (String) SPUtils.get(mContext, SPUtils.STR_ENCODE, "");
-//        Logg.d(TAG, "des==" + des);
-//        if (!TextUtils.isEmpty(des)) {
-                try {
-//            String aesKey = KeyStoreUtils.getInstance().decryptByPrivateKey(des);
-//            Logg.d(TAG, "aesKey==" + aesKey);
+                if (sha256 != null) {
                     String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
                     Logg.d(TAG, "encrypt==" + encrypt);
-                    String desPath;
-                    if (isEvent) {
-                        desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
-                    } else {
-                        desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
-                    }
-                    Logg.d(TAG, "desPath==" + desPath);
-                    if (desPath != null) {
-                        FileUtils.writeFile(desPath, encrypt, false);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    FileUtils.writeFile(desPath, encrypt, false);
                 }
-//        }
             }
-        }.start();
+        } catch (Exception e) {
+            Logg.d(TAG, "error happened when save hash");
+        }
     }
 
     private MediaMuxerWrapper.StateCallback mMuxerStateCallback = new MediaMuxerWrapper.StateCallback() {
