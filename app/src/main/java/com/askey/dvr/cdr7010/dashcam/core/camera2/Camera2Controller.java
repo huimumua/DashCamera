@@ -148,7 +148,7 @@ public class Camera2Controller {
         }
     }
 
-    public void closeCamera() throws Exception {
+    public void closeCamera() throws CameraAccessException {
         Log.d(TAG, "closeCamera");
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {

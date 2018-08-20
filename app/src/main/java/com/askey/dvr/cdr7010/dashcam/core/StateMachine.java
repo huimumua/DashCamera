@@ -193,7 +193,7 @@ public class StateMachine {
 
         addTransition(Transition.create(STATE_CLOSE, EEvent.OPEN, STATE_PREPARE_OPEN));
         addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.OPEN_SUCCESS, STATE_OPEN));
-        addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.ERROR, STATE_CLOSE));
+        addTransition(Transition.create(STATE_PREPARE_OPEN, EEvent.ERROR, STATE_PREPARE_CLOSE));
         addTransition(Transition.create(STATE_OPEN, EEvent.CLOSE, STATE_PREPARE_CLOSE));
         addTransition(Transition.create(STATE_OPEN, EEvent.OPEN, STATE_PREPARE_CLOSE));
         addTransition(Transition.create(STATE_PREPARE_CLOSE, EEvent.CLOSE_SUCCESS, STATE_CLOSE));
@@ -217,6 +217,16 @@ public class StateMachine {
         }
     }
 
+    public synchronized void dispatchEventDelayed(Event event, long delayMillis) {
+        if (DEBUG) Log.v(TAG, "dispatchEvent: currState=" + currState + ", event=" + event
+                + ", delayMillis=" + delayMillis);
+        if (delayMillis == 0) {
+            dispatchEvent(event);
+        } else {
+            handler.postDelayed(new DispatchRunnable(event), delayMillis);
+        }
+    }
+
     public synchronized void dispatchEvent(Event event) {
         if (DEBUG) Log.v(TAG, "dispatchEvent: currState=" + currState + ", event=" + event);
         boolean found = false;
@@ -234,6 +244,18 @@ public class StateMachine {
             currState.exit();
             currState = nextState;
             nextState.enter();
+        }
+    }
+
+    private class DispatchRunnable implements Runnable {
+        private Event mEvent;
+        public DispatchRunnable(Event event) {
+            mEvent = event;
+        }
+
+        @Override
+        public void run() {
+            dispatchEvent(mEvent);
         }
     }
 }

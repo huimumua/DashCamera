@@ -7,6 +7,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
 import android.location.Location;
 import android.media.Image;
 import android.media.ImageReader;
@@ -68,6 +69,12 @@ public class DashCam implements DashCamControl, AdasStateListener {
     // Check Function is ready to start see @setFunctionReady
     private final EnumSet<Function> mReadyFunctions = EnumSet.noneOf(Function.class);
 
+
+    private enum Error {
+        CAMERA_ACCESS_EXCEPTION
+    }
+    // Error flags to know what error was happened
+    private final EnumSet<Error> mErrorFlag = EnumSet.noneOf(Error.class);
 
     public interface StateCallback {
         void onStarted();
@@ -211,8 +218,11 @@ public class DashCam implements DashCamControl, AdasStateListener {
             if (SetUtils.equals(mReadyFunctions, mSetEnabledFunctions)) {
                 try {
                     startCamera();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (CameraAccessException e) {
+                    Logg.e(TAG, e.getMessage());
+                    mErrorFlag.add(Error.CAMERA_ACCESS_EXCEPTION);
+                    mStateCallback.onError();
+                    mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, e.getMessage()));
                 }
             }
         });
@@ -272,15 +282,22 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     @Override
     public void onCameraClosed() {
-        Logg.v(TAG, "onCameraClosed");
+        Logg.v(TAG, "onCameraClosed: mErrorFlag = " + mErrorFlag);
         if (mSetEnabledFunctions.size() != 0) {
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.OPEN,
-                    "onCameraClosed, but mSetEnabledFunctions = " + mSetEnabledFunctions));
+            long delayMillis = 0;
+            if (mErrorFlag.size() != 0) {
+			    // Any errors, wait for 3 seconds and try again
+                delayMillis = 3000;
+                mErrorFlag.clear();
+            }
+            String reason = "onCameraClosed but mSetEnabledFunctions = " + mSetEnabledFunctions;
+            StateMachine.Event event = new StateMachine.Event(EEvent.OPEN, reason);
+            mStateMachine.dispatchEventDelayed(event, delayMillis);
         }
     }
 
     @Override
-    public void onStartVideoRecord() throws Exception {
+    public void onStartVideoRecord() {
         Logg.d(TAG, "onStartVideoRecord");
 
     }
@@ -330,22 +347,24 @@ public class DashCam implements DashCamControl, AdasStateListener {
         }
     }
 
-    private void startCamera() throws Exception {
+    private void startCamera() throws CameraAccessException {
         Logg.d(TAG, "startCamera");
+        mCamera2Controller.startRecordingVideo();
         if (mRecorder != null) {
             mRecorder.startRecording();
         }
-
-        mCamera2Controller.startRecordingVideo();
     }
 
     @Override
     public void onStopVideoRecord() {
         Logg.d(TAG, "onStopVideoRecord");
+        mCamera2Controller.stopRecordingVideo();
         try {
-            mCamera2Controller.stopRecordingVideo();
             mCamera2Controller.closeCamera();
-
+        } catch (CameraAccessException e) {
+            // Nothing we can do here, looks like must fix if any error occurs
+            Logg.e(TAG, e.getMessage());
+        } finally {
             if (mRenderer != null) {
                 mRenderer.stop();
             }
@@ -355,8 +374,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
                 mRecorder.release();
                 mRecorder = null;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            checkCloseSuccess();
         }
     }
 
