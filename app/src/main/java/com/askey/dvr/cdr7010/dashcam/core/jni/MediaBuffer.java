@@ -46,12 +46,6 @@ public class MediaBuffer {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        native_release(mNativeObject);
-        super.finalize();
-    }
-
     // called from JNI
     private void reportCacheFile(String path) {
         if (mHandler != null) {

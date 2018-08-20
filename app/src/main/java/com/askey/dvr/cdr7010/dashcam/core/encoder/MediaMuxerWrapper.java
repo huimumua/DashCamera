@@ -52,7 +52,7 @@ public class MediaMuxerWrapper {
     private long mSegmentDurationLimitedUs = 60 * 1000 * 1000L; // us
     private static final long SEGMENT_CREATE_THRESHOLD_US = 5 * 1000 * 1000L; // us
     private static final long EVENT_RECORD_DURATION_US = 5 * 1000 * 1000L; // us
-    private final MediaBuffer mMediaBuffer;
+    private MediaBuffer mMediaBuffer;
     private final HandlerThread mMuxerThread;
     private final MuxerHandler mMuxerHandler;
     private EventState mEventState;
@@ -164,13 +164,22 @@ public class MediaMuxerWrapper {
     public void terminateRecording() {
         Logg.d(LOG_TAG, "terminateRecordeing");
         mReasonInterruption = true;
-        mMediaBuffer.stop();
+        if (mMediaBuffer != null) {
+            mMediaBuffer.stop();
+        }
         mMuxerHandler.removeMessages(0);
         mMuxerHandler.terminate();
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
         if (mSegmentCallback != null) {
             mSegmentCallback.segmentTerminated();
+        }
+    }
+
+    public void release() {
+        if (mMediaBuffer != null) {
+            mMediaBuffer.release();
+            mMediaBuffer = null;
         }
     }
 
@@ -228,8 +237,10 @@ public class MediaMuxerWrapper {
         mStatredCount++;
         if ((mEncoderCount > 0) && (mStatredCount == mEncoderCount)) {
             mTotalDurationUs = 0;
-            mMediaBuffer.reset();
-            mMediaBuffer.start();
+            if (mMediaBuffer != null) {
+                mMediaBuffer.reset();
+                mMediaBuffer.start();
+            }
             mIsStarted = true;
             mFirstStarPtsUs = -1;
             mReasonInterruption = false;
@@ -250,7 +261,9 @@ public class MediaMuxerWrapper {
         mStatredCount--;
         if ((mEncoderCount > 0) && (mStatredCount <= 0)) {
             mIsStarted = false;
-            mMediaBuffer.stop();
+            if (mMediaBuffer != null) {
+                mMediaBuffer.stop();
+            }
             mMuxerHandler.removeMessages(0);
             mMuxerHandler.stop();
             mMuxerThread.quitSafely();
@@ -301,7 +314,9 @@ public class MediaMuxerWrapper {
                 }
             }
         }
-        mMediaBuffer.writeSampleData(type, eventId, time, byteBuf, bufferInfo);
+        if (mMediaBuffer != null) {
+            mMediaBuffer.writeSampleData(type, eventId, time, byteBuf, bufferInfo);
+        }
     }
 
     private void closeMuxer(AndroidMuxer muxer) {

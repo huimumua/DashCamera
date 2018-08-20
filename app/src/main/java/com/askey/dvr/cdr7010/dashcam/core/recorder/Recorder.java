@@ -96,6 +96,7 @@ public class Recorder implements IFrameListener {
     }
 
     public void release() {
+        mMuxer.release();
         mMuxer = null;
         mVideoEncoder = null;
         mAudioEncoder = null;
