@@ -40,13 +40,12 @@ public class AppUtils {
     @SuppressWarnings("deprecation")
     public static boolean isActivityTop(Context context, String className) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(2);
-
-        //判断程序是否在栈顶
-        if (list != null && list.size() > 0 && list.get(0).topActivity.getClassName().equals(className)) {
-            return true;
+        List<ActivityManager.RunningTaskInfo> list = null;
+        if (am != null) {
+            list = am.getRunningTasks(2);
         }
-        return false;
+        //判断程序是否在栈顶
+        return list != null && list.size() > 0 && list.get(0).topActivity.getClassName().equals(className);
     }
 
     /**
@@ -54,16 +53,12 @@ public class AppUtils {
      */
     @SuppressWarnings("deprecation")
     public static boolean isAppTop(Context context) {
-        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(2);
-
-        //判断程序是否在栈顶
-        if (list != null && list.size() > 0 && list.get(0).topActivity.getPackageName().equals(context.getPackageName())) {
-            return true;
+        ActivityManager am = (ActivityManager) context.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> list = null;
+        if (am != null) {
+            list = am.getRunningTasks(2);
         }
-
-        return false;
+        //判断程序是否在栈顶
+        return list != null && list.size() > 0 && list.get(0).topActivity.getPackageName().equals(context.getPackageName());
     }
-
-
 }
