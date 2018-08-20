@@ -16,7 +16,8 @@ public class SdcardInfo implements Parcelable {
 
     private String totalSize;
     private String normalSize;
-    private String normalCurrentSize;
+    private String normal1CurrentSize;
+    private String normal2CurrentSize;
     private String eventSize;
     private String eventCurrentSize;
     private String parkingSize;
@@ -29,7 +30,8 @@ public class SdcardInfo implements Parcelable {
     protected SdcardInfo(Parcel in) {
         totalSize = in.readString();
         normalSize = in.readString();
-        normalCurrentSize = in.readString();
+        normal1CurrentSize = in.readString();
+        normal2CurrentSize = in.readString();
         eventSize = in.readString();
         eventCurrentSize = in.readString();
         parkingSize = in.readString();
@@ -66,12 +68,20 @@ public class SdcardInfo implements Parcelable {
         this.normalSize = normalSize;
     }
 
-    public String getNormalCurrentSize() {
-        return normalCurrentSize;
+    public String getNormal1CurrentSize() {
+        return normal1CurrentSize;
     }
 
-    public void setNormalCurrentSize(String normalCurrentSize) {
-        this.normalCurrentSize = normalCurrentSize;
+    public void setNormal1CurrentSize(String normal1CurrentSize) {
+        this.normal1CurrentSize = normal1CurrentSize;
+    }
+
+    public String getNormal2CurrentSize() {
+        return normal2CurrentSize;
+    }
+
+    public void setNormal2CurrentSize(String normal2CurrentSize) {
+        this.normal2CurrentSize = normal2CurrentSize;
     }
 
     public String getEventSize() {
@@ -132,7 +142,8 @@ public class SdcardInfo implements Parcelable {
 
         dest.writeString(totalSize);
         dest.writeString(normalSize);
-        dest.writeString(normalCurrentSize);
+        dest.writeString(normal1CurrentSize);
+        dest.writeString(normal2CurrentSize);
         dest.writeString(eventSize);
         dest.writeString(eventCurrentSize);
         dest.writeString(parkingSize);
