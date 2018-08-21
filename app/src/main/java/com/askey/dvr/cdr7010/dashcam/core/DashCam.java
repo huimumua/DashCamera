@@ -70,7 +70,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
 
     private enum Error {
-        RECORD_ERROR, CAMERA_ACCESS_EXCEPTION
+        RECORD_ERROR, CAMERA_ERROR, CAMERA_ACCESS_EXCEPTION
     }
     // Error flags to know what error was happened
     private final EnumSet<Error> mErrorFlag = EnumSet.noneOf(Error.class);
@@ -435,6 +435,12 @@ public class DashCam implements DashCamControl, AdasStateListener {
         public void onCaptureStopped() {
             Logg.v(TAG, "onCaptureStopped");
             checkCloseSuccess();
+        }
+
+        @Override
+        public void onCameraError(int error) {
+            Logg.e(TAG, "onCameraError: error=" + error);
+            goToErrorState(Error.CAMERA_ERROR, new CameraAccessException(error));
         }
     };
 

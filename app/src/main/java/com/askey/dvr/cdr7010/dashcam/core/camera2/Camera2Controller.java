@@ -127,6 +127,7 @@ public class Camera2Controller {
             mCameraDevice.close();
             mCameraDevice = null;
             mCameraOpenCloseLock.release();
+            mListenerHandler.post(() -> mListener.onCameraError(error));
         }
     };
 
