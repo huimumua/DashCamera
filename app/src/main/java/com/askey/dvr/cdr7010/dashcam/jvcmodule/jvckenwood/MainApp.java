@@ -266,9 +266,12 @@ public class MainApp {
         public void logUploadResult(int oos, String result) {
             Logg.d(LOG_TAG, "logUploadResult: oos=" + oos + ", result=" + result);
 
-            String outputFilePath = DashCamApplication.getAppContext().getFilesDir().getAbsolutePath() + "/log.zip";
+            String outputFilePath = DashCamApplication.getAppContext().getFilesDir().getAbsolutePath();
             File outputFile = new File(outputFilePath);
-            outputFile.delete();
+            for(File file : outputFile.listFiles()){
+                if(file.getName().startsWith("log_"))
+                    file.delete();
+            }
         }
     };
 
