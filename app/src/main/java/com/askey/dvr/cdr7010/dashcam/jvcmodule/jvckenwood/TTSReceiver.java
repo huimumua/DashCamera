@@ -24,12 +24,12 @@ public class TTSReceiver extends BroadcastReceiver {
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: requestId=" + requestId);
             result = intent.getIntExtra("result", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: result=" + result);
+            if (TTS.isSpeaking && requestId == TTS.speakingId) {
+                TTS.isSpeaking = false;
+                TTS.speakingId = -1;
+            }
             if (result == 0) {//0 : 正常完了
-                if (TTS.isSpeaking && requestId == TTS.speakingId) {
-                    TTS.isSpeaking = false;
-                    TTS.speakingId = -1;
-                    Logg.i(LOG_TAG, "==0 : 正常完了===isSpeaking = false");
-                }
+                Logg.i(LOG_TAG, "==0 : 正常完了===isSpeaking = false");
             } else if (result == 1) {//1 : パラメータエラー
                 Logg.i(LOG_TAG, "=1 : パラメータエラー==");
             } else if (result == 2) {//2 : キャンセル失敗
@@ -40,12 +40,12 @@ public class TTSReceiver extends BroadcastReceiver {
             Logg.i(LOG_TAG, "onReceive: requestId=" + requestId);
             result = intent.getIntExtra("result", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_END_RESPONSE: result=" + result);
+            if (TTS.isSpeaking && requestId == TTS.speakingId) {
+                TTS.isSpeaking = false;
+                TTS.speakingId = -1;
+            }
             if (result == 0) {// 0 : 再生正常完了
-                if (TTS.isSpeaking && requestId == TTS.speakingId) {
-                    TTS.isSpeaking = false;
-                    TTS.speakingId = -1;
-                    Logg.i(LOG_TAG, "== 0 : 再生正常完了==isSpeaking = false");
-                }
+                Logg.i(LOG_TAG, "== 0 : 再生正常完了==isSpeaking = false");
             } else if (result == 1) {//1 : パラメータエラー
                 Logg.i(LOG_TAG, "==1 : パラメータエラー=");
             } else if (result == 2) {//2 : 音声ファイルなし
