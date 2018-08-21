@@ -65,7 +65,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -898,11 +897,17 @@ public class CameraRecordFragment extends Fragment {
         Log.d(TAG, "inContractDay");
         canRecord = true;
         GlobalLogic.getInstance().setECallAllow(true);
-        try {
-            startVideoRecord("get insurance");
-        } catch (Exception e) {
-            Logg.e(TAG, "startVideoRecord when get insurance failed");
-        }
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    startVideoRecord("get insurance");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Logg.e(TAG, "startVideoRecord when get insurance failed");
+                }
+            }
+        });
     }
 
     /**
