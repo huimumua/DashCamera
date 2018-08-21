@@ -552,7 +552,7 @@
         <event_type>115</event_type>
         <dialog_type>3</dialog_type>
         <name>ファイル数オーバーによるイベント記録の失敗</name>
-        <description>イベント記録失敗(ファイル上限)</description>
+        <description>イベント記録失敗(ファイル数超過)</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
@@ -814,7 +814,7 @@
         <event_type>129</event_type>
         <dialog_type>3</dialog_type>
         <name>ファイル数オーバーによる静止画記録の失敗</name>
-        <description>静止画記録失敗（ファイル数超過）</description>
+        <description>静止画記録失敗(ファイル数超過)</description>
         <voice_guidence></voice_guidence>
         <popup>yes</popup>
         <icon>yes</icon>
