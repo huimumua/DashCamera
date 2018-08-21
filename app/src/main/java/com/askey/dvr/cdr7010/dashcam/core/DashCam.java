@@ -3,16 +3,14 @@ package com.askey.dvr.cdr7010.dashcam.core;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.location.Location;
-import android.media.Image;
-import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.RemoteException;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.adas.AdasStateListener;
@@ -28,12 +26,13 @@ import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SetUtils;
 
-import java.util.EnumSet;
 import net.sf.marineapi.nmea.util.Position;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.List;
 
 public class DashCam implements DashCamControl, AdasStateListener {
@@ -71,7 +70,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
 
     private enum Error {
-        CAMERA_ACCESS_EXCEPTION
+        RECORD_ERROR, CAMERA_ACCESS_EXCEPTION
     }
     // Error flags to know what error was happened
     private final EnumSet<Error> mErrorFlag = EnumSet.noneOf(Error.class);
@@ -219,10 +218,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
                 try {
                     startCamera();
                 } catch (CameraAccessException e) {
-                    Logg.e(TAG, e.getMessage());
-                    mErrorFlag.add(Error.CAMERA_ACCESS_EXCEPTION);
-                    mStateCallback.onError();
-                    mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, e.getMessage()));
+                    goToErrorState(Error.CAMERA_ACCESS_EXCEPTION, e);
+                    return;
                 }
             }
         });
@@ -413,8 +410,9 @@ public class DashCam implements DashCamControl, AdasStateListener {
             if (mSetEnabledFunctions.contains(Function.RECORD)) {
                 try {
                     prepareRecorder();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (IOException e) {
+                    goToErrorState(Error.RECORD_ERROR, e);
+                    return;
                 }
             }
             if (mAdasController != null) {
@@ -447,17 +445,17 @@ public class DashCam implements DashCamControl, AdasStateListener {
         }
     }
 
-    private void prepareRecorder() throws Exception {
+    private void prepareRecorder() throws IOException {
         Logg.v(TAG, "prepareRecorder");
 
-        int sdcardStatus = FileManager.getInstance(mContext).checkSdcardAvailable();
-        if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
-            if (mStateCallback != null) {
-                mStateCallback.onError();
+        try {
+            int sdcardStatus = FileManager.getInstance(mContext).checkSdcardAvailable();
+            if (!SDcardHelper.isSDCardAvailable(sdcardStatus)) {
+                throw new IOException("!SDcardHelper.isSDCardAvailable(sdcardStatus)");
             }
-            throw new RuntimeException("sd card unavailable");
+        } catch (RemoteException e) {
+            throw new IOException(e);
         }
-
 
         mRecorder = new Recorder(mContext, mConfig, mRecorderCallback);
         mRecorder.prepare();
@@ -508,5 +506,14 @@ public class DashCam implements DashCamControl, AdasStateListener {
         newBmp.recycle();
         bmp.recycle();
         return convertBmp;
+    }
+
+    private void goToErrorState(Error error, Exception e) {
+        Logg.w(TAG, e.getMessage());
+        mErrorFlag.add(error);
+        if (mStateCallback != null) {
+            mStateCallback.onError();
+        }
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, e.getMessage()));
     }
 }
