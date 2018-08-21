@@ -17,7 +17,7 @@ import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class JvcEventReceiver extends BroadcastReceiver{
+public class JvcEventReceiver extends BroadcastReceiver {
     private static final String LOG_TAG = "JvcEventReceiver";
     private static final String ACTION_EVENT_DISPLAY_ALERT = "com.jvckenwood.eventsending.EVENT_DISPLAY_ALERT";
     private static final String ACTION_EVENT_RECORD_REQUEST = "com.jvckenwood.eventsending.EVENT_RECORD_REQUEST";
@@ -29,15 +29,15 @@ public class JvcEventReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         Logg.i(LOG_TAG, "onReceive: action=" + action);
-        if(action.equals(ACTION_EVENT_DISPLAY_ALERT)){
+        if (action.equals(ACTION_EVENT_DISPLAY_ALERT)) {
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if(checkEventInfo(eventInfo, eventType)) EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
+            if (checkEventInfo(eventInfo, eventType))
+                EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
 
 
-
-        }else if(action.equals(ACTION_EVENT_RECORD_REQUEST)){
+        } else if (action.equals(ACTION_EVENT_RECORD_REQUEST)) {
             int eventNo = intent.getIntExtra(EXTRA_EVENT_NO, -1);
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
@@ -54,25 +54,27 @@ public class JvcEventReceiver extends BroadcastReceiver{
                 ArrayList<String> files = new ArrayList<>();
                 JvcEventSending.recordResponse(eventNo, results, files);
             } else {
-                Intent i = new  Intent("com.askey.dashcam.record.EVENT");
+                Intent i = new Intent("com.askey.dashcam.record.EVENT");
                 i.putExtra("id", eventNo);
                 LocalBroadcastManager.getInstance(context).sendBroadcast(i);
             }
         }
     }
 
-    private boolean checkEventInfo(EventInfo eventInfo, int eventType){
-        if(eventInfo == null){
+    private boolean checkEventInfo(EventInfo eventInfo, int eventType) {
+        if (eventInfo == null) {
             Logg.e(LOG_TAG, "checkEventInfo: can't find EventInfo, eventType=" + eventType);
             return false;
         }
-        if(GlobalLogic.getInstance().isStartSwitchUser()){
-            if(eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()){
-                return false;
+        if (GlobalLogic.getInstance().isStartSwitchUser() || GlobalLogic.getInstance().isECallNotAllow()) {
+            if (eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()) {
+                eventInfo.setSupportPopUpStatus(false);
+                eventInfo.setSupportSpeechStatus(false);
+//                return false;
             }
         }
-        if(!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)){
-            Logg.d(LOG_TAG, "checkEventInfo checkDrivingSupportAlertSettingOnOff, eventType=" + eventType+" off");
+        if (!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)) {
+            Logg.d(LOG_TAG, "checkEventInfo checkDrivingSupportAlertSettingOnOff, eventType=" + eventType + " off");
             return false;
         }
         return true;

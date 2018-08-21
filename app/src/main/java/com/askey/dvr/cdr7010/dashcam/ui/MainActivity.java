@@ -59,8 +59,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.Recordi
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_ASKEY_NOT_SUPPORTED;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_FILE_LIMIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_EVENT_PICTURE_LIMIT;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_FULL_LIMIT_EXIT;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_FAIL;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_INIT_SUCCESS;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SDcardStatusType.SDCARD_MOUNTED;
@@ -228,17 +226,17 @@ public class MainActivity extends DialogActivity {
     private LocalJvcStatusManager.LocalJvcStatusCallback jvcStatusCallback = new LocalJvcStatusManager.LocalJvcStatusCallback() {
         @Override
         public void onDataArriving(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap) {
-            Logg.d("NoticePresenter", "onDataArriving...");
+            Logg.d(TAG, "onDataArriving...");
             int oos = -1;
             String response = null;
             if (enumMap != null) {
                 if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.OOS)) {
                     oos = (int) enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
-                    Logg.d("NoticePresenter", "oos..." + oos);
+                    Logg.d(TAG, "oos..." + oos);
                 }
                 if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.RESPONSE)) {
                     response = (String) enumMap.get(JvcStatusParams.JvcStatusParam.RESPONSE);
-                    Logg.d("NoticePresenter", "response.." + response);
+                    Logg.d(TAG, "response.." + response);
                 }
                 switch (oos) {
                     case 0://成功
@@ -249,19 +247,7 @@ public class MainActivity extends DialogActivity {
                                 switch (status) {
                                     case 0://正常
                                         int flg = jsonObject.optInt("flg");
-                                        switch (flg) {
-                                            case 1://始期日以前
-                                                removeListeners();
-                                                fragment.beforeContractDayStart();
-                                                break;
-                                            case 2://証券期間中 do nothing
-                                                break;
-                                            case 0://対象の証券無し
-                                            case 3://"満期日+14日"以降
-                                                timeFinishApp.start();
-                                                fragment.afterContractDayEnd();
-                                                break;
-                                        }
+                                        dealFlg(flg);
                                         break;
                                     case -1://想定外の例外
                                         break;
@@ -276,11 +262,30 @@ public class MainActivity extends DialogActivity {
                         }
                         break;
                     default://圏外
+                        int flg = Settings.Global.getInt(getContentResolver(), AskeySettings.Global.SYSSET_STARTUP_INFO, -1);
+                        Logg.d(TAG, "flg FROM SETTINGS==" + flg);
+                        dealFlg(flg);
                         break;
                 }
             }
         }
     };
+
+    private void dealFlg(int flg) {
+        switch (flg) {
+            case 1://始期日以前
+                fragment.beforeContractDayStart();
+                break;
+            case 0://対象の証券無し
+            case 2://証券期間中 do nothing
+                fragment.inContractDay();
+                break;
+            case 3://"満期日+14日"以降
+                timeFinishApp.start();
+                fragment.afterContractDayEnd();
+                break;
+        }
+    }
 
     private CountDownTimer timeFinishApp = new CountDownTimer(60000, 1000) {
 

@@ -111,9 +111,9 @@ public class CameraRecordFragment extends Fragment {
     private TelephonyManager mTelephonyManager;
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
-    private boolean hasStopped;
     private boolean isEventRecording;
     private boolean isChargeDisconnect = false;//电源状态，默认是连接的
+    public boolean canRecord;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
@@ -121,7 +121,7 @@ public class CameraRecordFragment extends Fragment {
     private static final String ACTION_SDCARD_LIMT = "com.askey.dvr.cdr7010.dashcam.limit";
     private static final String CMD_SHOW_REACH_PICTURE_FILE_OVER_LIMIT = "show_reach_picture_file_over_limit";
     private static final String CMD_SHOW_REACH_EVENT_FILE_OVER_LIMIT = "show_reach_event_file_over_limit";
-    public static  final String CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT ="show_both_event_and_picture_file_over_limit";//超过限制
+    public static final String CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT = "show_both_event_and_picture_file_over_limit";//超过限制
     private static final String CMD_SHOW_UNREACH_EVENT_FILE_LIMIT = "show_unreach_event_file_limit";//限制解除
     private static final String CMD_SHOW_UNREACH_PICTURE_FILE_LIMIT = "show_unreach_picture_file_limit";//限制解除
 
@@ -201,7 +201,7 @@ public class CameraRecordFragment extends Fragment {
                     } catch (Exception e) {
                         Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
                     }
-                } else if(CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT.equals(ex)){
+                } else if (CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT.equals(ex)) {
                     Logg.d(TAG, "CMD_SHOW_BOTH_EVENT_AND_PICTURE_FOLDER_OVER_LIMIT");
                     RecordHelper.setRecordingPrecondition(SDCARD_EVENT_FILE_OVER_LIMIT);
                     RecordHelper.setRecordingPrecondition(SDCARD_PICTURE_FILE_OVER_LIMIT);
@@ -533,28 +533,24 @@ public class CameraRecordFragment extends Fragment {
     public void onPause() {
         Logg.d(TAG, "onPause");
         mMainCam.enableAdas(false);
-        if (!hasStopped) {
-            stopVideoRecord("Fragment onPause");
-            getActivity().unregisterReceiver(mSdStatusListener);
-            getActivity().unregisterReceiver(mSdBadRemovalListener);
-            getActivity().unregisterReceiver(mShutdownReceiver);
-            getActivity().unregisterReceiver(mBatteryStateReceiver);
-            mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
-            LedMananger.getInstance().setLedMicStatus(false);
-        }
+        stopVideoRecord("Fragment onPause");
+        getActivity().unregisterReceiver(mSdStatusListener);
+        getActivity().unregisterReceiver(mSdBadRemovalListener);
+        getActivity().unregisterReceiver(mShutdownReceiver);
+        getActivity().unregisterReceiver(mBatteryStateReceiver);
+        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
+        LedMananger.getInstance().setLedMicStatus(false);
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
         Logg.d(TAG, "onDestroy");
-        if (!hasStopped) {
-            EventUtil.unregister(this);
-            osdView.unInit();
-            thermalController.stopThermalMonitor();
-            GPSStatusManager.getInstance().recordLocation(false);
-            getActivity().unregisterReceiver(simCardReceiver);
-        }
+        EventUtil.unregister(this);
+        osdView.unInit();
+        thermalController.stopThermalMonitor();
+        GPSStatusManager.getInstance().recordLocation(false);
+        getActivity().unregisterReceiver(simCardReceiver);
         if (timeFinishShow != null) {
             timeFinishShow.cancel();
         }
@@ -653,7 +649,7 @@ public class CameraRecordFragment extends Fragment {
                 checkSdcardAndSimcardStatus();
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SECOND_CAMERIA) {
-            GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType)messageEvent.getData());
+            GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType) messageEvent.getData());
         }
         osdView.invalidateView();
     }
@@ -747,6 +743,10 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void startVideoRecord(String reason) throws Exception {
+        if (!canRecord) {
+            Logg.d(TAG, "can not record at this time.");
+            return;
+        }
         int sdcardStatus = FileManager.getInstance(getContext()).checkSdcardAvailable();
         Logg.d(TAG, "startVideoRecord sdcardStatus=" + sdcardStatus);
 
@@ -821,17 +821,28 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
+    public void inContractDay() {
+        Log.d(TAG, "inContractDay");
+        canRecord = true;
+        GlobalLogic.getInstance().setECallAllow(true);
+        try {
+            startVideoRecord("get insurance");
+        } catch (Exception e) {
+            Logg.e(TAG, "startVideoRecord when get insurance failed");
+        }
+    }
+
     /**
      * 合约开始日之前，停止界面更新，停止录像
      */
     public void beforeContractDayStart() {
+        Log.d(TAG, "beforeContractDayStart");
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 tvContent.setVisibility(View.VISIBLE);
                 osdView.setVisibility(View.GONE);
                 tvContent.setText(getString(R.string.before_contract_day_start));
-                releaseAll();
                 timeFinishShow.start();
             }
         });
@@ -845,34 +856,28 @@ public class CameraRecordFragment extends Fragment {
 
         @Override
         public void onFinish() {
+            canRecord = true;
+            GlobalLogic.getInstance().setECallAllow(false);
             tvContent.setVisibility(View.GONE);
             osdView.setVisibility(View.VISIBLE);
+            try {
+                startVideoRecord("get insurance");
+            } catch (Exception e) {
+                Logg.e(TAG, "startVideoRecord when get insurance failed");
+            }
         }
     };
 
-    private void releaseAll() {
-        stopVideoRecord("Fragment onPause");
-        GPSStatusManager.getInstance().recordLocation(false);
-        getActivity().unregisterReceiver(mSdStatusListener);
-        getActivity().unregisterReceiver(mSdBadRemovalListener);
-        getActivity().unregisterReceiver(mShutdownReceiver);
-        getActivity().unregisterReceiver(mBatteryStateReceiver);
-        getActivity().unregisterReceiver(simCardReceiver);
-        mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
-        LedMananger.getInstance().setLedMicStatus(false);
-        EventUtil.unregister(this);
-        osdView.unInit();
-        hasStopped = true;
-    }
-
     public void afterContractDayEnd() {
+        Log.d(TAG, "afterContractDayEnd");
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                canRecord = false;
+                GlobalLogic.getInstance().setECallAllow(false);
                 tvContent.setVisibility(View.VISIBLE);
                 osdView.setVisibility(View.GONE);
                 tvContent.setText(getString(R.string.after_contract_day_stop));
-                releaseAll();
             }
         });
     }
