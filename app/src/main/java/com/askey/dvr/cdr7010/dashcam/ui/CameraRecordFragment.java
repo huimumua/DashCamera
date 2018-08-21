@@ -36,6 +36,8 @@ import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
@@ -58,10 +60,12 @@ import com.askey.platform.AskeySettings;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -421,6 +425,51 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
+    private LocalJvcStatusManager.LocalJvcStatusCallback jvcStatusCallback = enumMap -> {
+        Logg.d(TAG, "onDataArriving...");
+        int oos = -1;
+        String response = null;
+        if (enumMap != null) {
+            if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.OOS)) {
+                oos = (int) enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
+                Logg.d(TAG, "oos..." + oos);
+            }
+            if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.RESPONSE)) {
+                response = (String) enumMap.get(JvcStatusParams.JvcStatusParam.RESPONSE);
+                Logg.d(TAG, "response.." + response);
+            }
+            switch (oos) {
+                case 0://成功
+                    if (response != null) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.optInt("status");
+                            switch (status) {
+                                case 0://正常
+                                    int flg = jsonObject.optInt("flg");
+                                    dealFlg(flg);
+                                    break;
+                                case -1://想定外の例外
+                                    break;
+                                case -100://IMEIが未入力
+                                    break;
+                                case -700://IMEIがDBに未登録
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+                default://圏外
+                    int flg = Settings.Global.getInt(getActivity().getContentResolver(), AskeySettings.Global.SYSSET_STARTUP_INFO, -1);
+                    Logg.d(TAG, "flg FROM SETTINGS==" + flg);
+                    dealFlg(flg);
+                    break;
+            }
+        }
+    };
+
     public static CameraRecordFragment newInstance() {
         return new CameraRecordFragment();
     }
@@ -450,6 +499,7 @@ public class CameraRecordFragment extends Fragment {
         requestSIMCardPermissions();
         GPSStatusManager.getInstance().recordLocation(true);
         osdView.init(1000);
+        LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
     }
 
     @Override
@@ -556,6 +606,10 @@ public class CameraRecordFragment extends Fragment {
         getActivity().unregisterReceiver(simCardReceiver);
         if (timeFinishShow != null) {
             timeFinishShow.cancel();
+        }
+        if (timeFinishApp != null) {
+            timeFinishApp.cancel();
+            timeFinishApp = null;
         }
         super.onDestroy();
     }
@@ -824,6 +878,22 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
+    private void dealFlg(int flg) {
+        switch (flg) {
+            case 1://始期日以前
+                beforeContractDayStart();
+                break;
+            case 0://対象の証券無し
+            case 2://証券期間中 do nothing
+                inContractDay();
+                break;
+            case 3://"満期日+14日"以降
+                timeFinishApp.start();
+                afterContractDayEnd();
+                break;
+        }
+    }
+
     public void inContractDay() {
         Log.d(TAG, "inContractDay");
         canRecord = true;
@@ -868,6 +938,19 @@ public class CameraRecordFragment extends Fragment {
             } catch (Exception e) {
                 Logg.e(TAG, "startVideoRecord when get insurance failed");
             }
+        }
+    };
+
+    private CountDownTimer timeFinishApp = new CountDownTimer(60000, 1000) {
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+        }
+
+        @Override
+        public void onFinish() {
+            Logg.d(TAG, "关闭电源");
+            ActivityUtils.shutDown(DashCamApplication.getAppContext());
         }
     };
 
