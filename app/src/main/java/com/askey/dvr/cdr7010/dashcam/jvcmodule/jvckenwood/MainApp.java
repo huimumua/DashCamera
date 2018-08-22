@@ -364,7 +364,7 @@ public class MainApp {
         return true;
     }
 
-    private static void sendStatUpNotify() {
+    public static void sendStatUpNotify() {
         Log.d(LOG_TAG, "sendStatUpNotify~~~~!");
         ContentResolver contentResolver = mAppContext.getContentResolver();
         try {

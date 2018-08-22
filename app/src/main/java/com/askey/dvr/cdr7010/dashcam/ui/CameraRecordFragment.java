@@ -36,6 +36,7 @@ import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -889,6 +890,7 @@ public class CameraRecordFragment extends Fragment {
             case 3://"満期日+14日"以降
                 timeFinishApp.start();
                 afterContractDayEnd();
+                MainApp.sendStatUpNotify();
                 break;
         }
     }
