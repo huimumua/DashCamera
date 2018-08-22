@@ -26,7 +26,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class Camera2Controller {
-    private static final String TAG = "Camera2Controller";
+    private static final String TAG_BASE = Camera2Controller.class.getSimpleName();
+    private String TAG = TAG_BASE;
     private final CameraControllerListener mListener;
     private final Handler mListenerHandler;
     private boolean mIsRecordingVideo;
@@ -132,6 +133,7 @@ public class Camera2Controller {
     };
 
     public void open(@CameraHelper.CameraName int camera) throws Exception {
+        TAG = TAG_BASE + "-" + camera;
         Log.v(TAG, "open: facing = " + camera);
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {

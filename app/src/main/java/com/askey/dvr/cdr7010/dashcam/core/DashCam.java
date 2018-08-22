@@ -141,7 +141,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
         mContext = context.getApplicationContext();
         mConfig = config;
         mStateCallback = callback;
-        mStateMachine = new StateMachine(this);
+        mStateMachine = new StateMachine(this, config.cameraId());
         mMainThreadHandler = new Handler(Looper.getMainLooper());
         if (config.adasEnable()) {
             mAdasController = AdasController.getsInstance();

@@ -33,7 +33,9 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 public class MediaMuxerWrapper {
-    private static final String LOG_TAG = "MuxerWrapper";
+
+    private static final String TAG_BASE = MediaMuxerWrapper.class.getSimpleName();
+    private final String LOG_TAG;
 
     private Context mContext;
     private final HandlerThread mHandlerThread;
@@ -99,6 +101,7 @@ public class MediaMuxerWrapper {
                              @NonNull RecordConfig config,
                              final SegmentCallback segmentCallback,
                              final StateCallback stateCallback) throws IOException {
+        LOG_TAG = TAG_BASE + "-" + config.cameraId();
         mContext = context.getApplicationContext();
         mConfig = config;
         mSegmentCallback = segmentCallback;
@@ -346,7 +349,7 @@ public class MediaMuxerWrapper {
     }
 
 
-    static private class MuxerHandler extends Handler {
+    private class MuxerHandler extends Handler {
 
         private AndroidMuxer muxer;
         private WeakReference<MediaMuxerWrapper> weakParent;

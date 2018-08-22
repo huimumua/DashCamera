@@ -26,7 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Recorder implements IFrameListener {
-    private final static String TAG = "Recorder";
+    private final static String TAG_BASE = Recorder.class.getSimpleName();
+    private final String TAG;
     private static final String AES_KEY = "CaH5U?<5no_z3S,0Zx,8Ua<0Qo&5Ep/0";
 
     private Context mContext;
@@ -58,6 +59,7 @@ public class Recorder implements IFrameListener {
         mContext = context.getApplicationContext();
         mConfig = config;
         mStateCallback = callback;
+        TAG = TAG_BASE + "-" + config.cameraId();
     }
 
     public void prepare() throws IOException {

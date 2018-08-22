@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StateMachine {
-    private static final String TAG = "StateMachine";
+    private static final String TAG_BASE = StateMachine.class.getSimpleName();
+    private final String TAG;
 
     public final State STATE_CLOSE;
     private final State STATE_OPEN;
@@ -112,7 +113,8 @@ public class StateMachine {
         EEvent event;
     }
 
-    public StateMachine(DashCamControl dashCam) {
+    public StateMachine(DashCamControl dashCam, int cameraID) {
+        TAG = TAG_BASE + "-" + cameraID;
         mDashCamControl = dashCam;
         STATE_PREPARE_OPEN = new State("PREPARE_OPEN") {
             @Override
