@@ -99,7 +99,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
         DEBUG_IMAGE_PROCESS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_PROCESS, false);
         Log.v(TAG, "AdasController: DEBUG_IMAGE_PROCESS = " + DEBUG_IMAGE_PROCESS);
-        mFakeSpeed = SystemPropertiesProxy.getInt(PROP_FAKE_SPEED, 700); // TODO: default 0 to get real speed by default
+        mFakeSpeed = SystemPropertiesProxy.getInt(PROP_FAKE_SPEED, 0);
         Log.v(TAG, "AdasController: mFakeSpeed = " + mFakeSpeed);
     }
 
