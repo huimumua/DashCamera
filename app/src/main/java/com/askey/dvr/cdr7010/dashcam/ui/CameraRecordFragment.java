@@ -66,6 +66,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -302,13 +303,7 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     RECORDING_CONTINUOUS));
             isEventRecording = false;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    EventManager.getInstance().handOutEventInfo(104);
-                }
-            });
-
+            mHandler.post(() -> EventManager.getInstance().handOutEventInfo(104));
         }
 
         @Override
@@ -317,21 +312,10 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
             if (!isEventRecording) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        EventManager.getInstance().handOutEventInfo(105);
-                    }
-                });
+                mHandler.post(() -> EventManager.getInstance().handOutEventInfo(105));
             } else {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        EventManager.getInstance().handOutEventInfo(124);
-                    }
-                });
+                mHandler.post(() -> EventManager.getInstance().handOutEventInfo(124));
             }
-
         }
 
         @Override
@@ -339,13 +323,7 @@ public class CameraRecordFragment extends Fragment {
             Logg.d(TAG, "DashState: onError");
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     UIElementStatusEnum.RecordingStatusType.RECORDING_ERROR));
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    EventManager.getInstance().handOutEventInfo(114);
-                }
-            });
-
+            mHandler.post(() -> EventManager.getInstance().handOutEventInfo(114));
         }
 
         @Override
@@ -355,18 +333,15 @@ public class CameraRecordFragment extends Fragment {
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT : RECORDING_CONTINUOUS));
             final boolean event = isEventRecording;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (on) { // event recording
-                        EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
-                        EventManager.getInstance().handOutEventInfo(123); // Event Recording start
-                    } else { // Continuous recording
-                        if (event) {
-                            EventManager.getInstance().handOutEventInfo(124); // Event Recording end
-                        }
-                        EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
+            mHandler.post(() -> {
+                if (on) { // event recording
+                    EventManager.getInstance().handOutEventInfo(105); // Continuous Recording end
+                    EventManager.getInstance().handOutEventInfo(123); // Event Recording start
+                } else { // Continuous recording
+                    if (event) {
+                        EventManager.getInstance().handOutEventInfo(124); // Event Recording end
                     }
+                    EventManager.getInstance().handOutEventInfo(104); // Continuous Recording start
                 }
             });
             isEventRecording = on;
@@ -396,7 +371,6 @@ public class CameraRecordFragment extends Fragment {
                     //e.printStackTrace();
                 }
             }
-
         }
 
         @Override
@@ -425,47 +399,51 @@ public class CameraRecordFragment extends Fragment {
         }
     };
 
-    private LocalJvcStatusManager.LocalJvcStatusCallback jvcStatusCallback = enumMap -> {
-        Logg.d(TAG, "onDataArriving...");
-        int oos = -1;
-        String response = null;
-        if (enumMap != null) {
-            if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.OOS)) {
-                oos = (int) enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
-                Logg.d(TAG, "oos..." + oos);
-            }
-            if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.RESPONSE)) {
-                response = (String) enumMap.get(JvcStatusParams.JvcStatusParam.RESPONSE);
-                Logg.d(TAG, "response.." + response);
-            }
-            switch (oos) {
-                case 0://成功
-                    if (response != null) {
-                        try {
-                            JSONObject jsonObject = new JSONObject(response);
-                            int status = jsonObject.optInt("status");
-                            switch (status) {
-                                case 0://正常
-                                    int flg = jsonObject.optInt("flg");
-                                    dealFlg(flg);
-                                    break;
-                                case -1://想定外の例外
-                                    break;
-                                case -100://IMEIが未入力
-                                    break;
-                                case -700://IMEIがDBに未登録
-                                    break;
+    private LocalJvcStatusManager.LocalJvcStatusCallback jvcStatusCallback = new LocalJvcStatusManager.LocalJvcStatusCallback() {
+        @Override
+        public void onDataArriving(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap) {
+            LocalJvcStatusManager.removeInsuranceCallback(this);
+            Logg.d(TAG, "onDataArriving...");
+            int oos = -1;
+            String response = null;
+            if (enumMap != null) {
+                if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.OOS)) {
+                    oos = (int) enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
+                    Logg.d(TAG, "oos..." + oos);
+                }
+                if (enumMap.containsKey(JvcStatusParams.JvcStatusParam.RESPONSE)) {
+                    response = (String) enumMap.get(JvcStatusParams.JvcStatusParam.RESPONSE);
+                    Logg.d(TAG, "response.." + response);
+                }
+                switch (oos) {
+                    case 0://成功
+                        if (response != null) {
+                            try {
+                                JSONObject jsonObject = new JSONObject(response);
+                                int status = jsonObject.optInt("status");
+                                switch (status) {
+                                    case 0://正常
+                                        int flg = jsonObject.optInt("flg");
+                                        dealFlg(flg);
+                                        break;
+                                    case -1://想定外の例外
+                                        break;
+                                    case -100://IMEIが未入力
+                                        break;
+                                    case -700://IMEIがDBに未登録
+                                        break;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
-                    }
-                    break;
-                default://圏外
-                    int flg = Settings.Global.getInt(getActivity().getContentResolver(), AskeySettings.Global.SYSSET_STARTUP_INFO, -1);
-                    Logg.d(TAG, "flg FROM SETTINGS==" + flg);
-                    dealFlg(flg);
-                    break;
+                        break;
+                    default://圏外
+                        int flg = Settings.Global.getInt(getActivity().getContentResolver(), AskeySettings.Global.SYSSET_STARTUP_INFO, -1);
+                        Logg.d(TAG, "flg FROM SETTINGS==" + flg);
+                        dealFlg(flg);
+                        break;
+                }
             }
         }
     };
@@ -573,7 +551,6 @@ public class CameraRecordFragment extends Fragment {
                     .build();
             mExtCam = new DashCam(getActivity(), extConfig, null);
         }
-
         try {
             startVideoRecord("Fragment onResume");
         } catch (Exception e) {
@@ -621,31 +598,31 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void requestVideoPermissions() {
-        if (!hasPermissionsGranted(VIDEO_PERMISSIONS)) {
+        if (hasPermissionsNotGranted(VIDEO_PERMISSIONS)) {
             requestPermissions(VIDEO_PERMISSIONS, REQUEST_VIDEO_PERMISSIONS);
         }
     }
 
     private void requestGPSPermissions() {
-        if (!hasPermissionsGranted(GPS_PERMISSIONS)) {
+        if (hasPermissionsNotGranted(GPS_PERMISSIONS)) {
             requestPermissions(GPS_PERMISSIONS, REQUEST_GPS_PERMISSIONS);
         }
     }
 
     private void requestSIMCardPermissions() {
-        if (!hasPermissionsGranted(SIM_PERMISSIONS)) {
+        if (hasPermissionsNotGranted(SIM_PERMISSIONS)) {
             requestPermissions(SIM_PERMISSIONS, REQUEST_SIMCARD_PERMISSIONS);
         }
     }
 
-    private boolean hasPermissionsGranted(String[] permissions) {
+    private boolean hasPermissionsNotGranted(String[] permissions) {
         for (String permission : permissions) {
             if (ActivityCompat.checkSelfPermission(getActivity(), permission)
                     != PackageManager.PERMISSION_GRANTED) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -800,8 +777,13 @@ public class CameraRecordFragment extends Fragment {
     }
 
     private void startVideoRecord(String reason) throws Exception {
+        if (mMainCam == null) {
+            Logg.d(TAG, "dashcam unavailable");
+            return;
+        }
         if (!canRecord) {
             Logg.d(TAG, "can not record at this time.");
+            LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
             return;
         }
         int sdcardStatus = FileManager.getInstance(getContext()).checkSdcardAvailable();
@@ -818,10 +800,6 @@ public class CameraRecordFragment extends Fragment {
         } else {
             RecordHelper.setRecordingPrecondition(SDCARD_AVAILABLE);
             onMessageEvent(new MessageEvent<>(Event.EventCode.EVENT_SDCARD, SDCARD_INIT_SUCCESS));
-        }
-
-        if (mMainCam == null) {
-            throw new RuntimeException("dashcam unavailable");
         }
         // TODO: TBD: need to check?
         // Or don't check here Let DashCam decide it can start or not
@@ -861,16 +839,13 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onChange(boolean selfChange) {
             if (mMainCam != null && mExecutor != null) {
-                mExecutor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getMicphoneEnable()) {
-                            mMainCam.demute();
-                            EventManager.getInstance().handOutEventInfo(106); //Audio recording ON
-                        } else {
-                            mMainCam.mute();
-                            EventManager.getInstance().handOutEventInfo(107); //Audio recording OFF
-                        }
+                mExecutor.submit(() -> {
+                    if (getMicphoneEnable()) {
+                        mMainCam.demute();
+                        EventManager.getInstance().handOutEventInfo(106); //Audio recording ON
+                    } else {
+                        mMainCam.mute();
+                        EventManager.getInstance().handOutEventInfo(107); //Audio recording OFF
                     }
                 });
             }
@@ -899,15 +874,12 @@ public class CameraRecordFragment extends Fragment {
         Log.d(TAG, "inContractDay");
         canRecord = true;
         GlobalLogic.getInstance().setECallAllow(true);
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    startVideoRecord("get insurance");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Logg.e(TAG, "startVideoRecord when get insurance failed");
-                }
+        getActivity().runOnUiThread(() -> {
+            try {
+                startVideoRecord("get insurance");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Logg.e(TAG, "startVideoRecord when get insurance failed");
             }
         });
     }
@@ -917,14 +889,11 @@ public class CameraRecordFragment extends Fragment {
      */
     public void beforeContractDayStart() {
         Log.d(TAG, "beforeContractDayStart");
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                tvContent.setVisibility(View.VISIBLE);
-                osdView.setVisibility(View.GONE);
-                tvContent.setText(getString(R.string.before_contract_day_start));
-                timeFinishShow.start();
-            }
+        getActivity().runOnUiThread(() -> {
+            tvContent.setVisibility(View.VISIBLE);
+            osdView.setVisibility(View.GONE);
+            tvContent.setText(getString(R.string.before_contract_day_start));
+            timeFinishShow.start();
         });
     }
 
@@ -963,15 +932,12 @@ public class CameraRecordFragment extends Fragment {
 
     public void afterContractDayEnd() {
         Log.d(TAG, "afterContractDayEnd");
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                canRecord = false;
-                GlobalLogic.getInstance().setECallAllow(false);
-                tvContent.setVisibility(View.VISIBLE);
-                osdView.setVisibility(View.GONE);
-                tvContent.setText(getString(R.string.after_contract_day_stop));
-            }
+        getActivity().runOnUiThread(() -> {
+            canRecord = false;
+            GlobalLogic.getInstance().setECallAllow(false);
+            tvContent.setVisibility(View.VISIBLE);
+            osdView.setVisibility(View.GONE);
+            tvContent.setText(getString(R.string.after_contract_day_stop));
         });
     }
 
@@ -997,7 +963,6 @@ public class CameraRecordFragment extends Fragment {
         }
         refreshUserInfo();
         EventManager.getInstance().handOutEventInfo(127);
-
     }
 
     private void checkSdcardAndSimcardStatus() {
