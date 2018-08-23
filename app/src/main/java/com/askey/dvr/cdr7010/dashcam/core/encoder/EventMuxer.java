@@ -42,6 +42,7 @@ public class EventMuxer implements Runnable{
     private final SegmentCallback mCallback;
     private final Handler mHandler;
     private int slice_index = 0;
+    private volatile boolean mEventBusy = false;
 
     @Override
     public void run() {
@@ -138,6 +139,7 @@ public class EventMuxer implements Runnable{
                             sliceCount = 0;
                             mMuxer = null;
                             eventId = Event.ID_NONE;
+                            mEventBusy = false;
                         }
                     }
                 }
@@ -148,6 +150,7 @@ public class EventMuxer implements Runnable{
             mMuxer.stop();
             mMuxer = null;
         }
+        mEventBusy = false;
         mInputQueue.clear();
         Logg.d(LOG_TAG, "EventMuxer thread exit");
     }
@@ -188,11 +191,14 @@ public class EventMuxer implements Runnable{
     }
 
     void feed(int eventId, long time, String file) {
+        if (eventId != Event.ID_NONE && mMuxer == null) {
+            mEventBusy = true;
+        }
         mInputQueue.add(new Slice(eventId, time, file));
     }
 
     boolean isRecording() {
-        return mMuxer != null;
+        return mEventBusy;
     }
 
     AndroidMuxer createMuxer(final String path, final int eventId, final long eventTime) {
