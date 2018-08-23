@@ -152,23 +152,28 @@ public class EventManager {
     public void handOutEventInfo(int eventType) {
         long timeStamp = System.currentTimeMillis();
         EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
+        if(checkEventInfo(eventInfo,eventType,timeStamp)){
+            handOutEventInfo(eventInfo, timeStamp);
+        }
+    }
+
+    public boolean checkEventInfo(EventInfo eventInfo, int eventType ,long timeStamp){
         if (eventInfo == null) {
             Logg.e(LOG_TAG, "handOutEventInfo: can't find EventInfo, eventType=" + eventType);
-            return;
+            return false;
         }
         if (GlobalLogic.getInstance().isStartSwitchUser() || GlobalLogic.getInstance().isECallNotAllow()) {
-            if (eventInfo.isSupportPopUp() || eventInfo.isSupportSpeech()) {
-                Logg.d(LOG_TAG, "handOutEventInfo: start switch user, eventType=" + eventType);
-                eventInfo.setSupportPopUpStatus(false);
-                eventInfo.setSupportSpeechStatus(false);
-//                return;
+            if (eventInfo.isSupportLed()) {
+                for (EventCallback eventCallback : mLedEventCallbackList)
+                    eventCallback.onEvent(eventInfo, timeStamp);
             }
+            return false;
         }
         if (!DrivingSupportAlertSettingOnOffCheck.checkDrivingSupportAlertSettingOnOff(eventType)) {
             Logg.d(LOG_TAG, "checkDrivingSupportAlertSettingOnOff, eventType=" + eventType + " off");
-            return;
+            return false;
         }
-        handOutEventInfo(eventInfo, timeStamp);
+        return true;
     }
 
     public void handOutEventInfo(EventInfo eventInfo, long timeStamp) {

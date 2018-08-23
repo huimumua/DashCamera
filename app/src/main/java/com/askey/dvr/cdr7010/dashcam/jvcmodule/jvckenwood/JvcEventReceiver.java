@@ -33,7 +33,7 @@ public class JvcEventReceiver extends BroadcastReceiver {
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if (checkEventInfo(eventInfo, eventType))
+            if (EventManager.getInstance().checkEventInfo(eventInfo, eventType,timeStamp))
                 EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
 
 
