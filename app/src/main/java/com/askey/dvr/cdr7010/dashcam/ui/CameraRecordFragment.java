@@ -874,8 +874,8 @@ public class CameraRecordFragment extends Fragment {
         Log.d(TAG, "inContractDay");
         canRecord = true;
         GlobalLogic.getInstance().setECallAllow(true);
-        checkSdcardAndSimcardStatus();
         getActivity().runOnUiThread(() -> {
+            checkSdcardAndSimcardStatus();
             try {
                 startVideoRecord("get insurance");
             } catch (Exception e) {
