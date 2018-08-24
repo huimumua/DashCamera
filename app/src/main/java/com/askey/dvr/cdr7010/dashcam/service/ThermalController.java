@@ -33,10 +33,11 @@ public class ThermalController{
     private static final int LCD_HIGH_TEMP_THRESHOLD = 69;
     private static final int LCD_NORMAL_TEMP_THRESHOLD = 60;
     private static final int LCD_HIGH_TEMP_NOTIFY = 71;
+    private static final int LCD_ON = 1;
+    private static final int LCD_OFF =0;
     private HandlerThread mThermalMonitorThread;
     private Handler mThermalMonitorHandler;
     private ThermalListener thermalListener;
-    private boolean isCloseLcd;
     private boolean isFirstStart;
     private int last_temp;
     public interface ThermalListener{
@@ -63,12 +64,6 @@ public class ThermalController{
         mThermalMonitorHandler = null;
         EventUtil.unregister(this);
     }
-    public void setLcdCloseStatus(boolean isCloseLcd){
-        this.isCloseLcd = isCloseLcd;
-    }
-    private boolean isCloseLcd(){
-        return isCloseLcd;
-    }
 
     private  class ThermalMonitorRunnable implements Runnable {
         @Override
@@ -88,17 +83,17 @@ public class ThermalController{
                     EventUtil.sendEvent(Integer.valueOf(CPU_HIGH_TEMP_CRITICAL_POINT));
                 }
                 if(lcd_temp >= LCD_HIGH_TEMP_THRESHOLD){
-                    if(!isCloseLcd()) {
+                    if(LcdManager.getInstance().getLcdOnOffStatus() == LCD_ON) {
                         EventUtil.sendEvent(Integer.valueOf(LCD_HIGH_TEMP_NOTIFY));
                     }
                 }
-                if(lcd_temp < LCD_NORMAL_TEMP_THRESHOLD){
-                    if(isCloseLcd()){
+                if(lcd_temp <= LCD_NORMAL_TEMP_THRESHOLD){
+                    if(LcdManager.getInstance().getLcdOnOffStatus() == LCD_OFF){
                         EventUtil.sendEvent(Integer.valueOf(LCD_NORMAL_TEMP_THRESHOLD));
                     }
                 }
             }
-            mThermalMonitorHandler.postDelayed(this,1*5*1000);
+            mThermalMonitorHandler.postDelayed(this,1*7*1000);
         }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -126,10 +121,8 @@ public class ThermalController{
                 return;
             }
             EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV1);
-            setLcdCloseStatus(true);
         }else if(eventType.intValue() == LCD_NORMAL_TEMP_THRESHOLD){
             thermalListener.startLcdPanel();
-            setLcdCloseStatus(false);
         }
 
     }

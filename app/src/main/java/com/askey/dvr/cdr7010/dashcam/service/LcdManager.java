@@ -32,5 +32,9 @@ public class LcdManager{
             this.askeyLcdThermalManager.setLcdLightFlagOff();
         }
     }
+    public int getLcdOnOffStatus(){
+        int lcdOnOffStatus = this.askeyLcdThermalManager.ReadLcdOnOffStatus();
+        return lcdOnOffStatus;
+    }
 
 }
