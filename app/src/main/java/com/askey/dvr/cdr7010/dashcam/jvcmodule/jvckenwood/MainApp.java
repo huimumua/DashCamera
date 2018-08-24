@@ -52,6 +52,7 @@ public class MainApp {
     private static int startUp;
     private static int rtcInfo;
     private static final String PREFER_KEY_CONTRACT_FLG = "ContractFlg";
+    private int tripNum;
 
     private MainApp() {
         mAppContext = DashCamApplication.getAppContext();
@@ -65,7 +66,7 @@ public class MainApp {
                 }
             }
         }
-        countDownLatch = new CountDownLatch(3);
+        countDownLatch = new CountDownLatch(4);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -146,6 +147,16 @@ public class MainApp {
         }
 
         @Override
+        public void reportTripInfo(int oos, String response) throws RemoteException {
+            tripNum++;
+            if (tripNum==1){
+                countDownLatch.countDown();
+                Log.d(LOG_TAG,"countDownLatch.countDown()  04~~");
+            }
+            Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + "，tripNum=" + tripNum + ", response=" + response);
+        }
+
+        @Override
         public void reportSettingsUpdate(int oos, String response) {
             Logg.d(LOG_TAG, "reportSettingsUpdate: oos=" + oos + ", response=" + response);
             CommunicationService.reportSettingsUpdate(oos, response);
@@ -155,6 +166,7 @@ public class MainApp {
             enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
             SystemSettingManager.settingsUpdate(enumMap);
         }
+
 
         @Override
         public void reportDrivingReport(int oos, String response) {

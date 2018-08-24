@@ -32,9 +32,6 @@ interface IMainAppCallback {
      * 圏外の場合は取得できなかったことを通知する
      * </p>
      * @param oos 圏外フラグ 0:成功 1:圏外 2:処理中
-     * @param defaultUser デフォルトユーザー変更フラグ 0:変更なし 1:変更有
-     * @param selectUser 選択ユーザー変更フラグ 0:変更なし 1:変更有
-     * @param userList ユーザー一覧変更フラグ 0:変更なし 1:変更有
      * @param response サーバーからのレスポンスのJSON
      * @since 0.1 WIP
      */
@@ -66,6 +63,17 @@ interface IMainAppCallback {
      */
     void reportUserSettings(int oos, String response);
 
+    /**
+     * トリップID取得の結果
+     * <p>
+     * WaaSサーバーから取得したトリップID取得結果をMainAPPに通知する<br>
+     * 圏外の場合は取得できなかったことを通知する
+     * </p>
+     * @param oos 圏外フラグ 0:成功 1:圏外 2:処理中
+     * @param response サーバーからのレスポンスのJSON
+     * @since 0.1 WIP
+     */
+    void reportTripInfo(int oos, String response);
 
     /**
      * ドラレコ設定情報登録の結果
