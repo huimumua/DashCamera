@@ -28,46 +28,14 @@ public class GLDrawer2D {
 		+ "	gl_Position = uMVPMatrix * aPosition;\n"
 		+ "	vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n"
 		+ "}\n";
-//	private static final String fss
-//		= "#extension GL_OES_EGL_image_external : require\n"
-//		+ "precision mediump float;\n"
-//		+ "uniform samplerExternalOES sTexture;\n"
-//		+ "varying highp vec2 vTextureCoord;\n"
-//		+ "void main() {\n"
-//		+ "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n"
-//		+ "}";
 	private static final String fss
-			= "#extension GL_OES_EGL_image_external : require\n"
-			+ "precision highp   float;\n"
-			+ "uniform samplerExternalOES sTexture;\n"
-			+ "varying highp vec2 vTextureCoord;\n"
-			+ "vec2 GLCoord2TextureCoord(vec2 glCoord) {        return glCoord  * vec2(1.0, -1.0)/ 2.0 + vec2(0.5, 0.5);    }\n"
-			+ "void main() {\n"
-			+"   vec2 coord;\n"
-			+ "coord.x =  vTextureCoord.x;\n"
-			+ "coord.y =  1.0 - vTextureCoord.y;\n"
-			+"  vec3 uLensS;\n"
-			+" uLensS.x=1.0001;\n"   //1.8
-			+" uLensS.y=1.0001;\n"  //2.2
-			+" uLensS.z=1.0001;\n"  //scale 1.8
-			+" float Fx = 0.060;\n"+   //0.29
-			" float Fy = 0.400;\n"+    //1.4
-			" float scale = 0.520;\n"+
-			"  vec2 vPos  = coord;\n" +
-			"  vPos.x=vPos.x-0.5;\n"+
-			"  vPos.y=vPos.y-0.5;\n"+
-			"   vec2 vMapping = vPos.xy;\n" +
-			" vMapping.x = vMapping.x + ((pow(vPos.y, 2.0)/scale)*vPos.x/scale)*-Fx;\n"+
-			" vMapping.y = vMapping.y + ((pow(vPos.x, 2.0)/scale)*vPos.y/scale)*-Fy;\n"+
-			" vMapping = vMapping * uLensS.xy;\n"+
-			" vMapping = GLCoord2TextureCoord(vMapping/scale);\n"+
-			"vMapping.x = vMapping.x -0.01;\n"+
-			"vMapping.y = vMapping.y +0.01 ;\n"+
-			"vec4 texture = texture2D(sTexture, vMapping);\n"+
-			"if(vMapping.x > 0.99 || vMapping.x < 0.01 || vMapping.y > 0.99 || vMapping.y < 0.01){texture = vec4(0.0, 0.0, 0.0, 1.0);	}\n"+
-			" gl_FragColor = texture;\n"
-			//+ "  gl_FragColor = texture2D(sTexture, coord);\n"
-			+ "}";
+		= "#extension GL_OES_EGL_image_external : require\n"
+		+ "precision mediump float;\n"
+		+ "uniform samplerExternalOES sTexture;\n"
+		+ "varying highp vec2 vTextureCoord;\n"
+		+ "void main() {\n"
+		+ "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n"
+		+ "}";
 	private static final float[] VERTICES = { 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f };
 	private static final float[] TEXCOORD = { 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f };
 
