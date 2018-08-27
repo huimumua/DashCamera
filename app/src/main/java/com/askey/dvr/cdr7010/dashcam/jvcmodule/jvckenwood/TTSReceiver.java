@@ -24,10 +24,10 @@ public class TTSReceiver extends BroadcastReceiver {
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: requestId=" + requestId);
             result = intent.getIntExtra("result", -1);
             Logg.i(LOG_TAG, "ACTION_VOICE_CANCEL_RESPONSE: result=" + result);
-            if (TTS.isSpeaking && requestId == TTS.speakingId) {
-                TTS.isSpeaking = false;
-                TTS.speakingId = -1;
-            }
+//            if (TTS.isSpeaking && requestId == TTS.speakingId) {
+//                TTS.isSpeaking = false;
+//                TTS.speakingId = -1;
+//            }
             if (result == 0) {//0 : 正常完了
                 Logg.i(LOG_TAG, "==0 : 正常完了===isSpeaking = false");
             } else if (result == 1) {//1 : パラメータエラー

@@ -47,6 +47,7 @@ import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LcdManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
+import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
@@ -692,6 +693,7 @@ public class CameraRecordFragment extends Fragment {
         switch (sDcardStatus) {
             case SDCARD_MOUNTED:
                 DialogManager.getIntance().setSdcardInserted(true);
+                TTSManager.getInstance().ttsStop(Event.SDCARD_UNMOUNTED);
                 break;
             case SDCARD_REMOVED:
                 DialogManager.getIntance().setSdcardPulledOut(true);

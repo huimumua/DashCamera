@@ -115,6 +115,12 @@ public class DialogManager{
         }
         return false;
     }
+    public int getLastDialogType(){
+        if(mContext != null && (mContext instanceof Activity)){
+            return ((DialogActivity) mContext).getEventType();
+        }
+        return -2;
+    }
     public void setSdcardInvisible(boolean isInvisible){
         if(eventList != null && eventList.contains(Event.SDCARD_UNFORMATTED)){
             eventList.remove(Event.SDCARD_UNFORMATTED);

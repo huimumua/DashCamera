@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.provider.Settings;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.DrivingSupportAlertSettingOnOffCheck;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
@@ -173,6 +174,14 @@ public class EventManager {
             Logg.d(LOG_TAG, "checkDrivingSupportAlertSettingOnOff, eventType=" + eventType + " off");
             return false;
         }
+        if(isHandleSameAndLowPriorityDialogEvent(eventInfo.getPriority(),eventType)){
+            Logg.d(LOG_TAG, "checkEventInfo isDialogShowing="+DialogManager.getIntance().isDialogShowing(eventType)+",eventType="+eventType);
+            return false;
+        }
+        if(isHandleSameAndLowPriorityTtsEvent(eventInfo.getPriority(),eventType)){
+            Logg.d(LOG_TAG, "checkEventInfo isResumeTtsByEventType="+TTSManager.getInstance().isResumeTtsByEventType(eventType)+",eventType="+eventType);
+            return false;
+        }
         return true;
     }
 
@@ -222,6 +231,57 @@ public class EventManager {
     public interface EventCallback {
         void onEvent(EventInfo eventInfo, long timeStamp);
 //        void onCommunication(EventInfo eventInfo, int oos, String response);
+    }
+    public boolean isHandleSameAndLowPriorityDialogEvent(int priority,int eventType){
+        int lastEventType = DialogManager.getIntance().getLastDialogType();
+        Logg.d(LOG_TAG,"lastEventType="+lastEventType);
+        if(lastEventType == -2 || lastEventType == -1){
+            return false;
+        }
+
+        int lastPriority = getEventInfoByEventType(lastEventType).getPriority();
+        boolean isShowDialog = DialogManager.getIntance().isDialogShowing(lastEventType);
+        boolean isSdCardAbnormalEvent = (Event.contains(Event.sdCardAbnormalEvent,eventType)
+                || Event.contains(Event.sdCardUnMountedEvent,eventType));
+
+        Logg.d(LOG_TAG,"isHandleSameAndLowPriorityDialogEvent isShowDialog="+isShowDialog+",priority="+priority+",lastPriority="+lastPriority);
+        if(priority > lastPriority){
+            if(isShowDialog){
+                return true;
+            }
+        }else if(priority == lastPriority){
+            if((eventType == lastEventType)&& !isSdCardAbnormalEvent){
+                if(isShowDialog){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public boolean isHandleSameAndLowPriorityTtsEvent(int priority,int eventType){
+        int lastTtsEventType = TTSManager.getInstance().getLastTtsEventType();
+        boolean isResumeTts = TTSManager.getInstance().isResumeTtsByEventType(lastTtsEventType);
+        boolean isSdCardAbnormalEvent = (Event.contains(Event.sdCardAbnormalEvent,eventType)
+                || Event.contains(Event.sdCardUnMountedEvent,eventType));
+        Logg.d(LOG_TAG,"lastTtsEventType="+lastTtsEventType);
+        if(lastTtsEventType == -1){
+            return false;
+        }
+
+        int lastPriority = getEventInfoByEventType(lastTtsEventType).getPriority();
+        Logg.d(LOG_TAG,"isHandleSameAndLowPriorityEvent lastPriority="+lastPriority+",priority="+priority+",lastTtsEventType"+lastTtsEventType+",isResumeTts="+isResumeTts);
+        if(priority > lastPriority){
+            if(isResumeTts){
+                return true;
+            }
+        }else if(priority == lastPriority){
+            if((eventType == lastTtsEventType)&& !isSdCardAbnormalEvent){
+                if(isResumeTts){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

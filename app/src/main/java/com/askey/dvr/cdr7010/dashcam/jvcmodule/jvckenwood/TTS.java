@@ -33,14 +33,14 @@ public class TTS {
             return;
         }
 
+        isSpeaking = true;
+        speakingId = requestId;
         Intent intent = new Intent(ACTION_VOICE_NOTIFICATION);
         intent.putExtra("voiceId", voiceId);
         Logg.i(TAG, "voiceNotification=voiceId==" + voiceId[0]);
         intent.putExtra("requestId", requestId);
         Logg.i(TAG, "voiceNotification=requestId==" + requestId);
         sendOutBroadcast(intent);
-        isSpeaking = true;
-        speakingId = requestId;
     }
 
     public void speechStop(int requestId) {

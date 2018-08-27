@@ -12,6 +12,7 @@ public class TTSManager{
     private TTS tts;
     private int lastPriority = Integer.MAX_VALUE;
     private int lastRequestId = -1;
+    private int curRequestId = -1;
 
     private TTSManager(){ }
 
@@ -35,10 +36,11 @@ public class TTSManager{
         }
     }
     public void ttsEventStart(int requestId,int priority,int[] voiceId){
-        Logg.d(TAG,"ttsEventStart requestId="+requestId+",priority="+priority+",voiceId="+voiceId[0]);
+        Logg.d(TAG,"ttsEventStart requestId="+requestId+",lastRequestId="+lastRequestId+",priority="+priority+",voiceId="+voiceId[0]);
         if(ttsIsSpeaking()){
-            if(priority <= lastPriority){
+            if(priority <= lastPriority && (lastRequestId !=requestId ) ){
                 if(instance != null && tts != null){
+                    curRequestId = requestId;
                     tts.speechStop(lastRequestId);
                     tts.voiceNotification(voiceId,requestId);
                 }
@@ -47,6 +49,7 @@ public class TTSManager{
             }
         }else{
             if(instance != null && tts != null){
+                curRequestId = requestId;
                 tts.voiceNotification(voiceId,requestId);
                 lastPriority = priority;
                 lastRequestId = requestId;
@@ -65,5 +68,14 @@ public class TTSManager{
         }
         return false;
     }
-
+   public boolean isResumeTtsByEventType(int eventType){
+       Logg.d(TAG,"isResumeTtsByEventType curRequestId="+curRequestId+",ttsIsSpeaking="+ttsIsSpeaking()+"eventType="+eventType);
+        if(eventType == curRequestId && ttsIsSpeaking()){
+            return true;
+        }
+        return false;
+   }
+   public int getLastTtsEventType(){
+       return  lastRequestId;
+   }
 }
