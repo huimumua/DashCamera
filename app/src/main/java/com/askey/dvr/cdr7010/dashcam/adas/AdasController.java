@@ -208,7 +208,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
         Location location = GPSStatusManager.getInstance().getCurrentLocation();
         if (location != null) {
-            mLocationSpeed = location.getSpeed();
+            mLocationSpeed = location.getSpeed() * 3.6f; // Convert m/s to km/h
         }
         return mLocationSpeed;
     }
