@@ -239,6 +239,10 @@ public class EventManager {
             return false;
         }
 
+        if(!getEventInfoByEventType(eventType).isSupportPopUp()){
+            return false;
+        }
+
         int lastPriority = getEventInfoByEventType(lastEventType).getPriority();
         boolean isShowDialog = DialogManager.getIntance().isDialogShowing(lastEventType);
         boolean isSdCardAbnormalEvent = (Event.contains(Event.sdCardAbnormalEvent,eventType)
@@ -265,6 +269,9 @@ public class EventManager {
                 || Event.contains(Event.sdCardUnMountedEvent,eventType));
         Logg.d(LOG_TAG,"lastTtsEventType="+lastTtsEventType);
         if(lastTtsEventType == -1){
+            return false;
+        }
+        if(!getEventInfoByEventType(eventType).isSupportSpeech()){
             return false;
         }
 
