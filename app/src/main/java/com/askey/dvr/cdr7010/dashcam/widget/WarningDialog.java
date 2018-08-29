@@ -100,6 +100,9 @@ public class WarningDialog extends Dialog {
                 case Event.DRIVING_OUTSIDE_THE_DESIGNATED_AREA:
                     waringImg.setImageResource(R.drawable.dialog_outside);
                     break;
+                case Event.FRONT_COLLISION_WARNING:
+                    waringImg.setImageResource(R.drawable.dialog_forwardcollision);
+                    break;
                 default:
                     waringImg.setImageResource(R.drawable.dialog_warning);
             }
