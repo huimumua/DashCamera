@@ -270,8 +270,11 @@ public class CameraRecordFragment extends Fragment {
                         isChargeDisconnect = true;
                         Logg.d(TAG, "battery status is discharging");
                         if (isEventRecording) {
-                            Logg.d(TAG, "battery status is discharging");
+                            Logg.d(TAG, "EventRecording");
                             mMainCam.takeAPicture(handler);
+                        } else {
+                            Logg.d(TAG, "NormalRecording");
+                            handler.sendEmptyMessage(0);
                         }
                         break;
                 }

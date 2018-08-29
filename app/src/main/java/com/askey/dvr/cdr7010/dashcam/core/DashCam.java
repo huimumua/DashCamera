@@ -220,7 +220,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
                     startCamera();
                 } catch (CameraAccessException e) {
                     goToErrorState(Error.CAMERA_ACCESS_EXCEPTION, e);
-                    return;
+                } catch (Exception e){
+                    e.printStackTrace();
                 }
             }
         });
