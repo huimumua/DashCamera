@@ -30,6 +30,7 @@ import com.askey.dvr.cdr7010.dashcam.util.GpsHelper;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.RecordHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
+import com.askey.dvr.cdr7010.dashcam.util.ScreenSleepUtils;
 import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
 
@@ -127,6 +128,7 @@ public class MainActivity extends DialogActivity {
         SDcardHelper.checkSdcardState(this);
         GpsHelper.checkGpsSignalStrength();
         EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_SECOND_CAMERIA, CameraHelper.hasExtCamera() ? CONNECTED : DISCONNECTED));
+        ScreenSleepUtils.resumeScreenSleep();
     }
 
     @Override
@@ -135,6 +137,7 @@ public class MainActivity extends DialogActivity {
         if (!SDcardHelper.isSDCardEnable(this)) {
             LedMananger.getInstance().setLedRecStatus(true, false, 0);
         }
+        ScreenSleepUtils.cancelScreenSleep();
     }
 
     @Override

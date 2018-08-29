@@ -12,6 +12,7 @@ import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.CancelableRunnable;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
+import com.askey.dvr.cdr7010.dashcam.util.ScreenSleepUtils;
 
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.SdCardAndSimCardCheckStatus.CHECK_START;
 
@@ -69,6 +70,7 @@ public class DialogLogic{
 
     public void onShow(){
         if(mContext != null && (mContext instanceof Activity)){
+            ScreenSleepUtils.setScreenOn();
             Bundle bundle = new Bundle();
             bundle.putString("Message", curMessage);
             bundle.putInt("EventType", curEventType);
