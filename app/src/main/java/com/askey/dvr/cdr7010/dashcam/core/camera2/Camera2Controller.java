@@ -129,8 +129,14 @@ public class Camera2Controller {
 
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int error) {
-            Log.v(TAG, "onError: cameraDevice = " + cameraDevice + ", error = " + error);
-            mCameraDevice.close();
+            Log.e(TAG, "onError: cameraDevice = " + cameraDevice + ", error = " + error);
+            mState = State.STOPPED;
+            try {
+                mCameraDevice.close();
+            } catch (IllegalStateException e) {
+                // Nothing we can do, just print out
+                Log.w(TAG, e.getMessage());
+            }
             mCameraDevice = null;
             mCameraOpenCloseLock.release();
             mListenerHandler.post(() -> mListener.onCameraError(error));
@@ -175,6 +181,9 @@ public class Camera2Controller {
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.");
+        } catch (IllegalStateException e) {
+            // Nothing we can do, just print out
+            Log.w(TAG, e.getMessage());
         } finally {
             mCameraOpenCloseLock.release();
         }

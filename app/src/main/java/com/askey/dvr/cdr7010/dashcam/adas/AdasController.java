@@ -311,22 +311,29 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
     }
 
-    public ImageReader getImageReader() {
-        if (mImageReader == null) {
-            mImageReader = ImageReader.newInstance(ADAS_IMAGE_WIDTH, ADAS_IMAGE_HEIGHT, ImageFormat.YUV_420_888, BUFFER_NUM);
-            mImageReader.setOnImageAvailableListener(reader -> {
-                Image image = null;
-                try {
-                    image = reader.acquireLatestImage();
-                    if (image != null) {
-                        process(image);
-                    }
-                } catch (IllegalStateException e) {
-                    // FIXME: find the root cause
-                    handleError( "onImageAvailable", "FIXME, " + e.getMessage());
-                }
-            }, null);
+    /**
+     * obtainImageReader create new ImageReader every time
+     * Because sometimes cameraserver died and may hold its connection and cannot release
+     * Always use a new ImageReader fix this issue
+     * @return
+     */
+    public ImageReader obtainImageReader() {
+        if (mImageReader != null) {
+            mImageReader.close();
         }
+        mImageReader = ImageReader.newInstance(ADAS_IMAGE_WIDTH, ADAS_IMAGE_HEIGHT, ImageFormat.YUV_420_888, BUFFER_NUM);
+        mImageReader.setOnImageAvailableListener(reader -> {
+            Image image = null;
+            try {
+                image = reader.acquireLatestImage();
+                if (image != null) {
+                    process(image);
+                }
+            } catch (IllegalStateException e) {
+                // FIXME: find the root cause
+                handleError( "onImageAvailable", "FIXME, " + e.getMessage());
+            }
+        }, null);
         return mImageReader;
     }
 

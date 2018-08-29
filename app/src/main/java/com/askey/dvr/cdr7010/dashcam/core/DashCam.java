@@ -164,6 +164,10 @@ public class DashCam implements DashCamControl, AdasStateListener {
     }
 
     public void enableAdas(boolean enabled) {
+        if (mAdasController == null) {
+            Logg.e(TAG, "enableAdas: mAdasController=null");
+            return;
+        }
         if (enabled) {
             mAdasController.init(mContext);
             mAdasController.addListener(this);
@@ -496,7 +500,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     private void prepareAdas(Camera2Controller camera2Controller) {
         Logg.v(TAG, "prepareAdas");
-        camera2Controller.setImageReader(mAdasController.getImageReader());
+        camera2Controller.setImageReader(mAdasController.obtainImageReader());
         setFunctionReady(Function.ADAS);
     }
 
