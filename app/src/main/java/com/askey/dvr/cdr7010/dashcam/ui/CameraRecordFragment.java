@@ -499,6 +499,7 @@ public class CameraRecordFragment extends Fragment {
         super.onResume();
         Logg.d(TAG, "onResume");
         onMessageEvent(new MessageEvent(Event.EventCode.EVENT_MIC));
+        onMessageEvent(new MessageEvent(Event.EventCode.EVENT_REFRESH_USER_NAME));
         LedMananger.getInstance().setLedMicStatus(getMicphoneEnable());
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
@@ -689,6 +690,8 @@ public class CameraRecordFragment extends Fragment {
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SECOND_CAMERIA) {
             GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType) messageEvent.getData());
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_REFRESH_USER_NAME){
+            refreshUserInfo();
         }
         osdView.invalidateView();
     }

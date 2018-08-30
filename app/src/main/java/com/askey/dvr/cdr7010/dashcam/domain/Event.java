@@ -75,6 +75,7 @@ public final class Event{
        public static final int EVENT_SWITCH_USER = 0x256;
        public static final int EVENT_CHECK_SDCARD_AND_SIMCARD = 0x512;
        public static final int EVENT_SECOND_CAMERIA = 0x1024;
+       public static final int EVENT_REFRESH_USER_NAME = 0x2048;
     // other more
    }
    public static final int[] detectEvent ={ACCIDENT_DETECTION,LONG_RUNNING,ABRUPT_HANDLE,
