@@ -67,19 +67,26 @@ public class MediaMuxerWrapper {
     public static final int SAMPLE_TYPE_AUDIO = 2;
 
     @IntDef({SAMPLE_TYPE_VIDEO, SAMPLE_TYPE_AUDIO})
-    public @interface SampleType {}
+    public @interface SampleType {
+    }
 
     public interface SegmentCallback {
         boolean segmentStartPrepareSync(int event, long startTimeMs, String path);
+
         void segmentStartAsync(int event, long startTimeMs);
+
         void segmentCompletedSync(int event, String path);
+
         void segmentCompletedAsync(int event, long eventTimeMs, String path, long startTimeMs, long durationMs);
+
         void segmentTerminated();
     }
 
     public interface StateCallback {
         void onStartd();
+
         void onStoped();
+
         void onInterrupted();
     }
 
@@ -95,6 +102,7 @@ public class MediaMuxerWrapper {
 
     /**
      * Constructor
+     *
      * @throws IOException
      */
     public MediaMuxerWrapper(Context context,
@@ -233,10 +241,12 @@ public class MediaMuxerWrapper {
 
     /**
      * request start recording from encoder
+     *
      * @return true when muxer is ready to write
      */
-    /*package*/ synchronized boolean start() {
-        Logg.v(LOG_TAG,  "start:");
+    /*package*/
+    synchronized boolean start() {
+        Logg.v(LOG_TAG, "start:");
         mStatredCount++;
         if ((mEncoderCount > 0) && (mStatredCount == mEncoderCount)) {
             mTotalDurationUs = 0;
@@ -248,7 +258,7 @@ public class MediaMuxerWrapper {
             mFirstStarPtsUs = -1;
             mReasonInterruption = false;
             notifyAll();
-            Logg.v(LOG_TAG,  "MediaMuxer started:");
+            Logg.v(LOG_TAG, "MediaMuxer started:");
             if (mStateCallback != null) {
                 mStateCallback.onStartd();
             }
@@ -259,8 +269,9 @@ public class MediaMuxerWrapper {
     /**
      * request stop recording from encoder when encoder received EOS
      */
-    /*package*/ synchronized void stop() {
-        Logg.v(LOG_TAG,  "stop:mStatredCount=" + mStatredCount);
+    /*package*/
+    synchronized void stop() {
+        Logg.v(LOG_TAG, "stop:mStatredCount=" + mStatredCount);
         mStatredCount--;
         if ((mEncoderCount > 0) && (mStatredCount <= 0)) {
             mIsStarted = false;
@@ -285,8 +296,9 @@ public class MediaMuxerWrapper {
         }
     }
 
-    /*package*/ synchronized void addTrackWithType(final @SampleType int type,
-                                                      final MediaFormat format) {
+    /*package*/
+    synchronized void addTrackWithType(final @SampleType int type,
+                                       final MediaFormat format) {
         if (type == SAMPLE_TYPE_AUDIO)
             mAudioFormat = format;
         else
@@ -295,9 +307,10 @@ public class MediaMuxerWrapper {
         mMuxerHandler.eventMuxer.addTrack(type, format);
     }
 
-    /*package*/ synchronized void writeSampleDataWithType(final @SampleType int type,
-                                                          final ByteBuffer byteBuf,
-                                                          final MediaCodec.BufferInfo bufferInfo) {
+    /*package*/
+    synchronized void writeSampleDataWithType(final @SampleType int type,
+                                              final ByteBuffer byteBuf,
+                                              final MediaCodec.BufferInfo bufferInfo) {
         if (!mIsStarted) return;
         long time = System.currentTimeMillis();
         int eventId = 0;
@@ -311,6 +324,7 @@ public class MediaMuxerWrapper {
             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
                 if (mEventState.isNeedProcess()) {
                     mEventState.doProcess();
+                    Logg.e("iamlbccc", "Write event slice to cache file...");
                     Event event = mEventState.getEvent();
                     eventId = event.getId();
                     time = event.getTime();
@@ -391,7 +405,9 @@ public class MediaMuxerWrapper {
 
         private void pauseContinuesRecording() {
             MediaMuxerWrapper parent = weakParent.get();
+
             synchronized (syncObj) {
+
                 if (parent != null && muxer != null) {
                     preperaEventRecording = true;
                     parent.closeMuxer(muxer);
@@ -418,9 +434,13 @@ public class MediaMuxerWrapper {
 
                     if (muxer == null) {
                         try {
+                            Logg.e("iamlbccc", "Starting of new normal, get file path. ");
                             String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(parent.mConfig.cameraId(), time);
+                            Logg.e("iamlbccc", "Starting of new normal, creating Muxer.");
                             muxer = new AndroidMuxer(path);
+                            Logg.e("iamlbccc", "Starting of new normal, creating Muxer. Done");
                             if (parent.mSegmentCallback != null) {
+                                Logg.e("iamlbccc", "Normal Start...  (sync)");
                                 parent.mSegmentCallback.segmentStartPrepareSync(Event.ID_NONE, time, muxer.filePath());
                             }
                             muxer.addTrack(SAMPLE_TYPE_VIDEO, parent.mVideoFormat);
@@ -433,6 +453,7 @@ public class MediaMuxerWrapper {
                                 @Override
                                 public void run() {
                                     if (parent.mSegmentCallback != null) {
+                                        Logg.e("iamlbccc", "Normal Start...  (async)");
                                         parent.mSegmentCallback.segmentStartAsync(Event.ID_NONE, startTimeMs);
                                     }
                                 }
@@ -459,12 +480,14 @@ public class MediaMuxerWrapper {
         @Override
         public void handleMessage(Message msg) {
             String path = (String) msg.obj;
+            Logg.e("iamlbccc", "handMessage -> " + msg.obj);
             File file = new File(path);
             RandomAccessFile fin = null;
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             int eventId = Event.ID_NONE;
             long eventTime = 0;
             try {
+                Logg.e("iamlbccc", "Normal Access cache file.");
                 fin = new RandomAccessFile(file, "r");
                 int index = fin.readInt();
                 if (index - slice_index != 1) {
@@ -521,10 +544,12 @@ public class MediaMuxerWrapper {
                     }
 
                     if (event != Event.ID_NONE) {
+                        Logg.e("iamlbccc", "Switch to event. pausing continues recording.");
                         // stop continues recording
                         eventId = event;
                         eventTime = time;
                         pauseContinuesRecording();
+                        Logg.e("iamlbccc", "Switch to event. pausing continues recording. Done");
                         break;
                     } else {
                         muxSampleData(type, time, buffer, bufferInfo);
@@ -552,7 +577,7 @@ public class MediaMuxerWrapper {
             return;
         }
 
-        for (File file: directory.listFiles()) {
+        for (File file : directory.listFiles()) {
             if (file.isDirectory())
                 cleanDirectory(file);
             else

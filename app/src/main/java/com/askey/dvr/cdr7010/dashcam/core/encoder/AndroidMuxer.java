@@ -12,8 +12,8 @@ import java.nio.ByteBuffer;
 
 public class AndroidMuxer {
     private final String LOG_TAG = "AndroidMuxer";
-    private static byte[] AAC_MONO_SILENCE_FRAME_WITH_SIZE = new byte[] {
-            0x0A, 0x00, 0x01, 0x40, 0x20, 0x06, 0x4F, (byte)0xDE, 0x02, 0x70, 0x0C, 0x1C};
+    private static byte[] AAC_MONO_SILENCE_FRAME_WITH_SIZE = new byte[]{
+            0x0A, 0x00, 0x01, 0x40, 0x20, 0x06, 0x4F, (byte) 0xDE, 0x02, 0x70, 0x0C, 0x1C};
 
     private MediaMuxer mMuxer;
     private int mVidIdx, mAudIdx;
@@ -30,9 +30,11 @@ public class AndroidMuxer {
     private long mMaxDurationMs;
     private int mFrameCount = 0;
 
-    AndroidMuxer(@NonNull final String path)  throws IOException {
+    AndroidMuxer(@NonNull final String path) throws IOException {
         mPath = path;
+        Logg.e("iamlbccc", "\t+ New MediaMuxer for " + path);
         mMuxer = new MediaMuxer(mPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        Logg.e("iamlbccc", "\t- New MediaMuxer for " + path);
     }
 
     String filePath() {
@@ -91,7 +93,7 @@ public class AndroidMuxer {
 
         if (type == MediaMuxerWrapper.SAMPLE_TYPE_AUDIO) {
             mHasAudioData = true;
-        } else if (type == MediaMuxerWrapper.SAMPLE_TYPE_VIDEO){
+        } else if (type == MediaMuxerWrapper.SAMPLE_TYPE_VIDEO) {
             if (!mHasKeyFrame) {
                 if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
                     mHasKeyFrame = true;

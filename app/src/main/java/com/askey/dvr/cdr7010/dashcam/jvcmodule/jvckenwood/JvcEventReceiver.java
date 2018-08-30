@@ -28,12 +28,13 @@ public class JvcEventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        Logg.e("iamlbccc", "JVC Event : " + action);
         Logg.i(LOG_TAG, "onReceive: action=" + action);
         if (action.equals(ACTION_EVENT_DISPLAY_ALERT)) {
             int eventType = intent.getIntExtra(EXTRA_EVENT_TYPE, -1);
             long timeStamp = intent.getLongExtra(EXTRA_TIME_STAMP, -1);
             EventInfo eventInfo = EventManager.getInstance().getEventInfoByEventType(eventType);
-            if (EventManager.getInstance().checkEventInfo(eventInfo, eventType,timeStamp))
+            if (EventManager.getInstance().checkEventInfo(eventInfo, eventType, timeStamp))
                 EventManager.getInstance().handOutEventInfo(eventInfo, timeStamp);
 
 

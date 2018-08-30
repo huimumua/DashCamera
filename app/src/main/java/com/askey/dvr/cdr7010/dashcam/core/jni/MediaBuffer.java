@@ -2,6 +2,7 @@ package com.askey.dvr.cdr7010.dashcam.core.jni;
 
 import android.media.MediaCodec;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -49,18 +50,25 @@ public class MediaBuffer {
     // called from JNI
     private void reportCacheFile(String path) {
         if (mHandler != null) {
-            mHandler.sendMessage(mHandler.obtainMessage(0, path));
+            Message msg = mHandler.obtainMessage(0, path);
+            Log.d("iamlbccc", "JNI send message :" + msg.obj);
+            mHandler.sendMessage(msg);
         }
     }
 
     private native static void class_init_native();
 
     private native long native_init(int bufferSize, String workingDir);
+
     private native void native_start(long nativeObject);
+
     private native void native_stop(long nativeObject);
+
     private native void native_reset(long nativeObject);
+
     private native void native_release(long nativeObject);
+
     private native void native_writeSampleData(long nativeObject, int type, int event, long time, @NonNull ByteBuffer byteBuf,
-                                              int offset, int size, long presentationTimeUs, int flags);
+                                               int offset, int size, long presentationTimeUs, int flags);
 
 }

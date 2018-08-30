@@ -333,6 +333,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onEventStateChanged(final boolean on) {
             // 注意：禁止在这里进行耗时操作
+            Logg.e("iamlbccc", "UI onEventStateChanged...> " + on);
             Logg.d(TAG, "DashState: onEventStateChanged " + on);
             EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_RECORDING,
                     on ? RECORDING_EVENT : RECORDING_CONTINUOUS));

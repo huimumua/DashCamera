@@ -26,7 +26,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import static com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper.SAMPLE_TYPE_AUDIO;
 import static com.askey.dvr.cdr7010.dashcam.core.encoder.MediaMuxerWrapper.SAMPLE_TYPE_VIDEO;
 
-public class EventMuxer implements Runnable{
+public class EventMuxer implements Runnable {
 
     private final static String LOG_TAG = "EventMuxer";
 
@@ -64,6 +64,7 @@ public class EventMuxer implements Runnable{
                 try {
                     while (eventSlices.size() > 10) {
                         Slice s1 = eventSlices.poll();
+                        Logg.e("iamlbccc", "eventSlice poll: " + eventSlices.size());
                         new File(s1.file).delete();
                         if (mFlagTerm || mFlagStop) {
                             break;
@@ -71,6 +72,7 @@ public class EventMuxer implements Runnable{
                     }
 
                     Slice s = mInputQueue.take();
+                    Logg.e("iamlbccc", "Normal Take : " + mInputQueue.size());
                     if (mFlagTerm || mFlagStop) {
                         break;
                     }
@@ -81,27 +83,36 @@ public class EventMuxer implements Runnable{
                     }
                     if (s.file != null) {
                         eventSlices.add(new Slice(s.eventId, s.eventTime, s.file));
+                        Logg.e("iamlbccc", "eventSlice add_1: " + eventSlices.size());
                     }
                 } catch (InterruptedException e) {
                 }
             } else if (eventSlices.size() < 15) {
                 try {
                     Slice s = mInputQueue.take();
+                    Logg.e("iamlbccc", "Event Take : " + mInputQueue.size());
                     if (mFlagTerm) {
                         break;
                     }
                     eventSlices.add(new Slice(s.eventId, s.eventTime, s.file));
+                    Logg.e("iamlbccc", "eventSlice add_2: " + eventSlices.size());
                 } catch (InterruptedException e) {
                 }
             }
 
             if (eventId != Event.ID_NONE && sliceCount < 15) {
+                Logg.e("iamlbccc", "eventSlice get: " + (sliceCount) + " of " + eventSlices.size());
+
                 Slice s = eventSlices.get(sliceCount++);
+
                 if (s != null) {
                     if (mMuxer == null) {
                         try {
+                            Logg.e("iamlbccc", "Starting of new event, get file path. ");
                             String path = FileManager.getInstance(mContext).getFilePathForEvent(mConfig.cameraId(), eventTime);
+                            Logg.e("iamlbccc", "Starting of new event, creating Muxer. ");
                             mMuxer = createMuxer(path, eventId, eventTime);
+                            Logg.e("iamlbccc", "Starting of new event, creating Muxer Done.");
                             isNewFile = true;
                         } catch (RemoteException e) {
                             Logg.e(LOG_TAG, "fail to get file path from FileManager with error: "
@@ -124,6 +135,7 @@ public class EventMuxer implements Runnable{
                             final int event = eventId;
                             final long time = eventTime;
                             if (mCallback != null) {
+                                Logg.e("iamlbccc", "Event Complete...  (sync)");
                                 mCallback.segmentCompletedSync(event, muxer.filePath());
                             }
                             mHandler.post(new Runnable() {
@@ -131,7 +143,8 @@ public class EventMuxer implements Runnable{
                                 public void run() {
                                     muxer.stop();
                                     if (mCallback != null) {
-                                        mCallback.segmentCompletedAsync(event, time, muxer.filePath(), muxer.startTimeMs(), muxer.duration()/1000L);
+                                        Logg.e("iamlbccc", "Event Complete...  (async)");
+                                        mCallback.segmentCompletedAsync(event, time, muxer.filePath(), muxer.startTimeMs(), muxer.duration() / 1000L);
                                     }
                                 }
                             });
@@ -195,6 +208,7 @@ public class EventMuxer implements Runnable{
             mEventBusy = true;
         }
         mInputQueue.add(new Slice(eventId, time, file));
+        Logg.e("iamlbccc", "Add : " + mInputQueue.size());
     }
 
     boolean isRecording() {
@@ -205,6 +219,7 @@ public class EventMuxer implements Runnable{
         AndroidMuxer muxer = null;
         try {
             if (mCallback != null) {
+                Logg.e("iamlbccc", "Event Start...  (sync)");
                 mCallback.segmentStartPrepareSync(eventId, eventTime, path);
             }
             muxer = new AndroidMuxer(path);
@@ -216,6 +231,7 @@ public class EventMuxer implements Runnable{
                 @Override
                 public void run() {
                     if (mCallback != null) {
+                        Logg.e("iamlbccc", "Event Start...  (async)");
                         mCallback.segmentStartAsync(eventId, eventTime);
                     }
                 }
@@ -290,6 +306,7 @@ public class EventMuxer implements Runnable{
             this.eventTime = time;
             this.file = file;
         }
+
         int eventId;
         long eventTime;
         String file;

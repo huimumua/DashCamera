@@ -145,6 +145,7 @@ public class Recorder implements IFrameListener {
     private MediaMuxerWrapper.SegmentCallback mSegmentCallback = new MediaMuxerWrapper.SegmentCallback() {
         @Override
         public boolean segmentStartPrepareSync(int event, long startTime, String path) {
+
             Logg.v(TAG, "segmentStartPrepareSync: event=" + event + " " + path);
             // 注意：禁止在这里进行耗时操作
             if (mConfig.nmeaRecordEnable()) {
@@ -171,6 +172,7 @@ public class Recorder implements IFrameListener {
             }
 
             if (mStateCallback != null) {
+                Logg.e("iamlbccc","onEventStateChanged...");
                 mStateCallback.onEventStateChanged(event != 0);
             }
             return true;

@@ -24,7 +24,7 @@ public class MediaVideoEncoder extends MediaEncoder {
                              final int width, final int height,
                              int fps, int bitRate) {
         super(muxer, listener);
-         Logg.i(LOG_TAG, "MediaVideoEncoder: width="+width + ", height="+height);
+        Logg.i(LOG_TAG, "MediaVideoEncoder: width=" + width + ", height=" + height);
         mWidth = width;
         mHeight = height;
         mFPS = fps;
@@ -33,7 +33,7 @@ public class MediaVideoEncoder extends MediaEncoder {
 
     @Override
     protected void prepare() throws IOException {
-         Logg.i(LOG_TAG, "prepare: ");
+        Logg.i(LOG_TAG, "prepare: ");
         mMuxerStarted = mIsEOS = false;
         final MediaCodecInfo videoCodecInfo = selectVideoCodec(MIME_TYPE);
         if (videoCodecInfo == null) {
@@ -81,6 +81,7 @@ public class MediaVideoEncoder extends MediaEncoder {
 
     /**
      * select the first codec that match a specific MIME type
+     *
      * @param mimeType
      * @return null if no codec matched
      */
@@ -112,6 +113,7 @@ public class MediaVideoEncoder extends MediaEncoder {
 
     /**
      * select color format available on specific codec and we can use.
+     *
      * @return 0 if no colorFormat is matched
      */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
@@ -142,12 +144,13 @@ public class MediaVideoEncoder extends MediaEncoder {
      * color formats that we can use in this class
      */
     protected static int[] recognizedFormats;
+
     static {
-        recognizedFormats = new int[] {
+        recognizedFormats = new int[]{
 //          MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
 //          MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
 //          MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
-            MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
         };
     }
 
