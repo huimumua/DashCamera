@@ -103,6 +103,12 @@ public class WarningDialog extends Dialog {
                 case Event.FRONT_COLLISION_WARNING:
                     waringImg.setImageResource(R.drawable.dialog_forwardcollision);
                     break;
+                case Event.LEFT_LANE_DEPARTURE_WARNING:
+                    waringImg.setImageResource(R.drawable.dialog_lanedeparture);
+                    break;
+                case Event.RIGHT_LANE_DEPARTURE_WARNING:
+                    waringImg.setImageResource(R.drawable.dialog_lanedeparture);
+                    break;
                 default:
                     waringImg.setImageResource(R.drawable.dialog_warning);
             }
