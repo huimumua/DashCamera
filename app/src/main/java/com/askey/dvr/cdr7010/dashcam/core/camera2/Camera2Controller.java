@@ -39,11 +39,6 @@ public class Camera2Controller {
     }
 
     private State mState;
-
-    public  void initState(State state){
-        mState =state;
-    }
-
     public State getState() {
         return mState;
     }

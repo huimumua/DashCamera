@@ -483,36 +483,6 @@ public class CameraRecordFragment extends Fragment {
         GPSStatusManager.getInstance().recordLocation(true);
         osdView.init(1000);
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
-        final boolean stamp = getRecordStamp();
-        final boolean audio = getMicphoneEnable();
-        RecordConfig mainConfig = RecordConfig.builder()
-                .cameraId(CameraHelper.CAMERA_MAIN)
-                .videoWidth(1920)
-                .videoHeight(1080)
-                .videoFPS(27)
-                .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
-                .videoStampEnable(stamp)
-                .audioRecordEnable(true)
-                .audioMute(!audio)
-                .adasEnable(true)
-                .nmeaRecordEnable(true)
-                .build();
-        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
-        if (CameraHelper.hasExtCamera()) {
-            RecordConfig extConfig = RecordConfig.builder()
-                    .cameraId(CameraHelper.CAMERA_EXT)
-                    .videoWidth(1280)
-                    .videoHeight(720)
-                    .videoFPS(15)
-                    .videoBitRate(5 * 1024 * 1024) // 5Mbps
-                    .videoStampEnable(stamp)
-                    .audioRecordEnable(false)
-                    .audioMute(true)
-                    .adasEnable(false)
-                    .nmeaRecordEnable(false)
-                    .build();
-            mExtCam = new DashCam(getActivity(), extConfig, null);
-        }
     }
 
     @Override
@@ -554,7 +524,38 @@ public class CameraRecordFragment extends Fragment {
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
 
+        final boolean stamp = getRecordStamp();
+        final boolean audio = getMicphoneEnable();
+        RecordConfig mainConfig = RecordConfig.builder()
+                .cameraId(CameraHelper.CAMERA_MAIN)
+                .videoWidth(1920)
+                .videoHeight(1080)
+                .videoFPS(27)
+                .videoBitRate((int) (9.6 * 1024 * 1024)) // 10Mbps
+                .videoStampEnable(stamp)
+                .audioRecordEnable(true)
+                .audioMute(!audio)
+                .adasEnable(true)
+                .nmeaRecordEnable(true)
+                .build();
+        mMainCam = new DashCam(getActivity(), mainConfig, mDashCallback);
         mMainCam.enableAdas(true);
+
+        if (CameraHelper.hasExtCamera()) {
+            RecordConfig extConfig = RecordConfig.builder()
+                    .cameraId(CameraHelper.CAMERA_EXT)
+                    .videoWidth(1280)
+                    .videoHeight(720)
+                    .videoFPS(15)
+                    .videoBitRate(5 * 1024 * 1024) // 5Mbps
+                    .videoStampEnable(stamp)
+                    .audioRecordEnable(false)
+                    .audioMute(true)
+                    .adasEnable(false)
+                    .nmeaRecordEnable(false)
+                    .build();
+            mExtCam = new DashCam(getActivity(), extConfig, null);
+        }
         try {
             startVideoRecord("Fragment onResume");
         } catch (Exception e) {

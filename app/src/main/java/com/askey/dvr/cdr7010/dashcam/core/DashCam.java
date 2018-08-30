@@ -146,7 +146,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
         if (config.adasEnable()) {
             mAdasController = AdasController.getsInstance();
         }
-        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
     }
 
     public boolean isBusy() {
@@ -278,7 +277,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
     public void onOpenCamera() throws Exception {
         Logg.v(TAG, "onOpenCamera");
         clearFunctionReady();
-        mCamera2Controller.initState(Camera2Controller.State.STOPPED);
+        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
         mCamera2Controller.startBackgroundThread();
         mCamera2Controller.open(mConfig.cameraId());
     }
@@ -364,7 +363,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
         mCamera2Controller.stopRecordingVideo();
         try {
             mCamera2Controller.closeCamera();
-        } catch (Exception e) {
+        } catch (CameraAccessException e) {
             // Nothing we can do here, looks like must fix if any error occurs
             Logg.e(TAG, e.getMessage());
         } finally {
