@@ -3,6 +3,7 @@ package com.askey.dvr.cdr7010.dashcam.service;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.business.CReaderSpeaker;
+import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.TTS;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -38,7 +39,10 @@ public class TTSManager{
     public void ttsEventStart(int requestId,int priority,int[] voiceId){
         Logg.d(TAG,"ttsEventStart requestId="+requestId+",lastRequestId="+lastRequestId+",priority="+priority+",voiceId="+voiceId[0]);
         if(ttsIsSpeaking()){
-            if(priority <= lastPriority && (lastRequestId !=requestId ) ){
+            boolean isSdCardAbnormalEvent = (Event.contains(Event.sdCardAbnormalEvent,requestId)
+                    || Event.contains(Event.sdCardUnMountedEvent,requestId));
+            if(priority <= lastPriority && ((lastRequestId !=requestId ) &&!isSdCardAbnormalEvent)
+                    ||((priority <= lastPriority) && isSdCardAbnormalEvent) ){
                 if(instance != null && tts != null){
                     curRequestId = requestId;
                     tts.speechStop(lastRequestId);

@@ -696,7 +696,6 @@ public class CameraRecordFragment extends Fragment {
         switch (sDcardStatus) {
             case SDCARD_MOUNTED:
                 DialogManager.getIntance().setSdcardInserted(true);
-                TTSManager.getInstance().ttsStop(Event.SDCARD_UNMOUNTED);
                 break;
             case SDCARD_REMOVED:
                 DialogManager.getIntance().setSdcardPulledOut(true);
