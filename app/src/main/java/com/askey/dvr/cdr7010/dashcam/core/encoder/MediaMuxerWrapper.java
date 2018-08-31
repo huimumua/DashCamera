@@ -80,6 +80,8 @@ public class MediaMuxerWrapper {
         void segmentCompletedAsync(int event, long eventTimeMs, String path, long startTimeMs, long durationMs);
 
         void segmentTerminated();
+
+        void segmentTerminatedWithReason(int event, int reason);
     }
 
     public interface StateCallback {

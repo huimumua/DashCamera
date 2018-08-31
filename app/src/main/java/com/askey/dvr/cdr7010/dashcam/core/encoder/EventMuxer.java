@@ -56,9 +56,6 @@ public class EventMuxer implements Runnable {
         mInputQueue.clear();
 
         while (true) {
-            if (mFlagTerm) {
-                break;
-            }
 
             if ((eventId == Event.ID_NONE)) {
                 try {
@@ -91,9 +88,6 @@ public class EventMuxer implements Runnable {
                 try {
                     Slice s = mInputQueue.take();
                     Logg.e("iamlbccc", "Event Take : " + mInputQueue.size());
-                    if (mFlagTerm) {
-                        break;
-                    }
                     eventSlices.add(new Slice(s.eventId, s.eventTime, s.file));
                     Logg.e("iamlbccc", "eventSlice add_2: " + eventSlices.size());
                 } catch (InterruptedException e) {
@@ -120,7 +114,15 @@ public class EventMuxer implements Runnable {
                         }
                     }
 
+                    final AndroidMuxer muxer = mMuxer;
+                    final int event = eventId;
+                    final long time = eventTime;
+
                     if (mFlagTerm) {
+                        if (mCallback != null) {
+                            Logg.e("iamlbccc", "Event terminated... with " + 101);
+                            mCallback.segmentTerminatedWithReason(eventId, 101);
+                        }
                         break;
                     }
 
@@ -131,9 +133,6 @@ public class EventMuxer implements Runnable {
                         }
 
                         if (sliceCount >= 15 || mFlagStop) {
-                            final AndroidMuxer muxer = mMuxer;
-                            final int event = eventId;
-                            final long time = eventTime;
                             if (mCallback != null) {
                                 Logg.e("iamlbccc", "Event Complete...  (sync)");
                                 mCallback.segmentCompletedSync(event, muxer.filePath());
