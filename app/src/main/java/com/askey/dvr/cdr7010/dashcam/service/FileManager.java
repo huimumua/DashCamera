@@ -51,7 +51,7 @@ public class FileManager {
         if (INSTANCE == null) {
             synchronized (FileManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new FileManager(context);
+                    INSTANCE = new FileManager(context.getApplicationContext());
                 }
             }
         }
@@ -104,35 +104,19 @@ public class FileManager {
         return mService.checkSdcardAvailable();
     }
 
-    private String buildNmeaFilePath(long timeStamp, @NonNull String fileType, String ext) throws RemoteException {
-        if (mService == null) {
-            throw new RemoteException("No FileManagement service.");
-        }
-
-        String fileName;
-        synchronized (DATETIME_FORMAT) {
-            fileName = DATETIME_FORMAT.format(new Date(timeStamp)) + ext;
-        }
-        final String path = mService.openSdcard(fileName, fileType);
-        if (path == null) {
-            throw new RemoteException("null file path from FileManagement service.");
-        }
-        return path;
+    public String getFilePathForNmeaNormal(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
+        return buildFilePath(cameraId, timeStamp, "NMEA_NORMAL", ".nmea");
     }
 
-    public String getFilePathForNmeaNormal(long timeStamp) throws RemoteException {
-        return buildNmeaFilePath(timeStamp, "NMEA_NORMAL", ".nmea");
+    public String getFilePathForNmeaEvent(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
+        return buildFilePath(cameraId, timeStamp, "NMEA_EVENT", ".nmea");
     }
 
-    public String getFilePathForNmeaEvent(long timeStamp) throws RemoteException {
-        return buildNmeaFilePath(timeStamp, "NMEA_EVENT", ".nmea");
+    public String getFilePathForHashNormal(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
+        return buildFilePath(cameraId, timeStamp, "HASH_NORMAL", ".hash");
     }
 
-    public String getFilePathForHashNormal(long timeStamp) throws RemoteException {
-        return buildNmeaFilePath(timeStamp, "HASH_NORMAL", ".hash");
-    }
-
-    public String getFilePathForHashEvent(long timeStamp) throws RemoteException {
-        return buildNmeaFilePath(timeStamp, "HASH_EVENT", ".hash");
+    public String getFilePathForHashEvent(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
+        return buildFilePath(cameraId, timeStamp, "HASH_EVENT", ".hash");
     }
 }

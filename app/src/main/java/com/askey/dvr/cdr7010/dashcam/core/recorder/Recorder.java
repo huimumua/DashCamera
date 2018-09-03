@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.Surface;
 
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
@@ -148,15 +149,15 @@ public class Recorder implements IFrameListener {
         @Override
         public boolean segmentStartPrepareSync(int event, long startTime, String path) {
 
-            Logg.v(TAG, "segmentStartPrepareSync: event=" + event + " " + path);
+            Logg.v(TAG, "segmentStartPrepareSync: event=" + event + " startTime" + startTime + " " + path);
             // 注意：禁止在这里进行耗时操作
             if (mConfig.nmeaRecordEnable()) {
                 try {
                     String nmeaPath;
                     if (event == 0) {
-                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaNormal(startTime);
+                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaNormal(mConfig.cameraId(), startTime);
                     } else {
-                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaEvent(startTime);
+                        nmeaPath = FileManager.getInstance(mContext).getFilePathForNmeaEvent(mConfig.cameraId(), startTime);
                     }
                     Logg.i(TAG, "nmea path = " + nmeaPath);
                     NmeaRecorder nmea = NmeaRecorder.create(nmeaPath);
@@ -198,7 +199,7 @@ public class Recorder implements IFrameListener {
 
         @Override
         public void segmentCompletedAsync(int event, final long eventTimeMs, final String path, final long startTimeMs, long durationMs) {
-            Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " " + path);
+            Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " startTimeMs=" + startTimeMs + " " + path);
             if (event != 0) {
                 saveHash(path, startTimeMs, true);
                 Snapshot.take3Pictures(path, mConfig.cameraId(), startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
@@ -240,12 +241,12 @@ public class Recorder implements IFrameListener {
         try {
             String desPath;
             if (isEvent) {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(time);
+                desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(mConfig.cameraId(), time);
             } else {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(time);
+                desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(mConfig.cameraId(), time);
             }
-            Logg.d(TAG, "desPath==" + desPath);
-            if (desPath != null) {
+            Logg.d(TAG, "desPath==" + desPath + ",time==" + time);
+            if (!TextUtils.isEmpty(desPath)) {
                 String sha256 = HashUtil.getSHA256(new File(path));
                 Logg.d(TAG, "sha256==" + sha256);
                 if (sha256 != null) {
