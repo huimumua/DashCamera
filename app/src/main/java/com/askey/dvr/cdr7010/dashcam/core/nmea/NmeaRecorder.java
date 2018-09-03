@@ -104,7 +104,7 @@ public class NmeaRecorder {
         mStartTime = startTimeStamp / 1000;
         mRecordTime = mStartTime - 10;
         mEndTime = mStartTime + 4;
-        // Log.i(LOG_TAG, "Event startTime = " + mStartTime + ", recordTime" + mRecordTime + ", endTime" + mEndTime);
+        Log.i(LOG_TAG, "Event startTime = " + mStartTime + ", recordTime" + mRecordTime + ", endTime" + mEndTime);
         try {
             mOutputStream.write("$GTRIP,ABCD1234,2".getBytes()); //TODO: Change JVC format
             mOutputStream.write(newLineSymbol.getBytes());
@@ -113,6 +113,7 @@ public class NmeaRecorder {
                 writeToFile(mRecordTime);
                 mRecordTime++;
             }
+            Log.i(LOG_TAG, "Event NMEARecord record 10 seconds(pre)");
             nmeaRecorderListener.add(this);
         } catch (IOException e) {
             // throw new RuntimeException(e);
@@ -148,8 +149,8 @@ public class NmeaRecorder {
         mState = RecorderState.STOPPED;
 
         try {
-            // Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime);
-            Log.i(LOG_TAG, "Stop record");
+            Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime);
+            // Log.i(LOG_TAG, "Stop record");
             mOutputStream.flush();
             mOutputStream.close();
             removeNmeaRecorders.add(this);
@@ -169,7 +170,7 @@ public class NmeaRecorder {
         try {
             NmeaNodeSet nmeaNodeSet = histroyPool.get(recodingTime);
             if (nmeaNodeSet == null) {
-                Log.i(LOG_TAG, "Don't find nmeaNodeSet = " + recodingTime);
+                //Log.i(LOG_TAG, "Don't find nmeaNodeSet = " + recodingTime);
                 return;
             }
             // String tempString = "number" + nmeaNodeSet.keyNumber;
@@ -245,18 +246,6 @@ public class NmeaRecorder {
         } else {
             locationProvider = LocationManager.NETWORK_PROVIDER;
         }
-
-        // if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        //         && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        //     // TODO: Consider calling
-        //     //    ActivityCompat#requestPermissions
-        //     // here to request the missing permissions, and then overriding
-        //     //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-        //     //                                          int[] grantResults)
-        //     // to handle the case where the user grants the permission. See the documentation
-        //     // for ActivityCompat#requestPermissions for more details.
-        //     return;
-        // }
 
         Location location = locationManager.getLastKnownLocation(locationProvider);
         if (location != null) {
