@@ -33,7 +33,6 @@ public class GpsHelper{
                 break;
             case GPS_SIGNAL_STRENGTH_POOR:
                 EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.GPSStatusType>(Event.EventCode.EVENT_GPS, GPS_STRENGTH_NOT_FIXES));
-                handoutLocationMessageError();
                 GPSStatusManager.getInstance().setHaveGpsSignal(false);
                 break;
             case GPS_SIGNAL_STRENGTH_GOOD:
