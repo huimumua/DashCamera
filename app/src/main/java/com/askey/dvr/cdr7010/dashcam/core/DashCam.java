@@ -84,7 +84,9 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
         void onEventStateChanged(boolean on);
 
-        void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
+        void onEventCompleted(int eventId, long timestamp, List<String> pictures, String video);
+
+        void onEventTerminated(int eventId, int reason);
     }
 
     private boolean mRecording = false;
@@ -132,6 +134,14 @@ public class DashCam implements DashCamControl, AdasStateListener {
             Logg.d(TAG, "RecorderStateCallback: onEventCompleted ");
             if (mStateCallback != null) {
                 mStateCallback.onEventCompleted(eventId, timestamp, pictures, video);
+            }
+        }
+
+        @Override
+        public void onEventTerminated(int eventId, int reason) {
+            Logg.d(TAG, "RecorderStateCallback: onEventTerminated ");
+            if (mStateCallback != null) {
+                mStateCallback.onEventTerminated(eventId, reason);
             }
         }
     };
@@ -208,6 +218,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
     /**
      * A function may need sometimes to be ready.
      * This method set and check all functions is ready to start the Camera
+     *
      * @param function the function which is ready to start
      */
     private void setFunctionReady(Function function) {
@@ -223,7 +234,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
                     startCamera();
                 } catch (CameraAccessException e) {
                     goToErrorState(Error.CAMERA_ACCESS_EXCEPTION, e);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -288,7 +299,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
         if (mSetEnabledFunctions.size() != 0) {
             long delayMillis = 0;
             if (mErrorFlag.size() != 0) {
-			    // Any errors, wait for 3 seconds and try again
+                // Any errors, wait for 3 seconds and try again
                 delayMillis = 3000;
                 mErrorFlag.clear();
             }

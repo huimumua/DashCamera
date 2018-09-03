@@ -50,7 +50,9 @@ public class Recorder implements IFrameListener {
 
         void onEventStateChanged(boolean on);
 
-        void onEventCompleted(int evevtId, long timestamp, List<String> pictures, String video);
+        void onEventCompleted(int eventId, long timestamp, List<String> pictures, String video);
+
+        void onEventTerminated(int eventId, int reason);
     }
 
     public Recorder(@NonNull Context context,
@@ -172,7 +174,7 @@ public class Recorder implements IFrameListener {
             }
 
             if (mStateCallback != null) {
-                Logg.e("iamlbccc","onEventStateChanged...");
+                Logg.e("iamlbccc", "onEventStateChanged...");
                 mStateCallback.onEventStateChanged(event != 0);
             }
             return true;
@@ -223,6 +225,13 @@ public class Recorder implements IFrameListener {
                     }
                 }
                 mNmeaMap.clear();
+            }
+        }
+
+        @Override
+        public void segmentTerminatedWithReason(int event, int reason) {
+            if (mStateCallback != null) {
+                mStateCallback.onEventTerminated(event, reason);
             }
         }
     };

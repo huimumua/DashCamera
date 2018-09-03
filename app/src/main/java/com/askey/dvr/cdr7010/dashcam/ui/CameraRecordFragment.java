@@ -361,6 +361,14 @@ public class CameraRecordFragment extends Fragment {
             files.addAll(pictures);
             JvcEventSending.recordResponse(eventId, results, files);
         }
+
+        @Override
+        public void onEventTerminated(int eventId, int reason) {
+            Logg.d(TAG, "DashState: onEventTerminated ");
+            ArrayList<Integer> results = new ArrayList<>(Arrays.asList(reason, 0, reason, reason, reason, 0, 0, 0));
+            ArrayList<String> files = new ArrayList<>();
+            JvcEventSending.recordResponse(eventId, results, files);
+        }
     };
     private ThermalController.ThermalListener thermalListener = new ThermalController.ThermalListener() {
         @Override
