@@ -1,9 +1,12 @@
 package com.askey.dvr.cdr7010.dashcam.core;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 
+import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
+import com.askey.platform.AskeyIntent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +116,13 @@ public class StateMachine {
         EEvent event;
     }
 
+    private  void  sendErrorBroadCast(){
+        Intent intent =new Intent(AskeyIntent.JKC_EVENTSENDING_EVENT_NOTIFY_EVENT_DETECT);
+        intent.putExtra("eventType",8);
+        intent.putExtra("timeStamp",System.currentTimeMillis());
+        DashCamApplication.getAppContext().sendBroadcast(intent);
+    }
+
     public StateMachine(DashCamControl dashCam, int cameraID) {
         TAG = TAG_BASE + "-" + cameraID;
         mDashCamControl = dashCam;
@@ -123,6 +133,7 @@ public class StateMachine {
                 try {
                     mDashCamControl.onOpenCamera();
                 } catch (Exception e) {
+                    sendErrorBroadCast();
                     Logg.e(TAG, "onOpenCamera() fail with exception: " + e.getMessage());
                     dispatchEvent(new Event(EEvent.ERROR, e.getMessage()));
                 }
