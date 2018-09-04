@@ -78,7 +78,20 @@ public class FileManager {
             sb.append("_2");
         }
         sb.append(ext);
+        Logg.d(LOG_TAG, "buildFilePath,Path==" + sb.toString());
         final String path = mService.openSdcard(sb.toString(), fileType);
+        if (path == null) {
+            throw new RemoteException("null file path from FileManagement service.");
+        }
+        return path;
+    }
+
+    private String buildHashFilePath(String fileName, @NonNull String fileType) throws RemoteException {
+        if (mService == null) {
+            throw new RemoteException("No FileManagement service.");
+        }
+        fileName = String.format("%s.hash", fileName);
+        final String path = mService.openSdcard(fileName, fileType);
         if (path == null) {
             throw new RemoteException("null file path from FileManagement service.");
         }
@@ -112,11 +125,11 @@ public class FileManager {
         return buildFilePath(cameraId, timeStamp, "NMEA_EVENT", ".nmea");
     }
 
-    public String getFilePathForHashNormal(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
-        return buildFilePath(cameraId, timeStamp, "HASH_NORMAL", ".hash");
+    public String getFilePathForHashNormal(String fileName) throws RemoteException {
+        return buildHashFilePath(fileName, "HASH_NORMAL");
     }
 
-    public String getFilePathForHashEvent(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
-        return buildFilePath(cameraId, timeStamp, "HASH_EVENT", ".hash");
+    public String getFilePathForHashEvent(String fileName) throws RemoteException {
+        return buildHashFilePath(fileName, "HASH_EVENT");
     }
 }

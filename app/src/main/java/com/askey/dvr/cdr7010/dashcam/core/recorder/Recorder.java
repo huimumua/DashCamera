@@ -5,6 +5,7 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Surface;
 
 import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
@@ -240,24 +241,37 @@ public class Recorder implements IFrameListener {
     private void saveHash(String path, long time, boolean isEvent) {
         try {
             String desPath;
-            if (isEvent) {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(mConfig.cameraId(), time);
-            } else {
-                desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(mConfig.cameraId(), time);
-            }
-            Logg.d(TAG, "desPath==" + desPath + ",time==" + time);
-            if (!TextUtils.isEmpty(desPath)) {
-                String sha256 = HashUtil.getSHA256(new File(path));
-                Logg.d(TAG, "sha256==" + sha256);
-                if (sha256 != null) {
-                    String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
-                    Logg.d(TAG, "encrypt==" + encrypt);
-                    FileUtils.writeFile(desPath, encrypt, false);
+            String fileName = getFileNameFromPath(path);
+            Log.d(TAG, "fileName==" + fileName);
+            if (fileName != null) {
+                if (isEvent) {
+                    desPath = FileManager.getInstance(mContext).getFilePathForHashEvent(fileName);
+                } else {
+                    desPath = FileManager.getInstance(mContext).getFilePathForHashNormal(fileName);
+                }
+                Logg.d(TAG, "desPath==" + desPath + ",time==" + time);
+                if (!TextUtils.isEmpty(desPath)) {
+                    String sha256 = HashUtil.getSHA256(new File(path));
+                    Logg.d(TAG, "sha256==" + sha256);
+                    if (sha256 != null) {
+                        String encrypt = AESCryptUtil.encrypt(AES_KEY, sha256);
+                        Logg.d(TAG, "encrypt==" + encrypt);
+                        FileUtils.writeFile(desPath, encrypt, false);
+                    }
                 }
             }
         } catch (Exception e) {
             Logg.d(TAG, "error happened when save hash");
         }
+    }
+
+    private String getFileNameFromPath(String path) {
+        if (path == null || !path.contains("/") || !path.contains(".")) {
+            return null;
+        }
+        int start = path.lastIndexOf("/");
+        int end = path.lastIndexOf(".");
+        return path.substring(start + 1, end);
     }
 
     private MediaMuxerWrapper.StateCallback mMuxerStateCallback = new MediaMuxerWrapper.StateCallback() {
