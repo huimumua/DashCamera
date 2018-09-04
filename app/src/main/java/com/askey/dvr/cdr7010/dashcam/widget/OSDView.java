@@ -420,9 +420,9 @@ public class OSDView extends View {
             canvas.drawBitmap(lte_none, null, lteRectF, null);
         }
 
-        if (osdProvider.getEventRecordingLimitStatus() == EVENT_RECORDING_REACH_LIMIT_CONDITION) {
-            canvas.drawBitmap(event_recording_limit, null, eventRecordingLimitRectF, null);
-        }
+//        if (osdProvider.getEventRecordingLimitStatus() == EVENT_RECORDING_REACH_LIMIT_CONDITION) {
+//            canvas.drawBitmap(event_recording_limit, null, eventRecordingLimitRectF, null);
+//        }
         if (osdProvider.getParkingRecordingLimitStatus() == PARKING_RECORDING_REACH_LIMIT_CONDITION) {
             canvas.drawBitmap(parking_recording_limit, null, parkingRecordingLimitRectF, null);
         }
