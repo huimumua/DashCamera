@@ -33,6 +33,7 @@ public class UserSettingManager {
     private static final String LOG_TAG = "AskySettingManager";
     private static EnumMap<JvcStatusParams.JvcStatusParam, Object> mReportMap;
     public static UserInfoCallback userInfoCallback;
+    private static int localUserId, seletedUserId;
 
     public static void getUserList(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap, CountDownLatch countDownLatch) {
 
@@ -54,7 +55,6 @@ public class UserSettingManager {
                     if (userListInfo == null || userListInfo.user99 == null) {
                         return;
                     }
-                    int localUserId, seletedUserId;
                     String localSeletedata;
                     localSeletedata = Settings.Global.getString(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER_DAYS);
                     localUserId = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER, 01);
@@ -120,7 +120,9 @@ public class UserSettingManager {
         if (userListInfo == null) {
             return;
         }
-        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START));
+        if (localUserId != seletedUserId){
+            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START));
+        }
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
         switch (num){
@@ -168,7 +170,9 @@ public class UserSettingManager {
                     countDownLatch.countDown();
                     Log.d(LOG_TAG,"abby countDown~~02~!");
                 }
-                EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
+                if (localUserId != seletedUserId) {
+                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
+                }
                 break;
         }
 
