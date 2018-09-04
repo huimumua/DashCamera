@@ -47,7 +47,6 @@ import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LcdManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
-import com.askey.dvr.cdr7010.dashcam.service.TTSManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
@@ -80,7 +79,6 @@ import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStat
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.LTEStatusType.LTE_SIGNAL_STRENGTH_POOR;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_OFF;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.MICStatusType.MIC_ON;
-import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.BATTERY_STATUS_CHARGING;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.BATTERY_STATUS_DISCHARGING;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.HIGH_TEMPERATURE;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.RecordingPreconditionStatus.LOW_TEMPERATURE;
@@ -118,8 +116,7 @@ public class CameraRecordFragment extends Fragment {
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private boolean isEventRecording;
-    private boolean isChargeDisconnect = false;//电源状态，默认是连接的
-    public boolean canRecord;
+    public boolean canRecord = false;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
@@ -253,21 +250,7 @@ public class CameraRecordFragment extends Fragment {
             if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
                 int status = intent.getIntExtra("status", 0);
                 switch (status) {
-                    case BatteryManager.BATTERY_STATUS_CHARGING:
-                    case BatteryManager.BATTERY_STATUS_FULL:
-                        Log.i(TAG, "battery status is charging");
-                        if (isChargeDisconnect) {
-                            try {
-                                RecordHelper.setRecordingPrecondition(BATTERY_STATUS_CHARGING);
-                                startVideoRecord("Intent.BATTERY_STATUS_CHARGING");
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        isChargeDisconnect = false;
-                        break;
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
-                        isChargeDisconnect = true;
                         Logg.d(TAG, "battery status is discharging");
                         if (isEventRecording) {
                             Logg.d(TAG, "EventRecording");
@@ -286,12 +269,10 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
-                if (isChargeDisconnect) {
-                    RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
-                    stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
-                    //关机
-                    handler.sendEmptyMessageDelayed(1, 2000);
-                }
+                RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
+                stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
+                //关机
+                handler.sendEmptyMessageDelayed(1, 2000);
             } else if (msg.what == 1) {
                 Logg.d(TAG, "SHUT DOWN...");
                 ActivityUtils.shutDown(DashCamApplication.getAppContext());
@@ -491,6 +472,9 @@ public class CameraRecordFragment extends Fragment {
         GPSStatusManager.getInstance().recordLocation(true);
         osdView.init(1000);
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
     }
 
     @Override
@@ -528,10 +512,6 @@ public class CameraRecordFragment extends Fragment {
         dvrShutDownIntentFilter.addAction(Intent.ACTION_SHUTDOWN);
         dvrShutDownIntentFilter.setPriority(1000);
         getActivity().registerReceiver(mShutdownReceiver, dvrShutDownIntentFilter);
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
 
         final boolean stamp = getRecordStamp();
         final boolean audio = getMicphoneEnable();
@@ -581,7 +561,6 @@ public class CameraRecordFragment extends Fragment {
         getActivity().unregisterReceiver(mSdStatusListener);
         getActivity().unregisterReceiver(mSdBadRemovalListener);
         getActivity().unregisterReceiver(mShutdownReceiver);
-        getActivity().unregisterReceiver(mBatteryStateReceiver);
         mTelephonyManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
         LedMananger.getInstance().setLedMicStatus(false);
         super.onPause();
@@ -595,6 +574,7 @@ public class CameraRecordFragment extends Fragment {
         thermalController.stopThermalMonitor();
         GPSStatusManager.getInstance().recordLocation(false);
         getActivity().unregisterReceiver(simCardReceiver);
+        getActivity().unregisterReceiver(mBatteryStateReceiver);
         if (timeFinishShow != null) {
             timeFinishShow.cancel();
         }
@@ -698,7 +678,7 @@ public class CameraRecordFragment extends Fragment {
             }
         } else if (messageEvent.getCode() == Event.EventCode.EVENT_SECOND_CAMERIA) {
             GlobalLogic.getInstance().setSecondCameraStatus((UIElementStatusEnum.SecondCameraStatusType) messageEvent.getData());
-        } else if (messageEvent.getCode() == Event.EventCode.EVENT_REFRESH_USER_NAME){
+        } else if (messageEvent.getCode() == Event.EventCode.EVENT_REFRESH_USER_NAME) {
             refreshUserInfo();
         }
         osdView.invalidateView();
