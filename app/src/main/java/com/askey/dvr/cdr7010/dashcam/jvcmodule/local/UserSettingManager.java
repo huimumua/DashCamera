@@ -156,9 +156,9 @@ public class UserSettingManager {
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_NOTIFY_VOL+suffix, userListInfo.volume_n);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_PLAYBACK_VOL+suffix, userListInfo.volume_p);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_MONITOR_BRIGHTNESS+suffix, userListInfo.bright);
-                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_POWERSAVE_ACTION+suffix, userListInfo.psave_s);
-                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_POWERSAVE_TIME+suffix, userListInfo.lang);
-                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_LANGUAGE+suffix, userListInfo.psave_e);
+                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_POWERSAVE_ACTION+suffix, userListInfo.psave_e);
+                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_POWERSAVE_TIME+suffix, userListInfo.psave_s);
+                Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_LANGUAGE+suffix, userListInfo.lang);
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS+suffix, userListInfo.set_update_day);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.COMM_EMERGENCY_AUTO+suffix, userListInfo.outbound_call);
                 try {
