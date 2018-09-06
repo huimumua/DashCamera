@@ -18,6 +18,8 @@ import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.LocalJvcStatusManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.ManualUploadService;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.SystemSettingManager;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.UserSettingManager;
+import com.askey.dvr.cdr7010.dashcam.ui.CameraRecordFragment;
+import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeySettings;
@@ -76,7 +78,7 @@ public class MainApp {
                     e.printStackTrace();
                 }
                 sendStatUpNotify();
-                Log.d(LOG_TAG,"countDownLatch.await()~！");
+                Log.d(LOG_TAG, "countDownLatch.await()~！");
             }
         }).start();
 
@@ -149,9 +151,9 @@ public class MainApp {
         @Override
         public void reportTripInfo(int oos, String response) throws RemoteException {
             tripNum++;
-            if (tripNum==1){
+            if (tripNum == 1) {
                 countDownLatch.countDown();
-                Log.d(LOG_TAG,"countDownLatch.countDown()  04~~");
+                Log.d(LOG_TAG, "countDownLatch.countDown()  04~~");
             }
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + "，tripNum=" + tripNum + ", response=" + response);
         }
@@ -262,10 +264,11 @@ public class MainApp {
 
         @Override
         public void reportTxEventProgress(List<String> path, int result) {
-            /**
-             * MainApp无需应对
-             */
             Logg.d(LOG_TAG, "reportTxEventProgress: ");
+            if (CameraRecordFragment.isBatteryDisconnected()) {
+                Logg.d(LOG_TAG, "SHUT DOWN...");
+                ActivityUtils.shutDown(DashCamApplication.getAppContext());
+            }
         }
 
         @Override
@@ -280,8 +283,8 @@ public class MainApp {
 
             String outputFilePath = DashCamApplication.getAppContext().getFilesDir().getAbsolutePath();
             File outputFile = new File(outputFilePath);
-            for(File file : outputFile.listFiles()){
-                if(file.getName().startsWith("log_"))
+            for (File file : outputFile.listFiles()) {
+                if (file.getName().startsWith("log_"))
                     file.delete();
             }
         }
