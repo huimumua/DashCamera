@@ -158,7 +158,7 @@ public class OSDView extends View {
 
         time_bg = decodeResource(getResources(), R.drawable.bg_time);
 
-        recordingRectF = new RectF(11, 8, 59, 24);
+        recordingRectF = new RectF(11, 4, 82, 28);;
         continuous_recording = decodeResource(getResources(), R.drawable.continuous_recording);
         event_recording = decodeResource(getResources(), R.drawable.event_recording);
         stop_recording = decodeResource(getResources(), R.drawable.stop_recording);
@@ -186,9 +186,9 @@ public class OSDView extends View {
         menu = decodeResource(getResources(), R.drawable.menu);
         menuDisabled = decodeResource(getResources(), R.drawable.menu_disabled);
 
-        countTimeRectF = new RectF(62, 8, 77, 24);
+        countTimeRectF = new RectF(13, 36, 28, 52);
         countDownPaint = new Paint();
-        countDownPaint.setTextSize(DisplayUtils.sp2px(mContext, 12));
+        countDownPaint.setTextSize(DisplayUtils.sp2px(mContext, 18));
         countDownPaint.setColor(Color.WHITE);
         countDownPaint.setAntiAlias(true);
         Typeface font = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
@@ -200,7 +200,7 @@ public class OSDView extends View {
         eventRecordingLimitRectF = new RectF(90, 156, 156, 192);
         event_recording_limit = decodeResource(getResources(), R.drawable.event_recording_limit);
 
-        sdCardRectF = new RectF(11, 62, 35, 78);
+        sdCardRectF = new RectF(11, 62, 53, 90);
         sdcard_error = decodeResource(getResources(), R.drawable.icon_sdcard_error);
         sdcard_not_found = decodeResource(getResources(), R.drawable.icon_sdcard_nofound);
         sdcard_recording = decodeResource(getResources(), R.drawable.icon_sdcard_recording);
