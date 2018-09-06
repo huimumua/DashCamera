@@ -125,6 +125,7 @@ public class OSDView extends View {
     private int spacing;
     private boolean isJudge = true;
     private int baseY = 0;
+    private int padding = 2;
 
     public OSDView(Context context) {
         super(context);
@@ -375,7 +376,7 @@ public class OSDView extends View {
 //            canvas.drawText(userInfo, startDrawX, baseY, drawPaint);
 //            startDrawX -= 5;
 //        } else {
-        canvas.drawText(userInfo, (int) userInfoRectF.left, baseY, drawPaint);
+        canvas.drawText(userInfo, (int) userInfoRectF.left + padding, baseY, drawPaint);
 //        }
         // postInvalidateDelayed(scrollingSpeed);
         canvas.restore();
