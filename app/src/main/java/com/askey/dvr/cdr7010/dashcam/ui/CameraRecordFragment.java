@@ -117,7 +117,7 @@ public class CameraRecordFragment extends Fragment {
 
     private boolean isEventRecording;
     private static boolean isBatteryDisconnected = false;
-    public boolean canRecord = true;
+    public boolean canRecord = false;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
     private static final String SDCARD_FULL_LIMIT = "show_sdcard_full_limit";
