@@ -89,6 +89,7 @@ public class MainActivity extends DialogActivity {
     private static final int FROM_MAINAPP = 0;
     private AudioManager audioManager;
     private int maxVolume, currentVolume;
+    CameraRecordFragment fragment;
     private final DvrShutDownReceiver mDvrShutDownBroadCastReceiver = new DvrShutDownReceiver();
 
     @Override
@@ -96,7 +97,7 @@ public class MainActivity extends DialogActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         if (savedInstanceState == null) {
-            CameraRecordFragment fragment = CameraRecordFragment.newInstance();
+            fragment = CameraRecordFragment.newInstance();
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
@@ -194,7 +195,7 @@ public class MainActivity extends DialogActivity {
 
     @Override
     protected boolean handleKeyEvent(KeyEvent event) {
-        return GlobalLogic.getInstance().isStartSwitchUser();
+        return GlobalLogic.getInstance().isStartSwitchUser() || fragment.isKeyNotValid();
     }
 
     @Override
