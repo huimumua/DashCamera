@@ -189,6 +189,7 @@ public class UserSettingManager {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME, infoLists.user99.name);
             }
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID, String.valueOf(infoLists.user99.userid));
+            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER_DAYS, String.valueOf(infoLists.user99.selectdate));
         }
         if (infoLists.user01!=null) {
             if (!TextUtils.isEmpty(infoLists.user01.name)){
