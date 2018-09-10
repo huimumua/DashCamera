@@ -396,7 +396,7 @@ public class OSDView extends View {
         } else if (osdProvider.getRecordingStatus() == RECORDING_EVENT) {
             canvas.drawBitmap(event_recording, null, recordingRectF, null);
             if (countTime >= 0) {
-                drawRecordingCountDown(canvas, "0" + countTime, countTimeRectF);
+                drawRecordingCountDown(canvas, "" + countTime, countTimeRectF);
             }
         } else if (osdProvider.getRecordingStatus() == RECORDING_STOP
                 || osdProvider.getRecordingStatus() == RECORDING_ERROR) {
