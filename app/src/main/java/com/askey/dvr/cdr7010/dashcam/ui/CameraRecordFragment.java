@@ -116,6 +116,7 @@ public class CameraRecordFragment extends Fragment {
     private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private boolean isEventRecording;
+    private static boolean isBatteryDisconnected = false;
     public boolean canRecord = false;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
@@ -250,15 +251,15 @@ public class CameraRecordFragment extends Fragment {
             if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
                 int status = intent.getIntExtra("status", 0);
                 switch (status) {
+                    case BatteryManager.BATTERY_STATUS_CHARGING:
+                    case BatteryManager.BATTERY_STATUS_FULL:
+                        Logg.d(TAG, "battery status is charging");
+                        isBatteryDisconnected = false;
+                        break;
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
                         Logg.d(TAG, "battery status is discharging");
-                        if (isEventRecording) {
-                            Logg.d(TAG, "EventRecording");
-                            mMainCam.takeAPicture(handler);
-                        } else {
-                            Logg.d(TAG, "NormalRecording");
-                            handler.sendEmptyMessage(0);
-                        }
+                        isBatteryDisconnected = true;
+                        handler.sendEmptyMessageDelayed(0, 2000);//一秒内(考虑到实际接收广播的时间更长一些，delay2秒)，用户又插上不关机
                         break;
                 }
             }
@@ -269,10 +270,18 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
-                RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
-                stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
-                //关机
-                handler.sendEmptyMessageDelayed(1, 2000);
+                if (isBatteryDisconnected) {
+                    Logg.d(TAG, "battery status....isBatteryDisconnected");
+                    RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
+                    stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
+                    if (isEventRecording) {
+                        //关机,2018.9.5新需求，最多7秒后关机，此处按最长时间处理
+                        handler.sendEmptyMessageDelayed(1, 7000);
+                    } else {
+                        //关机
+                        handler.sendEmptyMessageDelayed(1, 2000);
+                    }
+                }
             } else if (msg.what == 1) {
                 Logg.d(TAG, "SHUT DOWN...");
                 ActivityUtils.shutDown(DashCamApplication.getAppContext());
@@ -336,10 +345,37 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onEventCompleted(int eventId, long timestamp, List<String> pictures, String video) {
             Logg.d(TAG, "DashState: onEventCompleted ");
-            ArrayList<Integer> results = new ArrayList<>(Arrays.asList(1, 0, 1, 1, 1, 0, 0, 0));
+            Integer[] data = new Integer[]{102, 0, 103, 103, 103, 0, 0, 0};
+            if (video != null) {
+                data[0] = 1;
+            }
+            if (pictures != null) {
+                for (int i = 0; i < pictures.size(); i++) {
+                    String path = pictures.get(i);
+                    if (!TextUtils.isEmpty(path)) {
+                        if (i == 0) {
+                            data[2] = 1;
+                        } else if (i == 1) {
+                            data[3] = 1;
+                        } else if (i == 2) {
+                            data[4] = 1;
+                        }
+                    }
+                }
+            }
             ArrayList<String> files = new ArrayList<>();
-            files.add(video);
-            files.addAll(pictures);
+            if (isBatteryDisconnected) {//掉电不传video和image3
+                data[4] = 0;
+                data[0] = 0;
+                if (pictures != null && pictures.size() >= 3) {
+                    files.add(pictures.get(0));
+                    files.add(pictures.get(1));
+                }
+            } else {//有供电才传video
+                files.add(video);
+                files.addAll(pictures);
+            }
+            ArrayList<Integer> results = new ArrayList<>(Arrays.asList(data));
             JvcEventSending.recordResponse(eventId, results, files);
         }
 
@@ -446,6 +482,10 @@ public class CameraRecordFragment extends Fragment {
         return new CameraRecordFragment();
     }
 
+    public static boolean isBatteryDisconnected() {
+        return isBatteryDisconnected;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -474,6 +514,7 @@ public class CameraRecordFragment extends Fragment {
         LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        intentFilter.setPriority(1000);
         getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
     }
 

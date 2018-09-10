@@ -1,7 +1,5 @@
 package com.askey.dvr.cdr7010.dashcam.util;
 
-import android.support.annotation.NonNull;
-
 import net.sf.marineapi.nmea.event.SentenceEvent;
 import net.sf.marineapi.nmea.event.SentenceListener;
 import net.sf.marineapi.nmea.io.SentenceReader;
@@ -13,6 +11,7 @@ import net.sf.marineapi.nmea.util.Time;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +27,12 @@ public class NMEAUtils {
 
     public NMEAUtils(String filePath) throws FileNotFoundException {
         sentences.clear();
-        sentenceReader = new SentenceReader(new FileInputStream(new File(filePath)));
+        FileInputStream fileInputStream = new FileInputStream(new File(filePath));
+        sentenceReader = new SentenceReader(fileInputStream);
         sentenceReader.addSentenceListener(new SentenceListener() {
             @Override
             public void readingPaused() {
-                if (listener != null) {
-                    listener.onReadFinish(sentences);
-                }
+                sentenceReader.stop();
             }
 
             @Override
@@ -46,6 +44,11 @@ public class NMEAUtils {
             public void readingStopped() {
                 if (listener != null) {
                     listener.onReadFinish(sentences);
+                }
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
 
