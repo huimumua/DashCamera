@@ -3,6 +3,7 @@ package com.askey.dvr.cdr7010.dashcam.core.recorder;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
@@ -52,26 +53,60 @@ public class Snapshot {
         long pts = timeStamp - 3000;
         long pos = firstTime;
         final List<String> fileNames = new ArrayList<>(3);
+        String fileName = getFileNameFromPath(videoFilePath);
+        Logg.d(TAG, "fileName==" + fileName);
+        if (TextUtils.isEmpty(fileName)) {
+            if (listener != null) {
+                listener.onPictureTake(new ArrayList<>(0));
+            }
+            return;
+        }
         for (int i = 0; i < 3; i++) {
+            String imagePathOriginal = get3SecondPicPath(fileName, i);
             String image;
             try {
-                image = fileManager.getFilePathForPicture(cameraId, pts);
+                image = fileManager.getFilePathForPicture(imagePathOriginal);
             } catch (Exception e) {
                 pts += 3000;
                 pos += SEEK_STEP;
                 continue;
             }
+            Logg.d(TAG, "image==" + image);
             Bitmap bmp = retriever.getFrameAtTime(pos);
             saveBitmap(pts, fileNames, image, bmp);
             pts += 3000;
             pos += SEEK_STEP;
         }
         retriever.release();
-        String nmeaPath = videoFilePath.replace("EVENT", "SYSTEM/NMEA/EVENT").replace("mp4", "nmea");
-        saveNmea(fileNames, nmeaPath);
+        if (!videoFilePath.contains("_2")) {
+            String nmeaPath = videoFilePath.replace("EVENT", "SYSTEM/NMEA/EVENT").replace("mp4", "nmea");
+            Logg.d(TAG, "nmeaPath==" + nmeaPath);
+            saveNmea(fileNames, nmeaPath);
+        }
         if (listener != null) {
             listener.onPictureTake(fileNames);
         }
+    }
+
+    private static String get3SecondPicPath(String fileName, int index) {
+        String filePathNum = fileName;
+        String nail = "";
+        if (fileName.contains("_")) {
+            filePathNum = fileName.substring(0, fileName.indexOf("_"));
+            nail = fileName.substring(fileName.indexOf("_"), fileName.length());
+        }
+        try {
+            long l = Long.parseLong(filePathNum);
+            if (index == 0) {
+                l = l - 3;
+            } else if (index == 2) {
+                l = l + 3;
+            }
+            return String.format("%s%s", l, nail);
+        } catch (Exception e) {
+            //
+        }
+        return null;
     }
 
     private static void saveBitmap(long pts, List<String> fileNames, String image, Bitmap bmp) {
@@ -112,6 +147,15 @@ public class Snapshot {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getFileNameFromPath(String path) {
+        if (path == null || !path.contains("/") || !path.contains(".")) {
+            return null;
+        }
+        int start = path.lastIndexOf("/");
+        int end = path.lastIndexOf(".");
+        return path.substring(start + 1, end);
     }
 }
 
