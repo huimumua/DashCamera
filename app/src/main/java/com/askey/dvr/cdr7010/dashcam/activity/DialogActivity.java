@@ -299,16 +299,19 @@ public abstract class DialogActivity extends AppCompatActivity {
         super.onDestroy();
     }
     protected  abstract  boolean handleKeyEvent(KeyEvent event);
-    private int keydowmRepeatCount =0;
-
+    /**
+     * key
+     */
+    private int mKeyDownRepeatCount =0;
+    private boolean mKeyDownInThisUI;
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-        keydowmRepeatCount++;
-        if(keydowmRepeatCount==1){
-            onKeyHoldHalfASecond(keyCode);
-        }else if(keydowmRepeatCount==2){
-            onKeyHoldOneSecond(keyCode);
-        }else if(keydowmRepeatCount==3){
+        mKeyDownRepeatCount++;
+        if(mKeyDownRepeatCount==1){
+            onKeyHoldHalfASecondDown(keyCode);
+        }else if(mKeyDownRepeatCount==2){
+            onKeyHoldOneSecondDown(keyCode);
+        }else if(mKeyDownRepeatCount==3){
             onKeyHoldThreeSecond(keyCode);
         }
         return true;
@@ -316,38 +319,61 @@ public abstract class DialogActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+      //  Logg.d(TAG, "onKeyDown: keyCode=" + keyCode + "   " + event.getRepeatCount());
         event.startTracking();
+        if(event.getRepeatCount() == 0) {
+            mKeyDownInThisUI = true;
+            onKeyShortPressedDown(keyCode);
+        }
 
-        if(keydowmRepeatCount==1){
+        if (mKeyDownRepeatCount == 1) {
             onContinueKeyHoldHalfASecond(keyCode);
-        }else if(keydowmRepeatCount==2){
+        } else if (mKeyDownRepeatCount == 2) {
             onContinueKeyHoldOneSecond(keyCode);
-        }else if(keydowmRepeatCount==3){
+        } else if (mKeyDownRepeatCount == 3) {
             onContinueKeyHoldThreeSecond(keyCode);
         }
+
         return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        event.startTracking();
-        if (keydowmRepeatCount==0) {
-            onKeyShortPressed(keyCode);
-        }else{
-            keydowmRepeatCount= 0;
+      //  Logg.d(TAG, "onKeyUp: keyCode=" + keyCode + "   "+ mKeyDownInThisUI);
+        if (mKeyDownRepeatCount==0 && mKeyDownInThisUI) {
+            onKeyShortPressedUp(keyCode);
+        } else if (mKeyDownRepeatCount == 1) {
+            onKeyHoldHalfASecondUp(keyCode);
+        } else if (mKeyDownRepeatCount == 2) {
+            onKeyHoldOneSecondUp(keyCode);
+        } else if (mKeyDownRepeatCount == 3) {
+            onKeyHoldThreeSecond(keyCode);
         }
+        mKeyDownRepeatCount= 0;
         return true;
     }
 
-    public void onKeyShortPressed(int keyCode) {
+    public void onKeyShortPressedDown(int keyCode) {
 
     }
 
-    public  void onKeyHoldHalfASecond(int keyCode){
+    public void onKeyShortPressedUp(int keyCode) {
 
     }
 
-    public  void onKeyHoldOneSecond(int keyCode){
+    public  void onKeyHoldHalfASecondDown(int keyCode){
+
+    }
+
+    public  void onKeyHoldHalfASecondUp(int keyCode){
+
+    }
+
+    public  void onKeyHoldOneSecondDown(int keyCode){
+
+    }
+
+    public  void onKeyHoldOneSecondUp(int keyCode){
 
     }
 
@@ -366,4 +392,5 @@ public abstract class DialogActivity extends AppCompatActivity {
     public void onContinueKeyHoldThreeSecond(int keyCode) {
 
     }
+
 }

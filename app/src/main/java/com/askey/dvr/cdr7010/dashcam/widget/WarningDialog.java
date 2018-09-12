@@ -85,6 +85,9 @@ public class WarningDialog extends Dialog {
     public void setImageResourceByEventType(int eventType){
         if(waringImg != null) {
             switch (eventType) {
+                case Event.ACCIDENT_DETECTION:
+                    waringImg.setImageResource(R.drawable.dialog_emergency);
+                    break;
                 case Event.ABRUPT_HANDLE:
                     waringImg.setImageResource(R.drawable.dialog_handle);
                     break;
