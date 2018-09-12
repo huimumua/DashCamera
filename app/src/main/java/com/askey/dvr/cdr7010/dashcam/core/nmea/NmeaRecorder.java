@@ -150,7 +150,7 @@ public class NmeaRecorder {
         mState = RecorderState.STOPPED;
 
         try {
-            Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime);
+            Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime + ", StartTime" + mStartTime);
             // Log.i(LOG_TAG, "Stop record");
             mOutputStream.flush();
             mOutputStream.close();
