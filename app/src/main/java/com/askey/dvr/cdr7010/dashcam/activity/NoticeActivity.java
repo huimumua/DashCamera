@@ -87,7 +87,7 @@ public class NoticeActivity extends DialogActivity implements NoticeFragment.Not
 //    }
 
     @Override
-    public void onKeyShortPressed(int keyCode) {
+    public void onKeyShortPressedUp(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_ENTER:
                 if (updateInfos != null && (updateInfos.updateResultState != Const.UPDATE_READY) && isUpdate) {

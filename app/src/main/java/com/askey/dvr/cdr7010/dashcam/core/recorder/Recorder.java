@@ -166,7 +166,7 @@ public class Recorder implements IFrameListener {
                         if (event == 0) {
                             nmea.start(startTime, 60);
                         } else {
-                            nmea.eventStart(startTime);
+                            nmea.eventStart(startTime, event);
                         }
                         mNmeaMap.put(path, nmea);
                     }
@@ -220,9 +220,14 @@ public class Recorder implements IFrameListener {
 
         @Override
         public void segmentTerminated() {
+            Logg.d(TAG, "segmentTerminated");
+
             if (mConfig.nmeaRecordEnable()) {
                 for (NmeaRecorder nmea : mNmeaMap.values()) {
+                    Logg.d(TAG, "nmea loop");
+
                     if (nmea != null && NmeaRecorder.RecorderState.STARTED == nmea.getState()) {
+                        Logg.d(TAG, "nmea.stop");
                         nmea.stop();
                     }
                 }

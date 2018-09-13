@@ -22,7 +22,7 @@ public class GlobalLogic {
     private boolean isInRecording;
     private String userInfo;
     private volatile boolean isStartSwitchUser = false;
-    private boolean isECallAllow = false;
+    private boolean isECallAllow = true;
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_NONE;

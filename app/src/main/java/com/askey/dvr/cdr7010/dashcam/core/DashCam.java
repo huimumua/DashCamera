@@ -315,50 +315,50 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     }
 
-    public void takeAPicture(final Handler handler) {
-        if (mRenderer != null) {
-            mRenderer.takeDisplaySnapshot(new EGLRenderer.SnapshotCallback() {
-                @Override
-                public void onSnapshotAvailable(byte[] data, int width, int height, long timeStamp) {
-                    Bitmap bmp = null;
-                    BufferedOutputStream bos = null;
-                    try {
-                        String filePathForPicture = FileManager.getInstance(mContext).getFilePathForPicture(mConfig.cameraId(), timeStamp);
-                        ByteBuffer buf = ByteBuffer.wrap(data);
-                        bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
-                        bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        bmp.copyPixelsFromBuffer(buf);
-                        bmp = convertBmp(bmp);
-                        bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-                        Position position = null;
-                        if (currentLocation != null) {
-                            Logg.d(TAG, "currentLocation!=null,getLatitude==" + currentLocation.getLatitude() + ",getLongitude==" + currentLocation.getLongitude());
-                            position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
-                        }
-                        Logg.d(TAG, "timeStamp==" + timeStamp);
-                        ExifHelper.build(filePathForPicture, timeStamp, position);
-                        // TODO: 2018/6/28 上傳文件
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (bmp != null) {
-                            bmp.recycle();
-                        }
-                        if (bos != null) {
-                            try {
-                                bos.flush();
-                                bos.close();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        handler.sendEmptyMessage(0);
-                    }
-                }
-            });
-        }
-    }
+//    public void takeAPicture(final Handler handler) {
+//        if (mRenderer != null) {
+//            mRenderer.takeDisplaySnapshot(new EGLRenderer.SnapshotCallback() {
+//                @Override
+//                public void onSnapshotAvailable(byte[] data, int width, int height, long timeStamp) {
+//                    Bitmap bmp = null;
+//                    BufferedOutputStream bos = null;
+//                    try {
+//                        String filePathForPicture = FileManager.getInstance(mContext).getFilePathForPicture(mConfig.cameraId(), timeStamp);
+//                        ByteBuffer buf = ByteBuffer.wrap(data);
+//                        bos = new BufferedOutputStream(new FileOutputStream(filePathForPicture));
+//                        bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//                        bmp.copyPixelsFromBuffer(buf);
+//                        bmp = convertBmp(bmp);
+//                        bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+//                        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+//                        Position position = null;
+//                        if (currentLocation != null) {
+//                            Logg.d(TAG, "currentLocation!=null,getLatitude==" + currentLocation.getLatitude() + ",getLongitude==" + currentLocation.getLongitude());
+//                            position = new Position(currentLocation.getLatitude(), currentLocation.getLongitude());
+//                        }
+//                        Logg.d(TAG, "timeStamp==" + timeStamp);
+//                        ExifHelper.build(filePathForPicture, timeStamp, position);
+//                        // TODO: 2018/6/28 上傳文件
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    } finally {
+//                        if (bmp != null) {
+//                            bmp.recycle();
+//                        }
+//                        if (bos != null) {
+//                            try {
+//                                bos.flush();
+//                                bos.close();
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        handler.sendEmptyMessage(0);
+//                    }
+//                }
+//            });
+//        }
+//    }
 
     private void startCamera() throws CameraAccessException {
         Logg.d(TAG, "startCamera");
