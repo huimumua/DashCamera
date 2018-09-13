@@ -62,7 +62,11 @@ public abstract class DialogActivity extends AppCompatActivity {
                 String[] voiceArray = voiceCode.split(",");
                 int[] voiceId = new int[voiceArray.length];
                 for (int idx = 0; idx < voiceArray.length; idx++) {
-                    voiceId[idx] = Integer.parseInt(voiceArray[idx].trim(), 16);
+                    if(voiceArray[idx].trim().contains("0x")){
+                        voiceId[idx] = Integer.parseInt(voiceArray[idx].trim().substring(2),16);
+                    }else {
+                        voiceId[idx] = Integer.parseInt(voiceArray[idx].trim(), 16);
+                    }
                 }
                 TTSManager.getInstance().ttsEventStart(eventInfo.getEventType(),
                         eventInfo.getPriority(), voiceId);
@@ -283,7 +287,7 @@ public abstract class DialogActivity extends AppCompatActivity {
                     break;
                 case AdDVICE_BEFORE_DRIVING:
                     EventManager.getInstance().getEventInfoByEventType(AdDVICE_BEFORE_DRIVING)
-                                        .setVoiceGuidence(String.valueOf(jvcReportInfo.getCode()));
+                                        .setVoiceGuidence(jvcReportInfo.getCode());
                     break;
                 default:
             }
