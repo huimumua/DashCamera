@@ -296,6 +296,7 @@ public class MediaMuxerWrapper {
                 }
             }
         }
+        mHandlerThread.quitSafely();
     }
 
     /*package*/

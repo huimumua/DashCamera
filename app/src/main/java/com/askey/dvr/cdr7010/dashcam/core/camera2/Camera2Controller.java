@@ -182,6 +182,7 @@ public class Camera2Controller {
         } finally {
             mCameraOpenCloseLock.release();
         }
+        stopBackgroundThread();
     }
 
     public void startRecordingVideo() throws CameraAccessException {
@@ -237,8 +238,8 @@ public class Camera2Controller {
         }
         try {
             setUpCaptureRequestBuilder(mCaptureBuilder);
-            HandlerThread thread = new HandlerThread("CameraPreview");
-            thread.start();
+            //HandlerThread thread = new HandlerThread("CameraPreview");
+            //thread.start();
             mCaptureSession.setRepeatingRequest(mCaptureBuilder.build(), null, mBackgroundHandler);
             mState = State.CAPTURING;
             mListenerHandler.post(mListener::onCaptureStarted);
