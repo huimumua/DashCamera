@@ -184,6 +184,7 @@ public class UserSettingManager {
         }
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
+        Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_NUM, infoLists.num);
         if (infoLists.user99!=null ) {
             if (!TextUtils.isEmpty(infoLists.user99.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME, infoLists.user99.name);
