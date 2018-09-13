@@ -49,7 +49,7 @@ public class DashCam implements DashCamControl {
     private StateCallback mStateCallback;
     private StateMachine mStateMachine;
     private AdasController mAdasController;
-
+    private boolean mTerminating;
 
     /**
      * Functions which need to start Camera
@@ -184,8 +184,33 @@ public class DashCam implements DashCamControl {
             mAdasController.init(mContext);
             mAdasController.addListener(mAdasStateListener);
             enableFunction(Function.ADAS);
-        } else {
-            disableFunction(Function.ADAS);
+        }
+    }
+
+    /**
+     * Make this API a synchronized method for CameraRecordFragment to call
+     * To ensure all resource are released before the Activity become Background
+     */
+    public void terminate() {
+        Logg.v(TAG, "terminate:");
+        mTerminating = true;
+        mSetEnabledFunctions.clear();
+        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
+        waitState(mStateMachine.STATE_OPEN, 1000);
+        mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE, "terminate"));
+        waitState(mStateMachine.STATE_CLOSE, 1000);
+        Logg.v(TAG, "terminate: END");
+    }
+
+    private void waitState(StateMachine.State state, long millis) {
+        synchronized (mStateMachine) {
+            while (mStateMachine.getCurrentState() != state) {
+                try {
+                    mStateMachine.wait(millis); // FIXME
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -296,7 +321,14 @@ public class DashCam implements DashCamControl {
 
     @Override
     public void onCameraClosed() {
-        Logg.v(TAG, "onCameraClosed: mErrorFlag = " + mErrorFlag);
+        Logg.v(TAG, "onCameraClosed: mErrorFlag=" + mErrorFlag +
+                ", mTerminating=" + mTerminating);
+        if (mTerminating) {
+            synchronized (mStateMachine) {
+                mStateMachine.notify();
+            }
+            return;
+        }
         if (mSetEnabledFunctions.size() != 0) {
             long delayMillis = 0;
             if (mErrorFlag.size() != 0) {
@@ -313,7 +345,12 @@ public class DashCam implements DashCamControl {
     @Override
     public void onStartVideoRecord() {
         Logg.d(TAG, "onStartVideoRecord");
-
+        if (mTerminating) {
+            synchronized (mStateMachine) {
+                mStateMachine.notify();
+            }
+            return;
+        }
     }
 
 //    public void takeAPicture(final Handler handler) {
@@ -373,7 +410,9 @@ public class DashCam implements DashCamControl {
     public void onStopVideoRecord() {
         Logg.d(TAG, "onStopVideoRecord");
         mCamera2Controller.stopRecordingVideo();
-        mAdasController.stop();
+        if (mAdasController != null) {
+            mAdasController.stop();
+        }
         try {
             mCamera2Controller.closeCamera();
         } catch (CameraAccessException e) {
@@ -451,10 +490,25 @@ public class DashCam implements DashCamControl {
     };
 
     private void checkCloseSuccess() {
-        if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
-                && mRecording == false
-                && mAdasController.getState() == AdasController.State.Stopped) {
-            mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "checkCloseSuccess"));
+        if (mAdasController != null) {
+            // Check ADAS
+            Log.v(TAG, "checkCloseSuccess: mCamera2Controller.getState()=" + mCamera2Controller.getState() +
+                    ", mRecording=" + mRecording +
+                    ", mAdasController.getState()" + mAdasController.getState());
+            if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
+                    && mRecording == false
+                    && (mAdasController.getState() == AdasController.State.Stopped || mAdasController.getState() == AdasController.State.Uninitialized)) {
+                mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "checkCloseSuccess"));
+            }
+        } else {
+            // No Check ADAS
+            Log.v(TAG, "checkCloseSuccess: mCamera2Controller.getState()=" + mCamera2Controller.getState() +
+                    ", mRecording=" + mRecording);
+            if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
+                    && mRecording == false) {
+                mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "checkCloseSuccess"));
+            }
+
         }
     }
 
@@ -501,7 +555,9 @@ public class DashCam implements DashCamControl {
 
     private void prepareAdas(Camera2Controller camera2Controller) {
         Logg.v(TAG, "prepareAdas");
-        mAdasController.start();
+        if (mAdasController != null) {
+            mAdasController.start();
+        }
     }
 
     private static Bitmap convertBmp(Bitmap bmp) {
