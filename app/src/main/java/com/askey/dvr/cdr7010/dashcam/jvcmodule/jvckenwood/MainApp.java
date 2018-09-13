@@ -255,13 +255,13 @@ public class MainApp {
                     if (status == 0) {
                         code = jsonObject.getString("code");
                         info.setCode(code);
+                        EventUtil.sendEvent(info);
                     }
                 } catch (JSONException e) {
                     Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
                     info.setCode("");
                 }
             }
-            EventUtil.sendEvent(info);
         }
 
         @Override
