@@ -8,9 +8,10 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
+import com.askey.dvr.cdr7010.dashcam.adas.AdasStatistics.ProfileItem;
+import com.askey.dvr.cdr7010.dashcam.adas.AdasStatistics.TimesItem;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.TimesPerSecondCounter;
 import com.jvckenwood.adas.detection.Detection;
@@ -26,31 +27,43 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
+import static com.jvckenwood.adas.util.Constant.ADAS_SUCCESS;
 
-public class AdasController implements Util.AdasCallback, AdasStateListener {
+public class AdasController implements Util.AdasCallback {
     private static final String TAG = AdasController.class.getSimpleName();
 
     private static final boolean DEBUG = false;
     static final int ADAS_IMAGE_WIDTH = 1280;
     static final int ADAS_IMAGE_HEIGHT = 720;
     static final int BUFFER_NUM = 3;
+    private static final int EXPECTED_LISTENER_NUM = 1;
+
+    /* Interval of printing statistics data */
+    private static long STATISTICS_INTERVAL_MILL_SEC = 60 * 1000;
+
+    /* Used for some synchronized method to change state after return */
+    private static final long STATE_CHANGE_DELAY = 100;
+    /* FINETUNE: wait for image reader to release */
+    private static final long IMAGE_READER_CLOSE_DELAY = 500;
 
     /* Properties for debug */
     private static boolean EXCEPTION_WHEN_ERROR;
     private static boolean DEBUG_FPS;
     private static boolean ADAS_DISABLED;
     private static boolean DEBUG_IMAGE_PROCESS;
+    private static boolean PRINT_STATISTICS;
 
     /* Handler Messages */
-    private static final int MSG_PROCESS = 0;
-    private static final int MSG_DID_ADAS_DETECT = 1;
     private static final String PROP_DEBUG_FPS = "persist.dvr.adas.debug_fps";
     private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
     private static final String PROP_EXCEPTION = "persist.dvr.adas.exception";
     private static final String PROP_DEBUG_PROCESS = "persist.dvr.adas.dbg_proc";
     private static final String PROP_FAKE_SPEED = "persist.dvr.adas.speed";
+    private static final String PROP_STATISTICS = "persist.dvr.adas.stat";
 
     private static AdasController sInstance;
 
@@ -63,13 +76,13 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     private Handler mHandler;
     private List<WeakReference<AdasStateListener>> mListeners;
     private ImageReader mImageReader;
-    private boolean mEnabled = true; // TODO: false default
-    private AdasStateControl mStateControl;
-    private float mFakeSpeed = 0;
+    private float mFakeSpeed;
     private float mLocationSpeed = 0;
+    private AdasStatistics mStatistics;
+    private ReentrantLock mProcessingLock;
 
-    private enum State {
-        Uninitialized, Initialing, Initialized, Stopping
+    public enum State {
+        Uninitialized, Initializing, Stopped, Starting, Started, Stopping, Finishing
     }
 
     private State mState;
@@ -79,6 +92,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             throw new RuntimeException("Singleton instance is already created!");
         }
         mState = State.Uninitialized;
+        mStatistics = new AdasStatistics();
+        mProcessingLock = new ReentrantLock();
         mAdasImpl = Util.getInstance();
         mTpsc = new TimesPerSecondCounter(TAG);
         mTpscDidAdas = new TimesPerSecondCounter(TAG + "_didAdas");
@@ -89,18 +104,26 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         handlerThread.start();
         mHandler = new AdasHandler(handlerThread.getLooper());
         mListeners = new ArrayList<>();
-        mStateControl = new JkcAdasStateControl();
-        mStateControl.addListener(this);
+
         ADAS_DISABLED = SystemPropertiesProxy.getBoolean(PROP_ADAS_DISABLED, false);
         Log.v(TAG, "AdasController: ADAS_DISABLED = " + ADAS_DISABLED);
-        DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, false);
-        Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
-        EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, false);
-        Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
+
         DEBUG_IMAGE_PROCESS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_PROCESS, false);
         Log.v(TAG, "AdasController: DEBUG_IMAGE_PROCESS = " + DEBUG_IMAGE_PROCESS);
-        mFakeSpeed = SystemPropertiesProxy.getInt(PROP_FAKE_SPEED, 0);
+
+        mFakeSpeed = SystemPropertiesProxy.getInt(PROP_FAKE_SPEED, DEBUG ? 70: 0);
         Log.v(TAG, "AdasController: mFakeSpeed = " + mFakeSpeed);
+
+        /* DEBUG variable enables below DEBUG*/
+        EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, DEBUG);
+        Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
+        PRINT_STATISTICS = SystemPropertiesProxy.getBoolean(PROP_STATISTICS, DEBUG);
+        Log.v(TAG, "AdasController: PRINT_STATISTICS = " + PRINT_STATISTICS);
+        DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, DEBUG);
+        Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
+        if (DEBUG)
+            STATISTICS_INTERVAL_MILL_SEC = 3 * 1000;
+
     }
 
     public static AdasController getsInstance() {
@@ -115,42 +138,88 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
 
     public void init(Context context) {
-        Log.i(TAG, "init");
-        if (mState != State.Uninitialized) {
-            handleError("finish", "Unexpected mState = " + mState);
-        }
-
         if (ADAS_DISABLED) {
-            Log.w(TAG, "init: not init because ADAS_DISABLED");
+            Log.w(TAG, "init: ADAS_DISABLED");
             return;
         }
+        Log.v(TAG, "init");
 
+        assertState("init", State.Uninitialized);
 
-        mState = State.Initialing;
+        changeState(State.Initializing);
         FC_PARAMETER fp = FcGetter.getFCParam();
 
         Log.v(TAG, "initAdas: FC_PARAMETER = " + fp);
+        mStatistics.logStart(ProfileItem.Init);
         int result = mAdasImpl.initAdas(fp, context, this);
-        if (result != 0) {
+        mStatistics.logFinish(ProfileItem.Init);
+        if (result != ADAS_SUCCESS) {
             handleError("init", "initAdas() failed with return value = " + result);
         }
+        assertState("init", State.Initializing);
+        changeState(State.Stopped);
+    }
 
-        mHandler.postDelayed(() -> mState = State.Initialized, 300);
+    private void changeState(State state) {
+        Log.v(TAG, "changeState: state = " + state);
+        if (mState != state) {
+            mState = state;
+            notifyStateChanged(mState);
+        }
+    }
+
+    private synchronized void notifyStateChanged(State state) {
+        removeNullWeakRefs(mListeners);
+        synchronized (mListeners) {
+            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
+            while (iterator.hasNext()) {
+                WeakReference<AdasStateListener> weakRef = iterator.next();
+                AdasStateListener listener = weakRef.get();
+                if (listener != null) {
+                    listener.onStateChanged(state);
+                    continue;
+                }
+            }
+        }
+
+    }
+
+    private void removeNullWeakRefs(List<WeakReference<AdasStateListener>> collection) {
+        synchronized (collection) {
+            Iterator<WeakReference<AdasStateListener>> iterator = collection.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next().get() == null) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     private void process(Image image) {
-        if (DEBUG_FPS) mTpsc.update();
-        if (ADAS_DISABLED) {
+        if (ADAS_DISABLED
+                || mState != State.Started
+                || mProcessingLock.isLocked()) {
+            // Too much logs
+            // Log.w(TAG, "process: ADAS_DISABLED=" + ADAS_DISABLED + ", mState=" + mState);
             image.close();
             return;
         }
+        if (!mProcessingLock.tryLock()) { // Unlock when process is done (didAdasDetect_internal)
+            Log.w(TAG, "process: \"stop()\" should has acquired the lock first!!!");
+            image.close();
+            return;
+        }
+        if (DEBUG_FPS) {
+            mTpsc.update();
+        }
 
-        Message msg = mHandler.obtainMessage(MSG_PROCESS, 0, 0, image);
-        msg.sendToTarget();
+        assertState("process", State.Started);
+        mHandler.post(()->process_internal(image));
     }
 
     private void process_internal(Image image) {
-        if (DEBUG) {
+        assertState("process_internal", State.Started);
+        if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "process_internal: image = " + image);
         }
 
@@ -160,8 +229,8 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         mFcInput.CaptureMilliSec = timestamp % 1000;
         ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureMilliSec, image);
 
-        if (mState != State.Initialized) {
-            Log.v(TAG, "process_internal: not Initialized = " + image);
+        if (mState != State.Started) {
+            Log.v(TAG, "process_internal: not Stopped = " + image);
             imageRecord.recycle();
             return;
         }
@@ -177,6 +246,7 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         ByteBuffer y = image.getPlanes()[0].getBuffer();
         ByteBuffer u = image.getPlanes()[1].getBuffer();
         ByteBuffer v = image.getPlanes()[2].getBuffer();
+        mStatistics.logStart(ProfileItem.Process);
         int result = Detection.adasDetect(y, u, v, mFcInput);
 
         if (result == ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION) {
@@ -202,6 +272,42 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
     }
 
+    @Override
+    public void didAdasDetect(long captureTimeMs) {
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "didAdasDetect: captureTime = " + captureTimeMs);
+        }
+        mStatistics.logFinish(ProfileItem.Process);
+        if (DEBUG_FPS) mTpscDidAdas.update();
+        mHandler.post(()->didAdasDetect_internal(captureTimeMs));
+    }
+
+    private void didAdasDetect_internal(long captureTimeMs) {
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "didAdasDetect_internal: captureTimeMs = " + captureTimeMs);
+        }
+
+        ImageRecord imageRecord = mProcessingImages.remove();
+        if (imageRecord.getTimestamp() != captureTimeMs) {
+            throw new RuntimeException("callback captureTimeMs=" + captureTimeMs + ", but oldest record timestamp=" + imageRecord.getTimestamp());
+        }
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "didAdasDetect_internal: close image = " + imageRecord);
+            Log.v(TAG, "didAdasDetect_internal: image dequeue = " + processingImagesToString());
+        }
+        imageRecord.recycle();
+        if (mState == State.Stopping) {
+            Log.w(TAG, "didAdasDetect_internal: stop is waiting the lock...");
+            if (mProcessingImages.size() > 0) {
+                throw new AssertionError("mProcessingImages.size() > 0");
+            }
+            Log.v(TAG, "didAdasDetect_internal: mImageReader.close() = " + mImageReader);
+
+            mImageReader.close();
+        }
+        mProcessingLock.unlock();
+    }
+
     private float getSpeed() {
         if (mFakeSpeed != 0) {
             return mFakeSpeed;
@@ -219,11 +325,9 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             return;
         }
 
-        if (mState != State.Initialized) {
-            handleError("finish", "Unexpected mState = " + mState);
-        }
-        mState = State.Stopping;
-
+        assertState("finish", State.Stopped);
+        changeState(State.Finishing);
+        mStatistics.logStart(ProfileItem.Finish);
         int result = mAdasImpl.finishAdas();
         if (result != Constant.ADAS_SUCCESS) {
             handleError("finish",
@@ -232,37 +336,16 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
 
     @Override
+    public synchronized void didAdasFinish(int i) {
+        Log.v(TAG, "didAdasFinish");
+        mStatistics.logFinish(ProfileItem.Finish);
+        assertState("didAdasFinish", State.Finishing);
+        changeState(State.Uninitialized);
+    }
+
+    @Override
     public void adasFailure(int i) {
         Log.e(TAG, "adasFailure: " + i);
-    }
-
-    @Override
-    public void didAdasDetect(long captureTime) {
-        if (DEBUG_FPS) mTpscDidAdas.update();
-        Message msg = mHandler.obtainMessage(MSG_DID_ADAS_DETECT, 0, 0, captureTime);
-        msg.sendToTarget();
-    }
-
-    @Override
-    public synchronized void didAdasFinish(int i) {
-        mState = State.Uninitialized;
-        Log.v(TAG, "didAdasFinish");
-    }
-
-    private void didAdasDetect_internal(long captureTimeMs) {
-        if (DEBUG_IMAGE_PROCESS) {
-            Log.v(TAG, "didAdasDetect_internal: captureTimeMs = " + captureTimeMs);
-        }
-
-        ImageRecord imageRecord = mProcessingImages.remove();
-        if (imageRecord.getTimestamp() != captureTimeMs) {
-            throw new RuntimeException("callback captureTimeMs=" + captureTimeMs + ", but oldest record timestamp=" + imageRecord.getTimestamp());
-        }
-        if (DEBUG_IMAGE_PROCESS) {
-            Log.v(TAG, "didAdasDetect_internal: close image = " + imageRecord);
-            Log.v(TAG, "didAdasDetect_internal: image dequeued = " + processingImagesToString());
-        }
-        imageRecord.recycle();
     }
 
     private String processingImagesToString() {
@@ -275,9 +358,13 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
     }
 
     public void addListener(AdasStateListener listener) {
-        // Log.v(TAG, "addListener: " + listener);
+        Log.v(TAG, "addListener: " + listener);
+        if (ADAS_DISABLED) {
+            return;
+        }
         WeakReference<AdasStateListener> weakListener =
                 new WeakReference<>(listener);
+        removeNullWeakRefs(mListeners);
         synchronized (mListeners) {
             if (mListeners.contains(weakListener)) {
                 handleError("addListener", "Add a listener multi-times");
@@ -285,19 +372,24 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             }
 
             mListeners.add(weakListener);
-            // Log.v(TAG, "addListener: listeners size = " + mListeners.size());
+            if (mListeners.size() > EXPECTED_LISTENER_NUM) {
+                handleError("addListener", "mListeners.size() = " + mListeners.size());
+            }
         }
     }
 
     public void removeListener(AdasStateListener listener) {
         // Log.v(TAG, "removeListener: " + listener);
+        if (ADAS_DISABLED) {
+            return;
+        }
         boolean found = false;
+        removeNullWeakRefs(mListeners);
         synchronized (mListeners) {
             Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
             while (iterator.hasNext()) {
                 WeakReference<AdasStateListener> weakRef = iterator.next();
                 if (weakRef.get() == null) {
-                    iterator.remove();
                     continue;
                 }
                 if (weakRef.get() == listener) {
@@ -317,11 +409,14 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
      * Always use a new ImageReader fix this issue
      * @return
      */
-    public ImageReader obtainImageReader() {
+    private void obtainImageReader() {
+        assertState("obtainImageReader", State.Starting);
         if (mImageReader != null) {
-            mImageReader.close();
+            handleError("obtainImageReader", "mImageReader may not close correctly (leak)");
         }
         mImageReader = ImageReader.newInstance(ADAS_IMAGE_WIDTH, ADAS_IMAGE_HEIGHT, ImageFormat.YUV_420_888, BUFFER_NUM);
+        mStatistics.log(TimesItem.NewImageReader);
+        Log.v(TAG, "obtainImageReader: new mImageReader = " + mImageReader);
         mImageReader.setOnImageAvailableListener(reader -> {
             Image image = null;
             try {
@@ -334,47 +429,10 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
                 handleError( "onImageAvailable", "FIXME, " + e.getMessage());
             }
         }, null);
+    }
+
+    public ImageReader getImageReader() {
         return mImageReader;
-    }
-
-    public boolean isEnabled() {
-        return mEnabled;
-    }
-
-    @Override
-    public void onAdasStarted() {
-        Log.v(TAG, "onAdasStarted");
-        mEnabled = true;
-        synchronized (mListeners) {
-            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
-            while (iterator.hasNext()) {
-                WeakReference<AdasStateListener> weakRef = iterator.next();
-                if (weakRef.get() == null) {
-                    iterator.remove();
-                    continue;
-                }
-                weakRef.get().onAdasStarted();
-            }
-        }
-        //TODO: start thread?
-    }
-
-    @Override
-    public void onAdasStopped() {
-        Log.v(TAG, "onAdasStopped");
-        mEnabled = false;
-        synchronized (mListeners) {
-            Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
-            while (iterator.hasNext()) {
-                WeakReference<AdasStateListener> weakRef = iterator.next();
-                if (weakRef.get() == null) {
-                    iterator.remove();
-                    continue;
-                }
-                weakRef.get().onAdasStopped();
-            }
-        }
-        //TODO: stop thread?
     }
 
     private class AdasHandler extends Handler {
@@ -382,20 +440,6 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
             super(looper);
         }
 
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case MSG_PROCESS:
-                    Image image = (Image) msg.obj;
-                    process_internal(image);
-                    break;
-                case MSG_DID_ADAS_DETECT:
-                    long captureTime = (long) msg.obj;
-                    didAdasDetect_internal(captureTime);
-                    break;
-            }
-        }
     }
 
     private void handleError(String func, String message) {
@@ -405,4 +449,95 @@ public class AdasController implements Util.AdasCallback, AdasStateListener {
         }
         Log.e(TAG, completeMessage);
     }
+
+    /**
+     * Asynchronized call
+     * Wait for State.Started to ensure it is Started
+     */
+    public void start() {
+        if (ADAS_DISABLED) {
+            Log.w(TAG, "start: ADAS_DISABLED");
+            return;
+        }
+        Log.v(TAG, "start");
+        mHandler.post(this::start_internal);
+        mHandler.postDelayed(this::printStatistics, STATISTICS_INTERVAL_MILL_SEC);
+    }
+
+    private void start_internal() {
+        Log.v(TAG, "start_internal");
+        assertState("start_internal", State.Stopped);
+        changeState(State.Starting);
+
+        long closeDelay = 0;
+        if (mImageReader != null) {
+            Log.w(TAG, "start_internal: closing mImageReader...");
+            mImageReader.close();
+            mImageReader = null;
+            closeDelay = IMAGE_READER_CLOSE_DELAY;
+        }
+        mHandler.postDelayed(mRunnablePrepareImageReader, closeDelay);
+    }
+
+    private Runnable mRunnablePrepareImageReader = () -> {
+        Log.v(TAG, "mRunnablePrepareImageReader");
+        obtainImageReader();
+        changeState(State.Started);
+    };
+
+    private void printStatistics() {
+        Log.v(TAG, "printStatistics: " + mStatistics);
+        if (mState == State.Started) {
+            mHandler.postDelayed(this::printStatistics, STATISTICS_INTERVAL_MILL_SEC);
+        }
+    }
+
+    /**
+     * Synchronized call
+     * When it is returned, state changed to State.Stopped
+     */
+    public void stop() {
+        if (ADAS_DISABLED) {
+            Log.w(TAG, "stop: ADAS_DISABLED");
+            return;
+        }
+        Log.v(TAG, "stop");
+        mStatistics.logStart(ProfileItem.Stop);
+        assertState("stop", State.Started);
+        try {
+            if (!mProcessingLock.tryLock()) { // Unlock in stop_internal
+                Log.w(TAG, "stop: \"process()\" has acquired the lock first!!!");
+                changeState(State.Stopping);
+                if (mProcessingLock.tryLock(1000, TimeUnit.MILLISECONDS)) {
+                    Log.w(TAG, "stop: acquire the lock!!!");
+                } else {
+                    Log.e(TAG, "stop: check why \"process()\" hasn't release the lock");
+                    throw new RuntimeException("Timeout: cannot acquire the lock");
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            mProcessingLock.unlock();
+            mStatistics.logFinish(ProfileItem.Stop);
+            changeState(State.Stopped);
+            Log.v(TAG, "stop: END");
+        }
+    }
+
+    private void assertState(String funcName, State state) {
+        if (mState != state) {
+            try {
+                handleError(funcName, "Assert state = " + state
+                        + ", mState = " + mState);
+            } catch (RuntimeException e) {
+                throw new IllegalStateException(e.getMessage());
+            }
+        }
+    }
+
+    public State getState() {
+        return mState;
+    }
+
 }

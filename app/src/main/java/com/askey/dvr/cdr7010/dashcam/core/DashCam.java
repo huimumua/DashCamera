@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasController;
 import com.askey.dvr.cdr7010.dashcam.adas.AdasStateListener;
@@ -35,7 +36,7 @@ import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.List;
 
-public class DashCam implements DashCamControl, AdasStateListener {
+public class DashCam implements DashCamControl {
 
     private String TAG = "DashCam";
     private final Handler mMainThreadHandler;
@@ -119,6 +120,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
             if (mStateCallback != null) {
                 mStateCallback.onError();
             }
+            checkCloseSuccess();
         }
 
         @Override
@@ -173,18 +175,17 @@ public class DashCam implements DashCamControl, AdasStateListener {
     }
 
     public void enableAdas(boolean enabled) {
+        Logg.v(TAG, "enableAdas: enabled=" + enabled);
         if (mAdasController == null) {
             Logg.e(TAG, "enableAdas: mAdasController=null");
             return;
         }
         if (enabled) {
             mAdasController.init(mContext);
-            mAdasController.addListener(this);
+            mAdasController.addListener(mAdasStateListener);
             enableFunction(Function.ADAS);
         } else {
             disableFunction(Function.ADAS);
-            mAdasController.removeListener(this);
-            mAdasController.finish();
         }
     }
 
@@ -372,6 +373,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
     public void onStopVideoRecord() {
         Logg.d(TAG, "onStopVideoRecord");
         mCamera2Controller.stopRecordingVideo();
+        mAdasController.stop();
         try {
             mCamera2Controller.closeCamera();
         } catch (CameraAccessException e) {
@@ -405,18 +407,6 @@ public class DashCam implements DashCamControl, AdasStateListener {
         if (mRecorder != null) {
             mRecorder.demute();
         }
-    }
-
-    @Override
-    public void onAdasStarted() {
-        Logg.v(TAG, "onAdasStarted");
-        enableFunction(Function.ADAS);
-    }
-
-    @Override
-    public void onAdasStopped() {
-        Logg.v(TAG, "onAdasStopped");
-        disableFunction(Function.ADAS);
     }
 
     private CameraControllerListener mCameraListener = new CameraControllerListener() {
@@ -462,7 +452,8 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     private void checkCloseSuccess() {
         if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
-                && !mRecording) {
+                && mRecording == false
+                && mAdasController.getState() == AdasController.State.Stopped) {
             mStateMachine.dispatchEvent(new StateMachine.Event(StateMachine.EEvent.CLOSE_SUCCESS, "checkCloseSuccess"));
         }
     }
@@ -510,8 +501,7 @@ public class DashCam implements DashCamControl, AdasStateListener {
 
     private void prepareAdas(Camera2Controller camera2Controller) {
         Logg.v(TAG, "prepareAdas");
-        camera2Controller.setImageReader(mAdasController.obtainImageReader());
-        setFunctionReady(Function.ADAS);
+        mAdasController.start();
     }
 
     private static Bitmap convertBmp(Bitmap bmp) {
@@ -538,4 +528,26 @@ public class DashCam implements DashCamControl, AdasStateListener {
         }
         mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.ERROR, e.getMessage()));
     }
+
+    private AdasStateListener mAdasStateListener = new AdasStateListener() {
+        @Override
+        public void onStateChanged(AdasController.State state) {
+            Logg.v(TAG, "mAdasStateListener-onStateChanged: " + state);
+            switch (state) {
+                case Started:
+                    mCamera2Controller.setImageReader(mAdasController.getImageReader());
+                    setFunctionReady(Function.ADAS);
+                    break;
+                case Stopped:
+                    checkCloseSuccess();
+                    if (!mSetEnabledFunctions.contains(Function.ADAS)) {
+                        mAdasController.finish();
+                    }
+                    break;
+                case Uninitialized:
+                    mAdasController.removeListener(mAdasStateListener);
+                    break;
+            }
+        }
+    };
 }
