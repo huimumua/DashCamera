@@ -117,6 +117,7 @@ public class CameraRecordFragment extends Fragment {
 
     private boolean isEventRecording;
     private static boolean isBatteryDisconnected = false;
+    private boolean isKeyNotValid = false;
     public boolean canRecord = false;
 
     private static final String ACTION_SDCARD_STATUS = "action_sdcard_status";
@@ -900,9 +901,7 @@ public class CameraRecordFragment extends Fragment {
                 inContractDay();
                 break;
             case 3://"満期日+14日"以降
-                timeFinishApp.start();
                 afterContractDayEnd();
-                MainApp.sendStatUpNotify();
                 break;
         }
     }
@@ -928,6 +927,8 @@ public class CameraRecordFragment extends Fragment {
     public void beforeContractDayStart() {
         Log.d(TAG, "beforeContractDayStart");
         getActivity().runOnUiThread(() -> {
+            isKeyNotValid = true;
+            GlobalLogic.getInstance().setECallAllow(false);
             tvContent.setVisibility(View.VISIBLE);
             osdView.setVisibility(View.GONE);
             tvContent.setText(getString(R.string.before_contract_day_start));
@@ -944,7 +945,7 @@ public class CameraRecordFragment extends Fragment {
         @Override
         public void onFinish() {
             canRecord = true;
-            GlobalLogic.getInstance().setECallAllow(false);
+            isKeyNotValid = false;
             tvContent.setVisibility(View.GONE);
             osdView.setVisibility(View.VISIBLE);
             try {
@@ -971,11 +972,14 @@ public class CameraRecordFragment extends Fragment {
     public void afterContractDayEnd() {
         Log.d(TAG, "afterContractDayEnd");
         getActivity().runOnUiThread(() -> {
+            timeFinishApp.start();
+            isKeyNotValid = true;
             canRecord = false;
             GlobalLogic.getInstance().setECallAllow(false);
             tvContent.setVisibility(View.VISIBLE);
             osdView.setVisibility(View.GONE);
             tvContent.setText(getString(R.string.after_contract_day_stop));
+            MainApp.sendStatUpNotify();
         });
     }
 
@@ -1020,5 +1024,9 @@ public class CameraRecordFragment extends Fragment {
             GlobalLogic.getInstance().setUserInfo(userName);
             osdView.invalidateView();
         }
+    }
+
+    public boolean isKeyNotValid() {
+        return isKeyNotValid;
     }
 }

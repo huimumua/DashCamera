@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.NetUtil;
 
@@ -25,16 +26,20 @@ public class EcallUtils {
     private static final String LOG_TAG = "EcallUtils";
 
     public static void startVoipActivity(int order) {
-        if (NetUtil.isNetworkAvailable()) {
-            Logg.d(LOG_TAG, "startVoipActivity: ");
-            Context appContext = DashCamApplication.getAppContext();
-            Intent intent = new Intent();
-            ComponentName componentName = new ComponentName(VOIP_PACKAGE_NAME, VOIP_CLASS_NAME);
-            intent.setComponent(componentName);
-            intent.putExtra(EXTRA_ORDER, order);
-            appContext.startActivity(intent);
-        } else {
+        if (!NetUtil.isNetworkAvailable()) {
             Logg.d(LOG_TAG, "no network, can not start voip");
+            return;
         }
+        if (GlobalLogic.getInstance().isECallNotAllow()) {
+            Logg.d(LOG_TAG, "insurance is not in the term, can not start voip");
+            return;
+        }
+        Logg.d(LOG_TAG, "startVoipActivity: ");
+        Context appContext = DashCamApplication.getAppContext();
+        Intent intent = new Intent();
+        ComponentName componentName = new ComponentName(VOIP_PACKAGE_NAME, VOIP_CLASS_NAME);
+        intent.setComponent(componentName);
+        intent.putExtra(EXTRA_ORDER, order);
+        appContext.startActivity(intent);
     }
 }

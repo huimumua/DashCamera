@@ -185,6 +185,7 @@ public class MediaMuxerWrapper {
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
         if (mSegmentCallback != null) {
+            Logg.d(LOG_TAG, "terminateRecordeing: segmentTerminated");
             mSegmentCallback.segmentTerminated();
         }
     }

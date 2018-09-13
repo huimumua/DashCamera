@@ -98,6 +98,18 @@ public class FileManager {
         return path;
     }
 
+    private String buildPicFilePath(String fileName) throws RemoteException {
+        if (mService == null) {
+            throw new RemoteException("No FileManagement service.");
+        }
+        fileName = String.format("%s.jpg", fileName);
+        final String path = mService.openSdcard(fileName, "PICTURE");
+        if (path == null) {
+            throw new RemoteException("null file path from FileManagement service.");
+        }
+        return path;
+    }
+
     public String getFilePathForNormal(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
         return buildFilePath(cameraId, timeStamp, "NORMAL", ".mp4");
     }
@@ -106,8 +118,8 @@ public class FileManager {
         return buildFilePath(cameraId, timeStamp, "EVENT", ".mp4");
     }
 
-    public String getFilePathForPicture(@CameraHelper.CameraName int cameraId, long timeStamp) throws RemoteException {
-        return buildFilePath(cameraId, timeStamp, "PICTURE", ".jpg");
+    public String getFilePathForPicture(String imageName) throws RemoteException {
+        return buildPicFilePath(imageName);
     }
 
     public int checkSdcardAvailable() throws RemoteException {

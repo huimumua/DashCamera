@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
-import com.askey.dvr.cdr7010.dashcam.util.DeviceUtils;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.ZipManager;
 
@@ -12,6 +11,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 
 /***
@@ -42,7 +42,8 @@ public class JvcLogUploadTask  extends AsyncTask<String, Integer, Boolean> {
             }
             SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
             Date date = new Date(System.currentTimeMillis());
-            String outputFileName = "log_" + df.format(date) + "_" + DeviceUtils.getUniquePsuedoID() + ".zip";
+//            String outputFileName = "log_" + df.format(date) + "_" + DeviceUtils.getUniquePsuedoID() + ".zip";
+            String outputFileName = "log_" + df.format(date) + "_" + UUID.randomUUID().toString() + ".zip";
             String outputFilePath = DashCamApplication.getAppContext().getFilesDir().getAbsolutePath() + "/" + outputFileName;
             ZipManager.zip(zipFilePathList, outputFilePath);
             //upload

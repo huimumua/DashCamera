@@ -89,6 +89,7 @@ public class MainActivity extends DialogActivity {
     private static final int FROM_MAINAPP = 0;
     private AudioManager audioManager;
     private int maxVolume, currentVolume;
+    CameraRecordFragment fragment;
     private final DvrShutDownReceiver mDvrShutDownBroadCastReceiver = new DvrShutDownReceiver();
 
     @Override
@@ -96,7 +97,7 @@ public class MainActivity extends DialogActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         if (savedInstanceState == null) {
-            CameraRecordFragment fragment = CameraRecordFragment.newInstance();
+            fragment = CameraRecordFragment.newInstance();
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
@@ -194,79 +195,114 @@ public class MainActivity extends DialogActivity {
 
     @Override
     protected boolean handleKeyEvent(KeyEvent event) {
-        return GlobalLogic.getInstance().isStartSwitchUser();
+        return GlobalLogic.getInstance().isStartSwitchUser() || fragment.isKeyNotValid();
+    }
+
+    private void handleVolumeUpKeyEvent(){
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) + 1;
+        if (currentVolume <= maxVolume) {
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
+                    0);
+        }
+    }
+    private void handleVolumeDownKeyEvent(){
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) - 1;
+        if (currentVolume >= 0) {
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
+                    0);
+        }
+    }
+    private void handleBackKeyEvent(){
+        int micValue = GlobalLogic.getInstance().getInt(AskeySettings.Global.RECSET_VOICE_RECORD);
+        int newVal = (micValue == 0) ? 1 : 0;
+        boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
+        EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
+    }
+    private void handleMenuKeyEvent(){
+        Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
+        if (currentLocation == null || currentLocation.getSpeed() <= 0.0f) {
+            SDcardHelper.disMissSdcardDialog();
+            MainAppSending.menuTransition(FROM_MAINAPP);
+            ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
+        }
     }
 
     @Override
     public void onContinueKeyHoldOneSecond(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_VOLUME_UP:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) + 1;
-                if (currentVolume <= maxVolume) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeUpKeyEvent();
                 break;
             case KeyAdapter.KEY_VOLUME_DOWN:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) - 1;
-                if (currentVolume >= 0) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeDownKeyEvent();
+                break;
+        }
+    }
+    @Override
+    public void onContinueKeyHoldThreeSecond(int keyCode) {
+        switch (keyCode) {
+            case KeyAdapter.KEY_VOLUME_UP:
+                handleVolumeUpKeyEvent();
+                break;
+            case KeyAdapter.KEY_VOLUME_DOWN:
+                handleVolumeDownKeyEvent();
                 break;
         }
     }
 
     @Override
-    public void onKeyShortPressed(int keyCode) {
+    public void onKeyShortPressedDown(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_VOLUME_UP:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) + 1;
-                if (currentVolume <= maxVolume) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeUpKeyEvent();
                 break;
             case KeyAdapter.KEY_VOLUME_DOWN:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) - 1;
-                if (currentVolume >= 0) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeDownKeyEvent();
                 break;
             case KeyAdapter.KEY_BACK:
-                int micValue = GlobalLogic.getInstance().getInt(AskeySettings.Global.RECSET_VOICE_RECORD);
-                int newVal = (micValue == 0) ? 1 : 0;
-                boolean value = GlobalLogic.getInstance().putInt(AskeySettings.Global.RECSET_VOICE_RECORD, newVal);
-                EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
+                handleBackKeyEvent();
                 break;
+            default:
+        }
+    }
+    @Override
+    public void onKeyShortPressedUp(int keyCode) {
+        switch (keyCode) {
             case KeyAdapter.KEY_MENU:
-                Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
-                if (currentLocation == null || currentLocation.getSpeed() <= 0.0f) {
-                    SDcardHelper.disMissSdcardDialog();
-                    MainAppSending.menuTransition(FROM_MAINAPP);
-                    ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
-                }
+                handleMenuKeyEvent();
+                break;
+            default:
+        }
+    }
+    @Override
+    public  void onKeyHoldHalfASecondUp(int keyCode){
+        switch (keyCode) {
+            case KeyAdapter.KEY_MENU:
+                handleMenuKeyEvent();
+                break;
+            default:
+        }
+    }
+    @Override
+    public  void onKeyHoldOneSecondUp(int keyCode){
+        switch (keyCode) {
+            case KeyAdapter.KEY_MENU:
+                handleMenuKeyEvent();
+                break;
+            default:
         }
     }
 
     @Override
-    public void onKeyHoldOneSecond(int keyCode) {
+    public void onKeyHoldOneSecondDown(int keyCode) {
         switch (keyCode) {
             case KeyAdapter.KEY_VOLUME_UP:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) + 1;
-                if (currentVolume <= maxVolume) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeUpKeyEvent();
                 break;
             case KeyAdapter.KEY_VOLUME_DOWN:
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION) - 1;
-                if (currentVolume >= 0) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, currentVolume,
-                            0);
-                }
+                handleVolumeDownKeyEvent();
                 break;
+            default:
         }
     }
 
