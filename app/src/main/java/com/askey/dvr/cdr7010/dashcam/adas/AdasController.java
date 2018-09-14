@@ -43,7 +43,7 @@ public class AdasController implements Util.AdasCallback {
     private static final int EXPECTED_LISTENER_NUM = 1;
 
     /* Interval of printing statistics data */
-    private static long STATISTICS_INTERVAL_MILL_SEC = 60 * 1000;
+    private static long STATISTICS_INTERVAL_MILL_SEC = 30 * 1000;
 
     /* Used for some synchronized method to change state after return */
     private static final long STATE_CHANGE_DELAY = 100;
@@ -461,7 +461,8 @@ public class AdasController implements Util.AdasCallback {
         }
         Log.v(TAG, "start");
         mHandler.post(this::start_internal);
-        mHandler.postDelayed(this::printStatistics, STATISTICS_INTERVAL_MILL_SEC);
+        mHandler.removeCallbacks(mPrintStatistics);
+        mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC);
     }
 
     private void start_internal() {
@@ -485,12 +486,12 @@ public class AdasController implements Util.AdasCallback {
         changeState(State.Started);
     };
 
-    private void printStatistics() {
-        Log.v(TAG, "printStatistics: " + mStatistics);
+    private Runnable mPrintStatistics = () -> {
+        Log.v(TAG, "mPrintStatistics: " + mStatistics);
         if (mState == State.Started) {
-            mHandler.postDelayed(this::printStatistics, STATISTICS_INTERVAL_MILL_SEC);
+            mHandler.postDelayed(this.mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC);
         }
-    }
+    };
 
     /**
      * Synchronized call
