@@ -17,9 +17,11 @@ import com.askey.dvr.cdr7010.dashcam.domain.KeyAdapter;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainAppSending;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcEventHandoutInfo;
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.receiver.DvrShutDownReceiver;
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
+import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.ActivityUtils;
@@ -34,6 +36,13 @@ import com.askey.dvr.cdr7010.dashcam.util.ScreenSleepUtils;
 import com.askey.platform.AskeyIntent;
 import com.askey.platform.AskeySettings;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.AdDVICE_BEFORE_DRIVING;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.DRIVING_REPORT;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.MONTHLY_DRIVING_REPORT;
+import static com.askey.dvr.cdr7010.dashcam.domain.Event.NOTICE_START;
 import static com.askey.dvr.cdr7010.dashcam.service.EventManager.EventCallback;
 import static com.askey.dvr.cdr7010.dashcam.service.EventManager.getInstance;
 import static com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum.EventRecordingLimitStatusType.EVENT_RECORDING_REACH_LIMIT_CONDITION;
@@ -96,6 +105,7 @@ public class MainActivity extends DialogActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+        EventUtil.register(this);
         if (savedInstanceState == null) {
             fragment = CameraRecordFragment.newInstance();
             getFragmentManager().beginTransaction()
@@ -132,6 +142,48 @@ public class MainActivity extends DialogActivity {
         ScreenSleepUtils.resumeScreenSleep();
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onHandleEvent ( JvcEventHandoutInfo jvcReportInfo){
+        if(jvcReportInfo != null && jvcReportInfo.getOos() == Const.OOS_SUCCESS && jvcReportInfo.getStatus() == 0) {
+            StringBuilder stringBuilder = new StringBuilder();
+            String voiceCode =null;
+            switch (jvcReportInfo.getEventType()) {
+                case NOTICE_START:
+                    if(jvcReportInfo.getType() == 1) {
+                        voiceCode = stringBuilder.append("0201").append(",").append("0202").toString();
+                        EventManager.getInstance().getEventInfoByEventType(NOTICE_START).setVoiceGuidence(voiceCode);
+                    }
+                    break;
+                case DRIVING_REPORT:
+                    if(jvcReportInfo.getResult() == 1){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0402").append(",").append("0405").toString();
+                    }else if(jvcReportInfo.getResult() == 2){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0403").append(",").append("0405").toString();
+                    }else if(jvcReportInfo.getResult() == 3){
+                        voiceCode = stringBuilder.append("0401").append(",")
+                                .append("0404").append(",").append("0405").toString();
+                    }
+                    EventManager.getInstance().getEventInfoByEventType(DRIVING_REPORT).setVoiceGuidence(voiceCode);
+                    break;
+                case MONTHLY_DRIVING_REPORT:
+                    if(jvcReportInfo.getResult() >= 0 && jvcReportInfo.getResult() <= 100){
+                        voiceCode = stringBuilder.append("0501").append(",").append("0502").toString();
+                        EventManager.getInstance().getEventInfoByEventType(MONTHLY_DRIVING_REPORT).setVoiceGuidence(voiceCode);
+                    }
+                    break;
+                case AdDVICE_BEFORE_DRIVING:
+                    EventManager.getInstance().getEventInfoByEventType(AdDVICE_BEFORE_DRIVING)
+                            .setVoiceGuidence(jvcReportInfo.getCode());
+                    break;
+                default:
+            }
+            EventManager.getInstance().handOutEventInfo(jvcReportInfo.getEventType());
+        }
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -149,6 +201,7 @@ public class MainActivity extends DialogActivity {
         MainApp.getInstance().unBindJvcMainAppService();
         //end add
         unregisterReceiver(mDvrShutDownBroadCastReceiver);
+        EventUtil.unregister(this);
         super.onDestroy();
     }
 
