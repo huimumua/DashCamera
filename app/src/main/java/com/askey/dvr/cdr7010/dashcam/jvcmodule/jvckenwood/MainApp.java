@@ -251,15 +251,17 @@ public class MainApp {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
+                    String code="";
                     if (status == 0) {
-                        int code = jsonObject.getInt("code");
+                        code = jsonObject.getString("code");
                         info.setCode(code);
+                        EventUtil.sendEvent(info);
                     }
                 } catch (JSONException e) {
                     Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
+                    info.setCode("");
                 }
             }
-            EventUtil.sendEvent(info);
         }
 
         @Override

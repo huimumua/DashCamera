@@ -32,6 +32,7 @@ public class JvcUserListInfo {
         public int userid;
         public String name;
         public String selectdate;
+        public String lastupdate;
     }
 
     public static class User00Bean {
@@ -44,6 +45,7 @@ public class JvcUserListInfo {
         public int userid;
         public String name;
         public String selectdate;
+        public String lastupdate;
     }
 
     public static class User01Bean {
