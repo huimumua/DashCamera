@@ -4,6 +4,7 @@ import net.sf.marineapi.nmea.event.SentenceEvent;
 import net.sf.marineapi.nmea.event.SentenceListener;
 import net.sf.marineapi.nmea.io.SentenceReader;
 import net.sf.marineapi.nmea.sentence.RMCSentence;
+import net.sf.marineapi.nmea.sentence.SentenceId;
 import net.sf.marineapi.nmea.util.Date;
 import net.sf.marineapi.nmea.util.Position;
 import net.sf.marineapi.nmea.util.Time;
@@ -58,6 +59,9 @@ public class NMEAUtils {
                     sentences.add((RMCSentence) sentenceEvent.getSentence());
                 }
             }
+        }, SentenceId.RMC);
+        sentenceReader.setExceptionListener(e -> {
+            //do nothing
         });
     }
 
