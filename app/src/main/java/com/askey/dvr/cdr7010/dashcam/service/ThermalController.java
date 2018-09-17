@@ -1,5 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.service;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -7,6 +8,8 @@ import android.os.Message;
 import android.text.TextUtils;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
+import com.askey.dvr.cdr7010.dashcam.util.AppUtils;
+import com.askey.dvr.cdr7010.dashcam.util.Const;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 
@@ -30,26 +33,26 @@ public class ThermalController{
     private static final int CPU_POWER_OFF_HIGH_TEMP_THRESHOLD = 100;
     private static final int CPU_HIGH_TEMP_THRESHOLD = 85;
     private static final int CPU_HIGH_TEMP_CRITICAL_POINT = 70;
-    private static final int LCD_HIGH_TEMP_THRESHOLD = 78;
+    private static final int LCD_HIGH_TEMP_THRESHOLD = 79;
     private static final int LCD_NORMAL_TEMP_THRESHOLD = 69;
     private static final int LCD_HIGH_TEMP_NOTIFY = 71;
-    private static final int LCD_ON = 1;
-    private static final int LCD_OFF =0;
     private HandlerThread mThermalMonitorThread;
     private Handler mThermalMonitorHandler;
     private ThermalListener thermalListener;
     private boolean isFirstStart;
     private int last_temp;
     private boolean isStartTts = true;
+    private Context mContext;
     public interface ThermalListener{
         void startRecording();
         void closeRecording();
         void closeLcdPanel();
         void startLcdPanel();
     }
-    public ThermalController(ThermalListener thermalListener){
+    public ThermalController(ThermalListener thermalListener,Context context){
         this.thermalListener = thermalListener;
         EventUtil.register(this);
+        mContext =context;
     }
     public void startThermalMonitor(){
         if(!isFirstStart) {
@@ -94,7 +97,7 @@ public class ThermalController{
                     isStartTts = true;
                 }
             }
-            mThermalMonitorHandler.postDelayed(this,1*7*1000);
+            mThermalMonitorHandler.postDelayed(this,1*1000);
         }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -112,8 +115,10 @@ public class ThermalController{
             thermalListener.closeRecording();
         }else if(eventType.intValue() == CPU_HIGH_TEMP_CRITICAL_POINT){
             thermalListener.startRecording();
-        }else if(eventType.intValue() == LCD_HIGH_TEMP_NOTIFY){
-            EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV1);
+        }else if(eventType.intValue() == LCD_HIGH_TEMP_NOTIFY) {
+            if (AppUtils.isActivityTop(mContext, Const.ACTIVITY_CLASSNAME)) {
+                EventManager.getInstance().handOutEventInfo(Event.HIGH_TEMPERATURE_THRESHOLD_LV1);
+            }
         }
 
     }

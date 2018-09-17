@@ -491,7 +491,7 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG, "onCreate");
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
-        thermalController = new ThermalController(thermalListener);
+        thermalController = new ThermalController(thermalListener,getActivity());
         EventUtil.register(this);
     }
 
