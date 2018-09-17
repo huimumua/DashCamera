@@ -39,6 +39,9 @@ import com.askey.platform.AskeySettings;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import static com.askey.dvr.cdr7010.dashcam.domain.Event.AdDVICE_BEFORE_DRIVING;
 import static com.askey.dvr.cdr7010.dashcam.domain.Event.DRIVING_REPORT;
 import static com.askey.dvr.cdr7010.dashcam.domain.Event.MONTHLY_DRIVING_REPORT;
@@ -100,6 +103,7 @@ public class MainActivity extends DialogActivity {
     private int maxVolume, currentVolume;
     CameraRecordFragment fragment;
     private final DvrShutDownReceiver mDvrShutDownBroadCastReceiver = new DvrShutDownReceiver();
+    private boolean mAllowGotoMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,6 +144,15 @@ public class MainActivity extends DialogActivity {
         GpsHelper.checkGpsSignalStrength();
         EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_SECOND_CAMERIA, CameraHelper.hasExtCamera() ? CONNECTED : DISCONNECTED));
         ScreenSleepUtils.resumeScreenSleep();
+
+        // PUCDR-2209: After Record Screen, wait for a while then can enter MENU
+        mAllowGotoMenu = false;
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mAllowGotoMenu = true;
+            }
+        }, 1000);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -272,6 +285,10 @@ public class MainActivity extends DialogActivity {
         EventUtil.sendEvent(new MessageEvent<>(Event.EventCode.EVENT_MIC, value));
     }
     private void handleMenuKeyEvent(){
+        if (!mAllowGotoMenu) { // PUCDR-2209
+            // Prevent leave recording too fast and cause tasks interrupt
+            return;
+        }
         Location currentLocation = GPSStatusManager.getInstance().getCurrentLocation();
         if (currentLocation == null || currentLocation.getSpeed() <= 0.0f) {
             SDcardHelper.disMissSdcardDialog();
