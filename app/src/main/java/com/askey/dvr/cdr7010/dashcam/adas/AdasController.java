@@ -1,10 +1,12 @@
 package com.askey.dvr.cdr7010.dashcam.adas;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.location.Location;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -44,11 +46,6 @@ public class AdasController implements Util.AdasCallback {
     /* Interval of printing statistics data */
     private static long STATISTICS_INTERVAL_MILL_SEC = 30 * 1000;
 
-    /* Used for some synchronized method to change state after return */
-    private static final long STATE_CHANGE_DELAY = 100;
-    /* FINETUNE: wait for image reader to release */
-    private static final long IMAGE_READER_CLOSE_DELAY = 500;
-
     /* Properties for debug */
     private static boolean DEBUG;
     private static boolean EXCEPTION_WHEN_ERROR;
@@ -81,9 +78,12 @@ public class AdasController implements Util.AdasCallback {
     private float mLocationSpeed = 0;
     private AdasStatistics mStatistics;
     private ReentrantLock mProcessingLock;
+    private ContentResolver mContentResolver;
+    private boolean mReinitializing;
+    private Context mContext;
 
     public enum State {
-        Uninitialized, Initializing, Stopped, Starting, Started, Stopping, Finishing
+        Uninitialized, Initializing, Stopped, Started, Stopping, Finishing
     }
 
     private State mState;
@@ -93,6 +93,7 @@ public class AdasController implements Util.AdasCallback {
             throw new RuntimeException("Singleton instance is already created!");
         }
         mState = State.Uninitialized;
+        mReinitializing = false;
         mStatistics = new AdasStatistics();
         mProcessingLock = new ReentrantLock();
         mAdasImpl = Util.getInstance();
@@ -148,7 +149,7 @@ public class AdasController implements Util.AdasCallback {
         Log.v(TAG, "init");
 
         assertState("init", State.Uninitialized);
-
+        mContext = context;
         changeState(State.Initializing);
         FC_PARAMETER fp = FcGetter.getFCParam();
 
@@ -161,7 +162,44 @@ public class AdasController implements Util.AdasCallback {
         }
         assertState("init", State.Initializing);
         changeState(State.Stopped);
+
+        mContentResolver = context.getContentResolver();
+        FcGetter.registerObserver(mContentResolver, mSettingObserver);
     }
+
+    private void reinit() {
+        if (State.Started != mState) {
+            Log.w(TAG, "reinit: unnecessary because mState = " + mState);
+            return;
+        }
+        mStatistics.logStart(ProfileItem.Reinitialize);
+        mReinitializing = true;
+        stop();
+        finish();
+    }
+
+    private AdasSettingObserver mSettingObserver = new AdasSettingObserver() {
+        @Override
+        public boolean deliverSelfNotifications() {
+            Log.v(TAG, "deliverSelfNotifications");
+            return super.deliverSelfNotifications();
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            Log.v(TAG, "onChange: selfChange=" + selfChange +
+                    ", uri=" + uri);
+            mHandler.removeCallbacks(mReinit);
+            mHandler.postDelayed(mReinit, 3000);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            Log.v(TAG, "onChange");
+        }
+    };
+
+    private Runnable mReinit = () -> reinit();
 
     private void changeState(State state) {
         Log.v(TAG, "changeState: state = " + state);
@@ -172,6 +210,9 @@ public class AdasController implements Util.AdasCallback {
     }
 
     private synchronized void notifyStateChanged(State state) {
+        if (mReinitializing) {
+            return;
+        }
         removeNullWeakRefs(mListeners);
         synchronized (mListeners) {
             Iterator<WeakReference<AdasStateListener>> iterator = mListeners.iterator();
@@ -346,6 +387,13 @@ public class AdasController implements Util.AdasCallback {
         mStatistics.logFinish(ProfileItem.Finish);
         assertState("didAdasFinish", State.Finishing);
         changeState(State.Uninitialized);
+        if (mReinitializing) {
+            init(mContext);
+            mReinitializing = false;
+            mStatistics.logFinish(ProfileItem.Reinitialize);
+            // Don't need prepare image reader again, go to Started
+            changeState(mState.Started);
+        }
     }
 
     @Override
@@ -498,6 +546,7 @@ public class AdasController implements Util.AdasCallback {
         Log.v(TAG, "stop");
         mStatistics.logStart(ProfileItem.Stop);
         assertState("stop", State.Started);
+        mContentResolver.unregisterContentObserver(mSettingObserver);
         try {
             if (!mProcessingLock.tryLock()) { // Unlock in stop_internal
                 Log.w(TAG, "stop: \"process()\" has acquired the lock first!!!");

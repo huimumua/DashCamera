@@ -598,7 +598,7 @@ public class DashCam implements DashCamControl {
                     break;
                 case Stopped:
                     checkCloseSuccess();
-                    if (!mSetEnabledFunctions.contains(Function.ADAS)) {
+                    if (mTerminating) {
                         mAdasController.finish();
                     }
                     break;

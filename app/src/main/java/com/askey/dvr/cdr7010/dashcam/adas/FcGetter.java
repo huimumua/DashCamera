@@ -1,5 +1,8 @@
 package com.askey.dvr.cdr7010.dashcam.adas;
 
+import android.content.ContentResolver;
+import android.provider.Settings;
+
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.platform.AskeySettings;
 import com.jvckenwood.adas.util.FC_PARAMETER;
@@ -24,6 +27,31 @@ class FcGetter {
             throw new RuntimeException("VEHICLE_WIDTHS not defined well");
         }
     }
+
+    private static final String KEYS[] = {
+        AskeySettings.Global.ADAS_PITCH_ANGLE,
+        AskeySettings.Global.ADAS_YAW_ANGLE,
+        AskeySettings.Global.ADAS_SKYLINE_RANGE,
+        AskeySettings.Global.ADAS_BONNETY,
+        AskeySettings.Global.ADAS_CENTERX,
+        AskeySettings.Global.CAR_TYPE,
+        AskeySettings.Global.ADAS_MOUNT_POSITION,
+        AskeySettings.Global.ADAS_CAR_COLLISION_SPEED,
+        AskeySettings.Global.ADAS_CAR_COLLISION_TIME,
+        AskeySettings.Global.ADAS_LANE_DEPARTURE_SPEED,
+        AskeySettings.Global.ADAS_LANE_DEPARTURE_RANGE,
+        AskeySettings.Global.ADAS_LANE_DEPARTURE_TIME,
+        AskeySettings.Global.ADAS_DELAY_START_DISTANCE,
+        AskeySettings.Global.ADAS_DELAY_START_RANGE,
+        AskeySettings.Global.ADAS_PED_COLLISION_TIME,
+        AskeySettings.Global.ADAS_PED_COLLISION_WIDTH,
+        AskeySettings.Global.ADAS_PED_COLLISION_SPEED_LOW,
+        AskeySettings.Global.ADAS_PED_COLLISION_SPEED_HIGH,
+        AskeySettings.Global.ADAS_FCWS,
+        AskeySettings.Global.ADAS_LDS,
+        AskeySettings.Global.ADAS_DELAY_START,
+        AskeySettings.Global.ADAS_PEDESTRIAN_COLLISION,
+    };
 
     public static FC_PARAMETER getFCParam() {
         GlobalLogic globalLogic = GlobalLogic.getInstance();
@@ -93,5 +121,14 @@ class FcGetter {
 
     private static int getInstallationHeight(int carType) {
         return INSTALLATION_HEIGHTS[carType];
+    }
+
+    public static void registerObserver(ContentResolver resolver, AdasSettingObserver observer) {
+        for (String key: KEYS
+             ) {
+            resolver.registerContentObserver(
+                    Settings.Global.getUriFor(key),
+                    false, observer);
+        }
     }
 }

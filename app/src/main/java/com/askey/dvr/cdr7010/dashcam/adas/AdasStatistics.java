@@ -13,7 +13,7 @@ class AdasStatistics {
     }
 
     public enum ProfileItem {
-        Init, Process, Stop, Finish
+        Init, Process, Stop, Finish, Reinitialize
     }
 
     public enum TimesItem {
@@ -26,6 +26,7 @@ class AdasStatistics {
         addProfiler(ProfileItem.Process);
         addProfiler(ProfileItem.Stop);
         addProfiler(ProfileItem.Finish);
+        addProfiler(ProfileItem.Reinitialize);
         mLogTimes = new HashMap<>();
         addTimesItem(TimesItem.NewImageReader);
     }
@@ -53,6 +54,7 @@ class AdasStatistics {
                 ", " + mProfilers.get(ProfileItem.Process) +
                 ", " + mProfilers.get(ProfileItem.Finish) +
                 ", " + mProfilers.get(ProfileItem.Stop) +
+                ", " + mProfilers.get(ProfileItem.Reinitialize) +
                 ", " + TimesItem.NewImageReader.name() + "=" + mLogTimes.get(TimesItem.NewImageReader) +
                 '}';
     }
