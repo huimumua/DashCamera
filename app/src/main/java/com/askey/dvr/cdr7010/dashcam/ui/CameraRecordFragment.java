@@ -619,8 +619,6 @@ public class CameraRecordFragment extends Fragment {
         stopVideoRecord("Fragment onPause");
         */
 
-        terminateVideoRecord();
-
         getActivity().unregisterReceiver(mSdStatusListener);
         getActivity().unregisterReceiver(mSdBadRemovalListener);
         getActivity().unregisterReceiver(mShutdownReceiver);
@@ -897,7 +895,9 @@ public class CameraRecordFragment extends Fragment {
      * This API is for close all resource on time as possible
      * Before the process become background
      */
-    private void terminateVideoRecord() {
+    public void terminateVideoRecord() {
+        Logg.v(TAG, "terminateVideoRecord");
+        long startMillis = System.currentTimeMillis();
         // Use DashCam.terminate() and make the method synchronized - As Possible
         // to close all resource (files) in time
         /* Terminate DashCam */
@@ -909,6 +909,8 @@ public class CameraRecordFragment extends Fragment {
         }
         ContentResolver contentResolver = getActivity().getContentResolver();
         contentResolver.unregisterContentObserver(mMicphoneSettingsObserver);
+        Logg.v(TAG, "terminateVideoRecord: elapsed = " +
+                (System.currentTimeMillis() - startMillis) + " ms");
     }
 
     private ContentObserver mMicphoneSettingsObserver = new ContentObserver(new Handler()) {

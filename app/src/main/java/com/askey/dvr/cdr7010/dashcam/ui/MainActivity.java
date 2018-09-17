@@ -276,6 +276,7 @@ public class MainActivity extends DialogActivity {
         if (currentLocation == null || currentLocation.getSpeed() <= 0.0f) {
             SDcardHelper.disMissSdcardDialog();
             MainAppSending.menuTransition(FROM_MAINAPP);
+            fragment.terminateVideoRecord();
             ActivityUtils.startActivity(this, Const.PACKAGE_NAME, Const.CLASS_NAME, false);
         }
     }

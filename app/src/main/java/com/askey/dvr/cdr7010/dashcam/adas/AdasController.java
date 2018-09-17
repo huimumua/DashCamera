@@ -36,7 +36,6 @@ import static com.jvckenwood.adas.util.Constant.ADAS_SUCCESS;
 public class AdasController implements Util.AdasCallback {
     private static final String TAG = AdasController.class.getSimpleName();
 
-    private static final boolean DEBUG = false;
     static final int ADAS_IMAGE_WIDTH = 1280;
     static final int ADAS_IMAGE_HEIGHT = 720;
     static final int BUFFER_NUM = 3;
@@ -51,6 +50,7 @@ public class AdasController implements Util.AdasCallback {
     private static final long IMAGE_READER_CLOSE_DELAY = 500;
 
     /* Properties for debug */
+    private static boolean DEBUG;
     private static boolean EXCEPTION_WHEN_ERROR;
     private static boolean DEBUG_FPS;
     private static boolean ADAS_DISABLED;
@@ -58,6 +58,7 @@ public class AdasController implements Util.AdasCallback {
     private static boolean PRINT_STATISTICS;
 
     /* Handler Messages */
+    private static final String PROP_DEBUG = "persist.dvr.adas.debug";
     private static final String PROP_DEBUG_FPS = "persist.dvr.adas.debug_fps";
     private static final String PROP_ADAS_DISABLED = "persist.dvr.adas.disabled";
     private static final String PROP_EXCEPTION = "persist.dvr.adas.exception";
@@ -115,6 +116,8 @@ public class AdasController implements Util.AdasCallback {
         Log.v(TAG, "AdasController: mFakeSpeed = " + mFakeSpeed);
 
         /* DEBUG variable enables below DEBUG*/
+        DEBUG = SystemPropertiesProxy.getBoolean(PROP_DEBUG, false);
+        Log.v(TAG, "AdasController: DEBUG = " + DEBUG);
         EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, DEBUG);
         Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
         PRINT_STATISTICS = SystemPropertiesProxy.getBoolean(PROP_STATISTICS, DEBUG);
@@ -204,11 +207,6 @@ public class AdasController implements Util.AdasCallback {
             image.close();
             return;
         }
-        if (!mProcessingLock.tryLock()) { // Unlock when process is done (didAdasDetect_internal)
-            Log.w(TAG, "process: \"stop()\" should has acquired the lock first!!!");
-            image.close();
-            return;
-        }
         if (DEBUG_FPS) {
             mTpsc.update();
         }
@@ -219,6 +217,12 @@ public class AdasController implements Util.AdasCallback {
 
     private void process_internal(Image image) {
         assertState("process_internal", State.Started);
+        if (!mProcessingLock.tryLock()) { // Unlock when process is done (didAdasDetect_internal)
+            Log.w(TAG, "process: \"stop()\" should has acquired the lock first!!!");
+            image.close();
+            return;
+        }
+
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "process_internal: image = " + image);
         }
@@ -304,6 +308,7 @@ public class AdasController implements Util.AdasCallback {
             Log.v(TAG, "didAdasDetect_internal: mImageReader.close() = " + mImageReader);
 
             mImageReader.close();
+            mImageReader = null;
         }
         mProcessingLock.unlock();
     }
@@ -410,7 +415,6 @@ public class AdasController implements Util.AdasCallback {
      * @return
      */
     private void obtainImageReader() {
-        assertState("obtainImageReader", State.Starting);
         if (mImageReader != null) {
             handleError("obtainImageReader", "mImageReader may not close correctly (leak)");
         }
@@ -460,29 +464,18 @@ public class AdasController implements Util.AdasCallback {
             return;
         }
         Log.v(TAG, "start");
-        mHandler.post(this::start_internal);
-        mHandler.removeCallbacks(mPrintStatistics);
-        mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC);
-    }
 
-    private void start_internal() {
-        Log.v(TAG, "start_internal");
-        assertState("start_internal", State.Stopped);
-        changeState(State.Starting);
-
-        long closeDelay = 0;
+        assertState("start", State.Stopped);
         if (mImageReader != null) {
-            Log.w(TAG, "start_internal: closing mImageReader...");
+            Log.w(TAG, "start: closing mImageReader...");
             mImageReader.close();
             mImageReader = null;
-            closeDelay = IMAGE_READER_CLOSE_DELAY;
         }
-        mHandler.postDelayed(mRunnablePrepareImageReader, closeDelay);
-    }
-
-    private Runnable mRunnablePrepareImageReader = () -> {
-        Log.v(TAG, "mRunnablePrepareImageReader");
         obtainImageReader();
+
+        mHandler.removeCallbacks(mPrintStatistics);
+        mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC);
+
         changeState(State.Started);
     };
 

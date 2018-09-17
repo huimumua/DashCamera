@@ -7,9 +7,8 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
-import android.location.Location;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -18,28 +17,22 @@ import com.askey.dvr.cdr7010.dashcam.adas.AdasStateListener;
 import com.askey.dvr.cdr7010.dashcam.core.StateMachine.EEvent;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.Camera2Controller;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraControllerListener;
-import com.askey.dvr.cdr7010.dashcam.core.recorder.ExifHelper;
 import com.askey.dvr.cdr7010.dashcam.core.recorder.Recorder;
 import com.askey.dvr.cdr7010.dashcam.core.renderer.EGLRenderer;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
-import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.dvr.cdr7010.dashcam.util.SDcardHelper;
 import com.askey.dvr.cdr7010.dashcam.util.SetUtils;
 
-import net.sf.marineapi.nmea.util.Position;
-
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.List;
 
 public class DashCam implements DashCamControl {
 
     private String TAG = "DashCam";
-    private final Handler mMainThreadHandler;
+    private final HandlerThread mHandlerThread;
+    private final Handler mHandler;
     private Context mContext;
     private RecordConfig mConfig;
     private Camera2Controller mCamera2Controller;
@@ -154,7 +147,9 @@ public class DashCam implements DashCamControl {
         mConfig = config;
         mStateCallback = callback;
         mStateMachine = new StateMachine(this, config.cameraId());
-        mMainThreadHandler = new Handler(Looper.getMainLooper());
+        mHandlerThread = new HandlerThread("TAG");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
         if (config.adasEnable()) {
             mAdasController = AdasController.getsInstance();
         }
@@ -192,23 +187,30 @@ public class DashCam implements DashCamControl {
      * To ensure all resource are released before the Activity become Background
      */
     public void terminate() {
-        Logg.v(TAG, "terminate:");
+        Logg.v(TAG, "terminate");
+        long startMillis = System.currentTimeMillis();
+        waitState(mStateMachine.STATE_OPEN, 600);
         mTerminating = true;
         mSetEnabledFunctions.clear();
-        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
-        waitState(mStateMachine.STATE_OPEN, 1000);
+        mHandler.removeCallbacks(checkEnabledFunctions);
         mStateMachine.dispatchEvent(new StateMachine.Event(EEvent.CLOSE, "terminate"));
-        waitState(mStateMachine.STATE_CLOSE, 1000);
-        Logg.v(TAG, "terminate: END");
+        waitState(mStateMachine.STATE_CLOSE, 600);
+        mHandlerThread.quit();
+        Logg.v(TAG, "terminate: elapsed = " +
+                (System.currentTimeMillis() - startMillis) + " ms");
     }
 
     private void waitState(StateMachine.State state, long millis) {
         synchronized (mStateMachine) {
-            while (mStateMachine.getCurrentState() != state) {
+            long startNano = System.nanoTime();
+            long elapsed = 0;
+            while (mStateMachine.getCurrentState() != state && elapsed < millis) {
                 try {
-                    mStateMachine.wait(millis); // FIXME
+                    mStateMachine.wait(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } finally {
+                    elapsed = (System.nanoTime() - startNano) / 1000000;
                 }
             }
         }
@@ -220,8 +222,8 @@ public class DashCam implements DashCamControl {
             return;
         }
         mSetEnabledFunctions.add(function);
-        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
-        mMainThreadHandler.postDelayed(checkEnabledFunctions, 100);
+        mHandler.removeCallbacks(checkEnabledFunctions);
+        mHandler.postDelayed(checkEnabledFunctions, 100);
     }
 
     private synchronized void disableFunction(Function function) {
@@ -230,12 +232,12 @@ public class DashCam implements DashCamControl {
             return;
         }
         mSetEnabledFunctions.remove(function);
-        mMainThreadHandler.removeCallbacks(checkEnabledFunctions);
-        mMainThreadHandler.postDelayed(checkEnabledFunctions, 100);
+        mHandler.removeCallbacks(checkEnabledFunctions);
+        mHandler.postDelayed(checkEnabledFunctions, 100);
     }
 
     private synchronized void clearFunctionReady() {
-        mMainThreadHandler.post(() -> {
+        mHandler.post(() -> {
             mReadyFunctions.clear();
         });
 
@@ -248,7 +250,7 @@ public class DashCam implements DashCamControl {
      * @param function the function which is ready to start
      */
     private void setFunctionReady(Function function) {
-        mMainThreadHandler.post(() -> {
+        mHandler.post(() -> {
             Logg.v(TAG, "setFunctionReady: " + function);
             if (mReadyFunctions.contains(function)) {
                 return;
@@ -314,7 +316,7 @@ public class DashCam implements DashCamControl {
     public void onOpenCamera() throws Exception {
         Logg.v(TAG, "onOpenCamera");
         clearFunctionReady();
-        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mMainThreadHandler);
+        mCamera2Controller = new Camera2Controller(mContext, mCameraListener, mHandler);
         mCamera2Controller.startBackgroundThread();
         mCamera2Controller.open(mConfig.cameraId());
     }
@@ -494,7 +496,7 @@ public class DashCam implements DashCamControl {
             // Check ADAS
             Log.v(TAG, "checkCloseSuccess: mCamera2Controller.getState()=" + mCamera2Controller.getState() +
                     ", mRecording=" + mRecording +
-                    ", mAdasController.getState()" + mAdasController.getState());
+                    ", mAdasController.getState()=" + mAdasController.getState());
             if (mCamera2Controller.getState() == Camera2Controller.State.STOPPED
                     && mRecording == false
                     && (mAdasController.getState() == AdasController.State.Stopped || mAdasController.getState() == AdasController.State.Uninitialized)) {
