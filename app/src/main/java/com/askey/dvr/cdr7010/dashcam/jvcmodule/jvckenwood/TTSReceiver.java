@@ -55,10 +55,11 @@ public class TTSReceiver extends BroadcastReceiver {
             } else if (result == 99) {//99 : その他再生失敗
                 Logg.i(LOG_TAG, "==99 : その他再生失敗==");
             }
+            if(Event.contains(Event.noticeEvent,requestId) || Event.contains(Event.simCardErroeEvent,requestId)){
+                DialogManager.getIntance().setSpeechCompleted(true);
+            }
         }
-        if(Event.contains(Event.noticeEvent,requestId) || Event.contains(Event.simCardErroeEvent,requestId)){
-            DialogManager.getIntance().setSpeechCompleted(true);
-        }
+
         if(Event.contains(Event.detectEvent,requestId)){
             Communication.getInstance().alertComplite(requestId);
         }

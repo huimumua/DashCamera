@@ -598,8 +598,15 @@ public class CameraRecordFragment extends Fragment {
     @Override
     public void onPause() {
         Logg.d(TAG, "onPause");
+
+        // Kenny comment below because they method is not synchronized and may occur leaking
+        /*
         mMainCam.enableAdas(false);
         stopVideoRecord("Fragment onPause");
+        */
+
+        terminateVideoRecord();
+
         getActivity().unregisterReceiver(mSdStatusListener);
         getActivity().unregisterReceiver(mSdBadRemovalListener);
         getActivity().unregisterReceiver(mShutdownReceiver);
@@ -868,6 +875,24 @@ public class CameraRecordFragment extends Fragment {
         }
         if (mMainCam != null) {
             mMainCam.stopVideoRecord(reason);
+        }
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        contentResolver.unregisterContentObserver(mMicphoneSettingsObserver);
+    }
+
+    /**
+     * This API is for close all resource on time as possible
+     * Before the process become background
+     */
+    private void terminateVideoRecord() {
+        // Use DashCam.terminate() and make the method synchronized - As Possible
+        // to close all resource (files) in time
+        /* Terminate DashCam */
+        if (mExtCam != null) {
+            mExtCam.terminate();
+        }
+        if (mMainCam != null) {
+            mMainCam.terminate();
         }
         ContentResolver contentResolver = getActivity().getContentResolver();
         contentResolver.unregisterContentObserver(mMicphoneSettingsObserver);

@@ -38,7 +38,7 @@ public class MediaMuxerWrapper {
     private final String LOG_TAG;
 
     private Context mContext;
-    private final HandlerThread mHandlerThread;
+    private static HandlerThread mHandlerThread = null;
     private final Handler mHandler;
     private MediaFormat mVideoFormat;
     private MediaFormat mAudioFormat;
@@ -123,8 +123,11 @@ public class MediaMuxerWrapper {
         mEncoderCount = mStatredCount = 0;
         mIsStarted = false;
 
-        mHandlerThread = new HandlerThread("MuxerWorker-" + mConfig.cameraId());
-        mHandlerThread.start();
+        if(mHandlerThread == null){
+            mHandlerThread = new HandlerThread("MuxerWorker-" + mConfig.cameraId());
+            mHandlerThread.start();
+        }
+
         mHandler = new Handler(mHandlerThread.getLooper());
 
         mMuxerThread = new HandlerThread("MuxerThread-" + mConfig.cameraId());
@@ -185,6 +188,7 @@ public class MediaMuxerWrapper {
         mMuxerThread.quit();
         mMuxerHandler.eventMuxer.terminate();
         if (mSegmentCallback != null) {
+            Logg.d(LOG_TAG, "terminateRecordeing: segmentTerminated");
             mSegmentCallback.segmentTerminated();
         }
     }

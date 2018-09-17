@@ -185,6 +185,8 @@ public class EGLRenderer implements OnFrameAvailableListener {
                 mEglCore.release();
                 mEglCore = null;
             }
+            mRenderThread.quit();
+            mRenderThread = null;
         }
 
         private void setDisplaySurface(Surface surface, int width, int height) {

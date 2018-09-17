@@ -16,7 +16,7 @@ public class StateMachine {
     private final String TAG;
 
     public final State STATE_CLOSE;
-    private final State STATE_OPEN;
+    public final State STATE_OPEN;
     private final State STATE_PREPARE_CLOSE;
     private final State STATE_PREPARE_OPEN;
 
@@ -65,7 +65,7 @@ public class StateMachine {
         void processEvent(Event event);
     }
 
-    private class State implements IState {
+    public class State implements IState {
         private final String name;
 
         State(String name) {
@@ -166,6 +166,7 @@ public class StateMachine {
             @Override
             public void enter() {
                 super.enter();
+                mDashCamControl.onStartVideoRecord();
                 if (pendingEvent.what != EEvent.NONE) {
                     handler.post(new Runnable() {
                         @Override

@@ -95,10 +95,10 @@ public class NmeaRecorder {
         return acquire;
     }
 
-    public boolean eventStart(final long startTimeStamp) {
+    public boolean eventStart(final long startTimeStamp , int event) {
         if (mState != RecorderState.CREATED)
             throw new RuntimeException("The NmeaRecorder state is not CREATED.");
-        Log.i(LOG_TAG, "Event NMEARecord start");
+        Log.i(LOG_TAG, "Event NMEARecord start: event = " + event);
 
         mState = RecorderState.STARTED;
         mStartTime = startTimeStamp / 1000;
@@ -126,11 +126,12 @@ public class NmeaRecorder {
     public boolean start(final long startTimeStamp, final long durationInSec) {
         if (mState != RecorderState.CREATED)
             throw new RuntimeException("The NmeaRecorder state is not CREATED.");
-        Log.i(LOG_TAG, "NMEARecord start");
         mState = RecorderState.STARTED;
         mStartTime = startTimeStamp / 1000;
         mRecordTime = mStartTime;
         mEndTime = mStartTime + durationInSec;
+        Log.i(LOG_TAG, "NMEARecord start, time:" + mRecordTime);
+
         // Log.i(LOG_TAG, "startTime = " + mStartTime + ", recordTime" + mRecordTime + ", endTime" + mEndTime);
         try {
             mOutputStream.write("$GTRIP,ABCD1234,2".getBytes()); //TODO: Change JVC format
@@ -149,10 +150,12 @@ public class NmeaRecorder {
         mState = RecorderState.STOPPED;
 
         try {
-            Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime);
+            Log.i(LOG_TAG, "stop: recordTime = " + mRecordTime + ", StartTime" + mStartTime);
             // Log.i(LOG_TAG, "Stop record");
             mOutputStream.flush();
             mOutputStream.close();
+            Log.i(LOG_TAG, "stop: file close " );
+
             removeNmeaRecorders.add(this);
             nmeaRecorderPool.release(this);
         } catch (IOException e) {
@@ -482,6 +485,7 @@ public class NmeaRecorder {
             }
         }
         for (NmeaRecorder nmeaRecorder : removeNmeaRecorders) {
+            Log.i(LOG_TAG, "nmeaRecorder: " + nmeaRecorder.mRecordTime + " unregister");
             nmeaRecorderListener.remove(nmeaRecorder);
         }
         removeNmeaRecorders.clear();

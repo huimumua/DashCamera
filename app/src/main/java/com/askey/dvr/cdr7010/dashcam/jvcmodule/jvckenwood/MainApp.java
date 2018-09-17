@@ -55,6 +55,7 @@ public class MainApp {
     private static int rtcInfo;
     private static final String PREFER_KEY_CONTRACT_FLG = "ContractFlg";
     private int tripNum;
+    private static boolean isFristSend = true;
 
     private MainApp() {
         mAppContext = DashCamApplication.getAppContext();
@@ -251,15 +252,17 @@ public class MainApp {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     info.setStatus(status);
+                    String code="";
                     if (status == 0) {
-                        int code = jsonObject.getInt("code");
+                        code = jsonObject.getString("code");
                         info.setCode(code);
+                        EventUtil.sendEvent(info);
                     }
                 } catch (JSONException e) {
                     Logg.e(LOG_TAG, "reportDrivingAdvice: error: " + e.getMessage());
+                    info.setCode("");
                 }
             }
-            EventUtil.sendEvent(info);
         }
 
         @Override
@@ -381,17 +384,20 @@ public class MainApp {
 
     public static void sendStatUpNotify() {
         Log.d(LOG_TAG, "sendStatUpNotify~~~~!");
-        ContentResolver contentResolver = mAppContext.getContentResolver();
-        try {
-            rtcInfo = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_RTCINFO);
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
+        if (isFristSend){
+            isFristSend = false;
+            ContentResolver contentResolver = mAppContext.getContentResolver();
+            try {
+                rtcInfo = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_RTCINFO);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+            }
+            try {
+                startUp = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_STARTUP_INFO);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+            }
+            MainAppSending.startupNotify(startUp, rtcInfo);
         }
-        try {
-            startUp = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_STARTUP_INFO);
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
-        }
-        MainAppSending.startupNotify(startUp, rtcInfo);
     }
 }
