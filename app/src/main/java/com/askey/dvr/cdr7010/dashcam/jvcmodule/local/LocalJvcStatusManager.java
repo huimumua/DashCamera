@@ -61,6 +61,7 @@ public class LocalJvcStatusManager {
         mReportMap = enumMap;
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
+        Settings.Global.putInt(contentResolver, "SYSSET_dashcam_launched", 1);
         if (enumMap != null) {
             isInsuranceTermArriving = true;
             int oos = (int) enumMap.get(JvcStatusParam.OOS);

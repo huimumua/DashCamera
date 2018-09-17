@@ -286,6 +286,10 @@ public class CameraRecordFragment extends Fragment {
             } else if (msg.what == 1) {
                 Logg.d(TAG, "SHUT DOWN...");
                 ActivityUtils.shutDown(DashCamApplication.getAppContext());
+            } else if (msg.what == 2) {
+                int flg = Settings.Global.getInt(getActivity().getContentResolver(), AskeySettings.Global.SYSSET_STARTUP_INFO, -1);
+                Logg.d(TAG, "flg FROM SETTINGS==" + flg);
+                dealFlg(flg);
             }
             return true;
         }
@@ -512,11 +516,21 @@ public class CameraRecordFragment extends Fragment {
         requestSIMCardPermissions();
         GPSStatusManager.getInstance().recordLocation(true);
         osdView.init(1000);
-        LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
+        dealInsurance();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         intentFilter.setPriority(1000);
         getActivity().registerReceiver(mBatteryStateReceiver, intentFilter);
+    }
+
+    private void dealInsurance() {
+        int launched = Settings.Global.getInt(getActivity().getContentResolver(), "SYSSET_dashcam_launched", 0);
+        Logg.d(TAG, "SYSSET_dashcam_launched==" + launched);
+        if (launched == 1) {
+            handler.sendEmptyMessageDelayed(2, 500);
+        } else {
+            LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
+        }
     }
 
     @Override
@@ -828,7 +842,6 @@ public class CameraRecordFragment extends Fragment {
         }
         if (!canRecord) {
             Logg.d(TAG, "can not record at this time.");
-            LocalJvcStatusManager.getInsuranceTerm(jvcStatusCallback);
             return;
         }
         int sdcardStatus = FileManager.getInstance(getContext()).checkSdcardAvailable();
