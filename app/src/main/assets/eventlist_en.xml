@@ -580,10 +580,10 @@
         <name>High temperature threshold Lv 1</name>
         <description>Monitor will be off for overheat</description>
         <voice_guidence></voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>no</icon>
         <led>no</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>46</id>

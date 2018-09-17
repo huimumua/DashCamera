@@ -580,10 +580,10 @@
         <name>高温閾値Lv1に達した場合</name>
         <description>高温のためモニター画面を消灯します</description>
         <voice_guidence></voice_guidence>
-        <popup>yes</popup>
+        <popup>no</popup>
         <icon>no</icon>
         <led>no</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>46</id>

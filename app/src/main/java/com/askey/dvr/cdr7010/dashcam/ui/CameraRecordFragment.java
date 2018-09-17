@@ -421,16 +421,10 @@ public class CameraRecordFragment extends Fragment {
 
         @Override
         public void closeLcdPanel() {
-            Logg.d(TAG, "ThermalController closeLcdPanel");
-            LcdManager.getInstance().setLcdLightStatus(false);
-            LcdManager.getInstance().setLcdLightFlagStatus(true);
         }
 
         @Override
         public void startLcdPanel() {
-            Logg.d(TAG, "ThermalController startLcdPanel");
-            LcdManager.getInstance().setLcdLightFlagStatus(false);
-            LcdManager.getInstance().setLcdLightStatus(true);
         }
     };
 
