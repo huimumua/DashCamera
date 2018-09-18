@@ -151,12 +151,12 @@ public class MainApp {
 
         @Override
         public void reportTripInfo(int oos, String response) throws RemoteException {
+            Logg.d(LOG_TAG, "reportTripInfo: oos=" + oos + "，tripNum=" + tripNum + ", response=" + response);
             tripNum++;
             if (tripNum == 1) {
                 countDownLatch.countDown();
                 Log.d(LOG_TAG, "countDownLatch.countDown()  04~~");
             }
-            Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + "，tripNum=" + tripNum + ", response=" + response);
         }
 
         @Override

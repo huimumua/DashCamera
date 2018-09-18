@@ -931,11 +931,16 @@ public class CameraRecordFragment extends Fragment {
                 beforeContractDayStart();
                 break;
             case 0://対象の証券無し
+                MainApp.sendStatUpNotify();
+                inContractDay();
+                Log.d(TAG,"対象の証券無し  flag=0 sendStatUpNotify~~~");
+                break;
             case 2://証券期間中 do nothing
                 inContractDay();
                 break;
             case 3://"満期日+14日"以降
                 afterContractDayEnd();
+                Log.d(TAG,"満期日+14日\"以降  flag=3 sendStatUpNotify~~~");
                 break;
         }
     }
