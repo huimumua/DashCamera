@@ -58,9 +58,9 @@ class FcGetter {
         FC_PARAMETER fp = new FC_PARAMETER();
         fp.PitchAngle = globalLogic.getInt(AskeySettings.Global.ADAS_PITCH_ANGLE);
         fp.YawhAngle = globalLogic.getInt(AskeySettings.Global.ADAS_YAW_ANGLE);
-        fp.HorizonY = (int) (globalLogic.getInt(AskeySettings.Global.ADAS_SKYLINE_RANGE) * getYscale());
-        fp.BonnetY = (int) (globalLogic.getInt(AskeySettings.Global.ADAS_BONNETY) * getYscale());
-        fp.CenterX = (int) (globalLogic.getInt(AskeySettings.Global.ADAS_CENTERX) * getXscale());
+        fp.HorizonY = globalLogic.getInt(AskeySettings.Global.ADAS_SKYLINE_RANGE);
+        fp.BonnetY = globalLogic.getInt(AskeySettings.Global.ADAS_BONNETY);
+        fp.CenterX = globalLogic.getInt(AskeySettings.Global.ADAS_CENTERX);
         int carType = globalLogic.getInt(AskeySettings.Global.CAR_TYPE);
         fp.InstallationHeight = getInstallationHeight(carType);
         fp.CenterDiff = globalLogic.getInt(AskeySettings.Global.ADAS_MOUNT_POSITION);
@@ -79,14 +79,6 @@ class FcGetter {
         fp.PedCollisionLowSpeed = globalLogic.getInt(AskeySettings.Global.ADAS_PED_COLLISION_SPEED_LOW);
         fp.PedCollisionHighSpeed = globalLogic.getInt(AskeySettings.Global.ADAS_PED_COLLISION_SPEED_HIGH);
         return fp;
-    }
-
-    private static float getXscale() {
-        return (float)ADAS_IMAGE_WIDTH / 320; // TODO: literal number = display width
-    }
-
-    private static float getYscale() {
-        return (float)ADAS_IMAGE_HEIGHT / 240; // TODO: literal number = display height
     }
 
     private static int getSelectIP() {
