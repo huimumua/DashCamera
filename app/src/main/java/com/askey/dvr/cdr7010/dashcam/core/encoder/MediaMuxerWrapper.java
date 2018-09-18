@@ -62,6 +62,7 @@ public class MediaMuxerWrapper {
 
     private ISegmentListener mSegmentListener;
     private StateCallback mStateCallback;
+    private static long mDurationAd = 0;
 
     public static final int SAMPLE_TYPE_VIDEO = 1;
     public static final int SAMPLE_TYPE_AUDIO = 2;
@@ -253,6 +254,7 @@ public class MediaMuxerWrapper {
     /*package*/
     synchronized boolean start() {
         Logg.v(LOG_TAG, "start:");
+        mDurationAd = 0;
         mStatredCount++;
         if ((mEncoderCount > 0) && (mStatredCount == mEncoderCount)) {
             mTotalDurationUs = 0;
@@ -433,7 +435,8 @@ public class MediaMuxerWrapper {
                 }
 
                 synchronized (syncObj) {
-                    if (muxer != null && muxer.duration() >= muxer.maxDuration()) {
+                    if (muxer != null && muxer.duration() >= (muxer.maxDuration() - mDurationAd)) {
+                        mDurationAd += muxer.duration() - muxer.maxDuration();
                         parent.closeMuxer(muxer);
                         muxer = null;
                     }
