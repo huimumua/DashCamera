@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
+import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.util.Logg;
 import com.askey.platform.AskeyIntent;
 
@@ -26,6 +27,7 @@ public class DvrShutDownReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         Logg.d(LOG_TAG, "onReceive: action=" + action);
         if(action.equals(AskeyIntent.ACTION_DVR_SHUTDOWN)){
+            LedMananger.getInstance().setShutDown(); //[PUCDR-2245] When shutdown process, LCM and LED off
             setShutDown(true);
             DialogManager.getIntance().setPowerOff(true);
         }else {

@@ -9,6 +9,7 @@ public class LedMananger{
     private AskeyLedManager askeyLedManager;
     private int lastPriority = Integer.MAX_VALUE;
     private boolean isLedOff = true;
+    private boolean mShutdownMode = false; //[PUCDR-2245] Add tag
 
     private LedMananger(){
         askeyLedManager = AskeyLedManager.getInstance();
@@ -26,6 +27,11 @@ public class LedMananger{
     }
     public void setLedRecStatus(boolean isNormal , boolean isInRecording ,int priority){
         Logg.d("LEDManager","isNormal="+isNormal+",isInRecording="+isInRecording+",priority="+priority+",lastPriority="+lastPriority+",isLedOff="+isLedOff);
+        if (mShutdownMode) {
+            //[PUCDR-2245] After shutdown thread run the un-mount (mount service),Led need to always off.
+            Logg.i("LEDManager","In shutdown process, pass LED function");
+            return;
+        }
         if ((priority <= lastPriority && !isLedOff) || isLedOff) {
             if(isInRecording && isNormal){
                 isLedOff = false;
@@ -47,5 +53,9 @@ public class LedMananger{
         }else {
             this.askeyLedManager.setLedOff(AskeyLedManager.LIGHT_ID_MIC);
         }
+    }
+
+    public void setShutDown() {
+        mShutdownMode = true;
     }
 }
