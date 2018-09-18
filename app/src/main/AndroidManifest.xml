@@ -124,6 +124,11 @@
                 <action android:name="com.jvckenwood.tts.VOICE_END_RESPONSE" />
             </intent-filter>
         </receiver>
+        <receiver android:name="com.askey.dvr.cdr7010.dashcam.receiver.DateTimeReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.DATE_CHANGED"/>
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".jvcmodule.local.EcallService"
