@@ -3,6 +3,7 @@ package com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.EventInfo;
@@ -85,8 +86,13 @@ public class CommunicationReceiver extends BroadcastReceiver {
             int status = jsonObject.getInt("status");
             if (status == 0) {
                 String code = jsonObject.getString("code");
-                if (code != null && !code.equals("00")) {
-                    int codeInteger = Integer.parseInt(code, 16);
+                if (!TextUtils.isEmpty(code) && !code.equals("00")) {
+                    int codeInteger = -1;
+                    if(code.contains("0x")){
+                        codeInteger = Integer.parseInt(code.substring(2),16);
+                    }else {
+                        codeInteger = Integer.parseInt(code.trim(), 16);
+                    }
                     Logg.d(LOG_TAG, "speakWeather: codeInteger=" + codeInteger);
                     if (Event.contains(Event.weatherWarning, codeInteger)) {
                         EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(code);
@@ -94,6 +100,15 @@ public class CommunicationReceiver extends BroadcastReceiver {
                     } else if (Event.contains(Event.specialWeatherWarning, codeInteger)) {
                         EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT_SPECIAL).setVoiceGuidence(code);
                         EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT_SPECIAL);
+                    } else if(Event.contains(Event.typhoonAlert, codeInteger)){
+                        EventManager.getInstance().getEventInfoByEventType(Event.TYPHOON_ALERT).setVoiceGuidence(code);
+                        EventManager.getInstance().handOutEventInfo(Event.TYPHOON_ALERT);
+                    } else if(Event.contains(Event.typhoonWarning, codeInteger)){
+                        EventManager.getInstance().getEventInfoByEventType(Event.TYPHOON_WARNING).setVoiceGuidence(code);
+                        EventManager.getInstance().handOutEventInfo(Event.TYPHOON_WARNING);
+                    } else{
+                        EventManager.getInstance().getEventInfoByEventType(Event.WEATHER_ALERT).setVoiceGuidence(code);
+                        EventManager.getInstance().handOutEventInfo(Event.WEATHER_ALERT);
                     }
                 }
             }
