@@ -55,7 +55,6 @@ public class MainApp {
     private static int rtcInfo;
     private static final String PREFER_KEY_CONTRACT_FLG = "ContractFlg";
     private int tripNum;
-    private static boolean isFristSend = true;
 
     private MainApp() {
         mAppContext = DashCamApplication.getAppContext();
@@ -75,11 +74,11 @@ public class MainApp {
             public void run() {
                 try {
                     countDownLatch.await();
+                    sendStatUpNotify();
+                    Log.d(LOG_TAG, "countDownLatch.await()~sendStatUpNotify~~~！");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                sendStatUpNotify();
-                Log.d(LOG_TAG, "countDownLatch.await()~！");
             }
         }).start();
 
@@ -111,6 +110,7 @@ public class MainApp {
             LocalJvcStatusManager.setInsuranceTerm(enumMap);
             if (oos != 0) {
                 sendStatUpNotify();
+                Log.d(LOG_TAG,"reportInsuranceTerm oos != 0 ~~~~~sendStatUpNotify~~~ ");
             }
         }
 
@@ -384,8 +384,6 @@ public class MainApp {
 
     public static void sendStatUpNotify() {
         Log.d(LOG_TAG, "sendStatUpNotify~~~~!");
-        if (isFristSend){
-            isFristSend = false;
             ContentResolver contentResolver = mAppContext.getContentResolver();
             try {
                 rtcInfo = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_RTCINFO);
@@ -398,6 +396,5 @@ public class MainApp {
                 e.printStackTrace();
             }
             MainAppSending.startupNotify(startUp, rtcInfo);
-        }
     }
 }
