@@ -35,6 +35,7 @@ import com.askey.dvr.cdr7010.dashcam.core.RecordConfig;
 import com.askey.dvr.cdr7010.dashcam.core.camera2.CameraHelper;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.Communication;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.JvcEventSending;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.jvckenwood.MainApp;
 import com.askey.dvr.cdr7010.dashcam.jvcmodule.local.JvcStatusParams;
@@ -1043,6 +1044,8 @@ public class CameraRecordFragment extends Fragment {
             Logg.e(TAG, "start video record fail with exception: " + e.getMessage());
         }
         refreshUserInfo();
+        int userId = GlobalLogic.getInstance().getInt(AskeySettings.Global.SYSSET_USER_ID);
+        Communication.getInstance().changeUserID(userId);
         EventManager.getInstance().handOutEventInfo(127);
     }
 

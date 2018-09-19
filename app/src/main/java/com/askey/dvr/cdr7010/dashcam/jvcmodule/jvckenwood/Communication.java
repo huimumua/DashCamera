@@ -63,14 +63,14 @@ public class Communication {
     }
 
     /**
-     * 被弃用
+     *
      */
-//    public void changeUserID(int userId){
-//        Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
-//        Intent intent = new Intent(ACTION_CHANGE_USERID);
-//        intent.putExtra("userId", userId);
-//        sendOutBroadcast(intent);
-//    }
+    public void changeUserID(int userId){
+        Logg.d(LOG_TAG, "changeUserID: userId=" + userId);
+        Intent intent = new Intent(ACTION_CHANGE_USERID);
+        intent.putExtra("userId", userId);
+        sendOutBroadcast(intent);
+    }
 
     public void alertComplite(int eventType){
         Logg.d(LOG_TAG, "alertComplite: eventType=" + eventType);
