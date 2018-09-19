@@ -547,21 +547,26 @@ public class AdasController implements Util.AdasCallback {
         mStatistics.logStart(ProfileItem.Stop);
         assertState("stop", State.Started);
         mContentResolver.unregisterContentObserver(mSettingObserver);
+        boolean locked = false;
         try {
-            if (!mProcessingLock.tryLock()) { // Unlock in stop_internal
+            locked = mProcessingLock.tryLock();
+            if (!locked) { // Unlock in stop_internal
                 Log.w(TAG, "stop: \"process()\" has acquired the lock first!!!");
                 changeState(State.Stopping);
-                if (mProcessingLock.tryLock(1000, TimeUnit.MILLISECONDS)) {
+                locked = mProcessingLock.tryLock(1000, TimeUnit.MILLISECONDS);
+                if (locked) {
                     Log.w(TAG, "stop: acquire the lock!!!");
                 } else {
                     Log.e(TAG, "stop: check why \"process()\" hasn't release the lock");
-                    throw new RuntimeException("Timeout: cannot acquire the lock");
+                    handleError("stop", "Timeout: cannot acquire the lock");
                 }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            mProcessingLock.unlock();
+            if (locked) {
+                mProcessingLock.unlock();
+            }
             mStatistics.logFinish(ProfileItem.Stop);
             changeState(State.Stopped);
             Log.v(TAG, "stop: END");
