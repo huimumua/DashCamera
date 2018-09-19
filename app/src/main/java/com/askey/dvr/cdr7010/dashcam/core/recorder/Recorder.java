@@ -203,7 +203,7 @@ public class Recorder implements IFrameListener {
             Logg.v(TAG, "segmentCompletedAsync: event=" + event + " eventTimeMs=" + eventTimeMs + " startTimeMs=" + startTimeMs + " " + path);
             if (event != 0) {
                 saveHash(path, startTimeMs, true);
-                Snapshot.take3Pictures(path, mConfig.cameraId(), startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
+                Snapshot.take3Pictures(mContext, path, mConfig.cameraId(), startTimeMs, 7 * 1000 * 1000L, FileManager.getInstance(mContext), pictures -> {
                     if (pictures != null) {
                         for (String pic : pictures) {
                             Logg.d(TAG, pic);

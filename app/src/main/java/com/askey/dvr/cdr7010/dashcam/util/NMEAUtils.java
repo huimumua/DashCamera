@@ -1,5 +1,10 @@
 package com.askey.dvr.cdr7010.dashcam.util;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import net.sf.marineapi.nmea.event.SentenceEvent;
 import net.sf.marineapi.nmea.event.SentenceListener;
 import net.sf.marineapi.nmea.io.SentenceReader;
@@ -22,34 +27,41 @@ import java.util.List;
  * Created by Navas.li on 2018/6/20
  */
 public class NMEAUtils {
+    private static final String TAG = "NMEAUtils";
     private List<RMCSentence> sentences = new ArrayList<>();
     private SentenceReader sentenceReader;
     private OnReadFinishListener listener;
+    Context context;
 
-    public NMEAUtils(String filePath) throws FileNotFoundException {
+    public NMEAUtils(Context context, String filePath) throws FileNotFoundException {
+        this.context = context;
         sentences.clear();
         FileInputStream fileInputStream = new FileInputStream(new File(filePath));
         sentenceReader = new SentenceReader(fileInputStream);
         sentenceReader.addSentenceListener(new SentenceListener() {
             @Override
             public void readingPaused() {
+                Logg.d(TAG,"readingPaused");
                 sentenceReader.stop();
             }
 
             @Override
             public void readingStarted() {
-
+                Logg.d(TAG,"readingStarted");
             }
 
             @Override
             public void readingStopped() {
-                if (listener != null) {
-                    listener.onReadFinish(sentences);
-                }
+                Logg.d(TAG,"readingStopped");
                 try {
                     fileInputStream.close();
+                    Logg.d(TAG,"fileInputStream.close");
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+                context.unregisterReceiver(mSdBadRemovalListener);
+                if (listener != null) {
+                    listener.onReadFinish(sentences);
                 }
             }
 
@@ -63,7 +75,30 @@ public class NMEAUtils {
         sentenceReader.setExceptionListener(e -> {
             //do nothing
         });
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);
+        filter.addDataScheme("file");
+        context.registerReceiver(mSdBadRemovalListener, filter);
     }
+
+    private BroadcastReceiver mSdBadRemovalListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Logg.d(TAG,"mSdBadRemovalListener...");
+            if (Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
+                Logg.d(TAG,"mSdBadRemovalListener...ACTION_MEDIA_EJECT");
+                try {
+                    sentenceReader.stop();
+                    Logg.d(TAG,"sentenceReader.stop..");
+                } catch (Exception e) {
+                    //
+                }
+            }
+        }
+    };
 
     public void start() {
         sentenceReader.start();

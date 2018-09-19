@@ -1,5 +1,6 @@
 package com.askey.dvr.cdr7010.dashcam.core.recorder;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.support.annotation.NonNull;
@@ -27,7 +28,8 @@ public class Snapshot {
         void onPictureTake(List<String> path);
     }
 
-    public static void take3Pictures(@NonNull String videoFilePath,
+    public static void take3Pictures(Context context,
+                                     @NonNull String videoFilePath,
                                      int cameraId,
                                      long timeStamp,
                                      long firstTime,
@@ -81,7 +83,7 @@ public class Snapshot {
         if (!videoFilePath.contains("_2")) {
             String nmeaPath = videoFilePath.replace("EVENT", "SYSTEM/NMEA/EVENT").replace("mp4", "nmea");
             Logg.d(TAG, "nmeaPath==" + nmeaPath);
-            saveNmea(fileNames, nmeaPath);
+            saveNmea(context, fileNames, nmeaPath);
         }
         if (listener != null) {
             listener.onPictureTake(fileNames);
@@ -133,9 +135,9 @@ public class Snapshot {
         }
     }
 
-    private static void saveNmea(List<String> fileNames, String nmeaPath) {
+    private static void saveNmea(Context context, List<String> fileNames, String nmeaPath) {
         try {
-            NMEAUtils nmeaUtils = new NMEAUtils(nmeaPath);
+            NMEAUtils nmeaUtils = new NMEAUtils(context, nmeaPath);
             nmeaUtils.setOnFinishListener(list -> {
                 for (String file : fileNames) {
                     String timeNeed = file.substring(file.lastIndexOf("/") + 1, file.indexOf("."));
