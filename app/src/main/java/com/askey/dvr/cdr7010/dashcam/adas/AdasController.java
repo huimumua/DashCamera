@@ -40,7 +40,18 @@ public class AdasController implements Util.AdasCallback {
 
     static final int ADAS_IMAGE_WIDTH = 1280;
     static final int ADAS_IMAGE_HEIGHT = 720;
-    static final int BUFFER_NUM = 3;
+
+    /**
+     * BUFFER_NUM indicate how many Image Buffer will be allocated
+     * In theory, 2 or 3 is sufficient for ADAS: only process 1 image 1 time
+     * However, due to
+     * 1. Asynchronous processing (Handler.post)
+     * 2. Sometimes CPU loading is high
+     * Some Image buffer maybe queued and not consumed or recycled.
+     * Therefore set the number a safer number
+     */
+    static final int BUFFER_NUM = 6; // A safer number maybe 6
+
     private static final int EXPECTED_LISTENER_NUM = 1;
 
     /* Interval of printing statistics data */
@@ -53,7 +64,6 @@ public class AdasController implements Util.AdasCallback {
     private static boolean DEBUG_FPS;
     private static boolean ADAS_DISABLED;
     private static boolean DEBUG_IMAGE_PROCESS;
-    private static boolean PRINT_STATISTICS;
 
     /* Handler Messages */
     private static final String PROP_DEBUG = "persist.dvr.adas.debug";
@@ -122,8 +132,6 @@ public class AdasController implements Util.AdasCallback {
         Log.v(TAG, "AdasController: DEBUG = " + DEBUG);
         EXCEPTION_WHEN_ERROR = SystemPropertiesProxy.getBoolean(PROP_EXCEPTION, DEBUG);
         Log.v(TAG, "AdasController: EXCEPTION_WHEN_ERROR = " + EXCEPTION_WHEN_ERROR);
-        PRINT_STATISTICS = SystemPropertiesProxy.getBoolean(PROP_STATISTICS, DEBUG);
-        Log.v(TAG, "AdasController: PRINT_STATISTICS = " + PRINT_STATISTICS);
         DEBUG_FPS = SystemPropertiesProxy.getBoolean(PROP_DEBUG_FPS, DEBUG);
         Log.v(TAG, "AdasController: DEBUG_FPS = " + DEBUG_FPS);
         if (DEBUG)
@@ -241,11 +249,18 @@ public class AdasController implements Util.AdasCallback {
     }
 
     private void process(Image image) {
+        if (DEBUG_IMAGE_PROCESS) {
+            Log.v(TAG, "process: image=" + image);
+        }
+        boolean locked = mProcessingLock.isLocked();
         if (ADAS_DISABLED
                 || mState != State.Started
-                || mProcessingLock.isLocked()) {
+                || locked) {
             // Too much logs
-            // Log.w(TAG, "process: ADAS_DISABLED=" + ADAS_DISABLED + ", mState=" + mState);
+            if (DEBUG_IMAGE_PROCESS) {
+                Log.w(TAG, "process: ADAS_DISABLED=" + ADAS_DISABLED + ", mState=" + mState +
+                        ", mProcessingLock.isLocked()=" + locked);
+            }
             image.close();
             return;
         }
@@ -258,9 +273,19 @@ public class AdasController implements Util.AdasCallback {
     }
 
     private void process_internal(Image image) {
-        assertState("process_internal", State.Started);
+        boolean locked = mProcessingLock.isLocked();
+        if (mState != State.Started
+                || locked) {
+            // Too much logs
+            if (DEBUG_IMAGE_PROCESS) {
+                Log.w(TAG, "process_internal: mState=" + mState +
+                        ", mProcessingLock.isLocked()=" + locked);
+            }
+            image.close();
+            return;
+        }
         if (!mProcessingLock.tryLock()) { // Unlock when process is done (didAdasDetect_internal)
-            Log.w(TAG, "process: \"stop()\" should has acquired the lock first!!!");
+            Log.w(TAG, "process_internal: \"stop()\" should has acquired the lock first!!!");
             image.close();
             return;
         }
