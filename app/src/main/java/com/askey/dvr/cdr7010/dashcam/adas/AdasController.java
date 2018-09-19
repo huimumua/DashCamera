@@ -44,6 +44,7 @@ public class AdasController implements Util.AdasCallback {
     private static final int EXPECTED_LISTENER_NUM = 1;
 
     /* Interval of printing statistics data */
+    private static long STATISTICS_INTERVAL_MILL_SEC_FIRST = 3 * 1000;
     private static long STATISTICS_INTERVAL_MILL_SEC = 30 * 1000;
 
     /* Properties for debug */
@@ -323,7 +324,9 @@ public class AdasController implements Util.AdasCallback {
             Log.v(TAG, "didAdasDetect: captureTime = " + captureTimeMs);
         }
         mStatistics.logFinish(ProfileItem.Process);
-        if (DEBUG_FPS) mTpscDidAdas.update();
+        if (DEBUG_FPS) {
+            mTpscDidAdas.update();
+        }
         mHandler.post(()->didAdasDetect_internal(captureTimeMs));
     }
 
@@ -334,7 +337,9 @@ public class AdasController implements Util.AdasCallback {
 
         ImageRecord imageRecord = mProcessingImages.remove();
         if (imageRecord.getTimestamp() != captureTimeMs) {
-            throw new RuntimeException("callback captureTimeMs=" + captureTimeMs + ", but oldest record timestamp=" + imageRecord.getTimestamp());
+            handleError("didAdasDetect_internal",
+                    "callback captureTimeMs=" + captureTimeMs +
+                            ", but oldest record timestamp=" + imageRecord.getTimestamp());
         }
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "didAdasDetect_internal: close image = " + imageRecord);
@@ -344,7 +349,7 @@ public class AdasController implements Util.AdasCallback {
         if (mState == State.Stopping) {
             Log.w(TAG, "didAdasDetect_internal: stop is waiting the lock...");
             if (mProcessingImages.size() > 0) {
-                throw new AssertionError("mProcessingImages.size() > 0");
+                handleError("didAdasDetect_internal", "mProcessingImages.size() > 0");
             }
             Log.v(TAG, "didAdasDetect_internal: mImageReader.close() = " + mImageReader);
 
@@ -522,7 +527,7 @@ public class AdasController implements Util.AdasCallback {
         obtainImageReader();
 
         mHandler.removeCallbacks(mPrintStatistics);
-        mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC);
+        mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC_FIRST);
 
         changeState(State.Started);
     };
@@ -562,7 +567,7 @@ public class AdasController implements Util.AdasCallback {
                 }
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            handleError("stop", e.getMessage());
         } finally {
             if (locked) {
                 mProcessingLock.unlock();
