@@ -97,6 +97,9 @@ public class DashCam implements DashCamControl {
         @Override
         public void onStoped() {
             Logg.d(TAG, "RecorderStateCallback: onStoped");
+            mRecorder.release();
+            mRecorder = null;
+
             mRecording = false;
             checkCloseSuccess();
             if (mStateCallback != null) {
@@ -427,8 +430,6 @@ public class DashCam implements DashCamControl {
 
             if (mRecorder != null) {
                 mRecorder.stopRecording();
-                mRecorder.release();
-                mRecorder = null;
             }
             checkCloseSuccess();
         }

@@ -114,6 +114,7 @@ public class AndroidMuxer {
         try {
             mMuxer.writeSampleData(idx, byteBuf, bufferInfo);
         } catch (Exception e) {
+            Logg.e("iamlbccc", "!!!" + e.toString());
         }
     }
 

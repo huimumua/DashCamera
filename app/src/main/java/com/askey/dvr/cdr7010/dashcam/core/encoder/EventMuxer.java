@@ -246,6 +246,7 @@ public class EventMuxer implements Runnable {
         File file = new File(slice);
         RandomAccessFile fin = null;
         try {
+            Logg.e("iamlbccc", "Event Access cache file.");
             fin = new RandomAccessFile(file, "r");
             int index = fin.readInt();
             if (!isFirst && (index - slice_index != 1)) {
@@ -282,7 +283,9 @@ public class EventMuxer implements Runnable {
                 bufferInfo.offset = 0;
                 bufferInfo.size = len;
                 ByteBuffer buffer = ByteBuffer.wrap(array);
+                Logg.e("iamlbccc", "\t+ Push sample data.");
                 mMuxer.writeSampleData(type, buffer, bufferInfo);
+                Logg.e("iamlbccc", "\t- Push sample data.");
             }
         } catch (FileNotFoundException e) {
             Logg.e(LOG_TAG, "open fail:  " + slice);

@@ -75,6 +75,8 @@ void *thread_func(void *arg) {
     unsigned long start_time_ms = 0;
     int fd = -1;
 
+    ALOGW("iamlbccc, Start tid: %d  0x%08x !\n", gettid(), bufObj);
+
     bufObj->thread_exit = false;
     bufObj->slice_count = 0;
     while (!bufObj->isStop()) {
@@ -87,6 +89,9 @@ void *thread_func(void *arg) {
             if (fd > 0) {
                 unsigned long diff = current_time_ms() - start_time_ms;
                 if (diff > 1000ul) {
+                    ALOGE("iamlbccc, who 0x%08x %ld Close file %d  %ld   name:%s\n", bufObj,
+                          gettid(),
+                          current_time_ms(), start_time_ms, bufObj->file_name);
                     close(fd);
                     fd = -1;
                     bufObj->notify();
@@ -109,6 +114,7 @@ void *thread_func(void *arg) {
         close(fd);
     }
 
+    ALOGW("iamlbccc, tid: %d joined. 3\n", gettid());
     return NULL;
 }
 } //namespace
@@ -137,6 +143,7 @@ MediaBuffer::MediaBuffer(jobject obj, size_t bufferSize, const char *dir, callba
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&data_available, NULL);
     pthread_mutex_init(&lock, NULL);
+    ALOGW("iamlbccc, NEW 0x%08x !\n", this);
 }
 
 MediaBuffer::~MediaBuffer()
@@ -257,7 +264,7 @@ void MediaBuffer::notify()
 
 int MediaBuffer::cacheCreate(unsigned long time)
 {
-    int n = sprintf(file_name, "%lu", time);
+    int n = sprintf(file_name, "%lu_%d_0x%08x", time, gettid(), this);
     file_name[n] = '\0';
     int fd = open(file_path, O_WRONLY | O_CREAT | O_APPEND);
     if (fd > 0) {
@@ -266,7 +273,7 @@ int MediaBuffer::cacheCreate(unsigned long time)
         uint32_t count = SWAP32(slice_count);
         write(fd, &count, sizeof(count));
     }
-
+    ALOGW("iamlbccc, who 0x%08x %d Create file %s\n", this, gettid(), file_name);
     return fd;
 }
 
