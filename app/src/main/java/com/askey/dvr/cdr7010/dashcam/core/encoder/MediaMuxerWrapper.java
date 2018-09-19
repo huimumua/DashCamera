@@ -62,7 +62,7 @@ public class MediaMuxerWrapper {
 
     private ISegmentListener mSegmentListener;
     private StateCallback mStateCallback;
-    private static long mDurationAd = 0;
+    private long mDurationAd = 0;
 
     public static final int SAMPLE_TYPE_VIDEO = 1;
     public static final int SAMPLE_TYPE_AUDIO = 2;
@@ -118,7 +118,7 @@ public class MediaMuxerWrapper {
         mSegmentCallback = segmentCallback;
         mStateCallback = stateCallback;
         mEventState = new EventState(mContext);
-
+        time_stamp_sync_v = 0;
         registerReceiver();
 
         mEncoderCount = mStatredCount = 0;
@@ -371,6 +371,11 @@ public class MediaMuxerWrapper {
     }
 
 
+    /////////
+    public static boolean has_ext_camera = CameraHelper.hasExtCamera();
+    public static long time_stamp_sync_v = 0;
+    public static @CameraHelper.CameraName int sync_cam_id;
+    /////////
     private class MuxerHandler extends Handler {
 
         private AndroidMuxer muxer;
@@ -443,8 +448,24 @@ public class MediaMuxerWrapper {
 
                     if (muxer == null) {
                         try {
+                            long sync_time = time;
+                            if(has_ext_camera) {
+
+                                if (time_stamp_sync_v == 0) {
+                                    time_stamp_sync_v = sync_time;
+                                    sync_cam_id = mConfig.cameraId();
+                                    Logg.d("FileNameSyncIssue","Start, Sync ID: "  +  sync_cam_id + " Sync Time: " + sync_time);
+                                }else{
+                                    if (Math.abs(time_stamp_sync_v - sync_time) < 3000){
+                                        Logg.d("FileNameSyncIssue","End TS: " + sync_time + " Sync To: " + time_stamp_sync_v + " Diff: " + (sync_time - time_stamp_sync_v));
+                                        sync_time = time_stamp_sync_v;
+                                    }
+                                    time_stamp_sync_v = 0;
+                                }
+                            }
+
                             Logg.e("iamlbccc", "Starting of new normal, get file path. ");
-                            String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(parent.mConfig.cameraId(), time);
+                            String path = FileManager.getInstance(parent.mContext).getFilePathForNormal(parent.mConfig.cameraId(), sync_time);
                             Logg.e("iamlbccc", "Starting of new normal, creating Muxer.");
                             muxer = new AndroidMuxer(path);
                             Logg.e("iamlbccc", "Starting of new normal, creating Muxer. Done");
