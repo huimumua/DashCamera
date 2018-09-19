@@ -114,6 +114,8 @@ public class NmeaRecorder {
                 mRecordTime++;
             }
             Log.i(LOG_TAG, "Event NMEARecord record 10 seconds(pre)");
+            //currentDatas[4] = "$JKDSA "+ ", "+ event + "," + newLineSymbol;
+            //mOutputStream.write(currentDatas[4].getBytes());
             nmeaRecorderListener.add(this);
         } catch (IOException e) {
             // throw new RuntimeException(e);
@@ -401,7 +403,7 @@ public class NmeaRecorder {
                 if (currentAsensors[0] == 0.0 && currentAsensors[1] == 0.0 && currentAsensors[2] == 0.0) {
                     sensorData = "$GSENS,999.999,999.999,999.999" + newLineSymbol;
                 } else {
-                    sensorData = String.format("$GSENS,%.3f,%.3f,%.3f", currentAsensors[0], currentAsensors[1], currentAsensors[2])
+                    sensorData = String.format("$GSENS,%.3f,%.3f,%.3f", -1 * currentAsensors[0] / 9.8,  -1 * currentAsensors[1] / 9.8, -1 * currentAsensors[2] / 9.8)
                             + newLineSymbol + gSensorData + mSensorData + pSensorData;
                 }
 
@@ -539,20 +541,6 @@ public class NmeaRecorder {
             dir.mkdir();
         }
 
-        // dir = new File(path + "/SYSTEM/NMEA/PARKING");
-        // if (!dir.exists()) {
-        //     Log.d(LOG_TAG, "mkdir = " + dir.getPath());
-        //     dir.mkdir();
-        // } else {
-        //     Log.i(LOG_TAG, "mkdir = " + dir.getPath());
-        // }
-        //
-        // dir = new File(path + "/SYSTEM/NMEA/MANUAL");
-        // if (!dir.exists()) {
-        //     Log.d(LOG_TAG, "mkdir = " + dir.getPath());
-        //     dir.mkdir();
-        // } else {
-        //     Log.i(LOG_TAG, "mkdir = " + dir.getPath());
-        // }
+
     }
 }
