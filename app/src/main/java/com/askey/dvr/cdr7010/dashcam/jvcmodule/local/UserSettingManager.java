@@ -187,7 +187,7 @@ public class UserSettingManager {
             if (!TextUtils.isEmpty(infoLists.user99.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME, infoLists.user99.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID, String.valueOf(infoLists.user99.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID, infoLists.user99.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER_DAYS, String.valueOf(infoLists.user99.selectdate));
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS, String.valueOf(infoLists.user99.lastupdate));
             Log.d(LOG_TAG,"setUserInfoLists~~~~"+String.valueOf(infoLists.user99.selectdate));
@@ -196,35 +196,35 @@ public class UserSettingManager {
             if (!TextUtils.isEmpty(infoLists.user01.name)){
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER1, infoLists.user01.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER1, String.valueOf(infoLists.user01.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER1, infoLists.user01.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER1, String.valueOf(infoLists.user01.lastupdate));
         }
         if (infoLists.user02!=null) {
             if (!TextUtils.isEmpty(infoLists.user02.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER2, infoLists.user02.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER2, String.valueOf(infoLists.user02.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER2, infoLists.user02.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER2, String.valueOf(infoLists.user02.lastupdate));
         }
         if (infoLists.user03!=null) {
             if (!TextUtils.isEmpty(infoLists.user03.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER3, infoLists.user03.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER3, String.valueOf(infoLists.user03.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER3, infoLists.user03.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER3, String.valueOf(infoLists.user03.lastupdate));
         }
         if (infoLists.user04!=null) {
             if (!TextUtils.isEmpty(infoLists.user04.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER4, infoLists.user04.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER4, String.valueOf(infoLists.user04.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER4, infoLists.user04.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER4, String.valueOf(infoLists.user04.lastupdate));
         }
         if (infoLists.user05!=null) {
             if (!TextUtils.isEmpty(infoLists.user05.name)) {
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_NAME_USER5, infoLists.user05.name);
             }
-            Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER5, String.valueOf(infoLists.user05.userid));
+            Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_ID_USER5, infoLists.user05.userid);
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER5, String.valueOf(infoLists.user05.lastupdate));
         }
         Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_NUM, infoLists.num);

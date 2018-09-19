@@ -78,6 +78,8 @@ public class MainApp {
                     Log.d(LOG_TAG, "countDownLatch.await()~sendStatUpNotify~~~！");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+
+
                 }
             }
         }).start();
