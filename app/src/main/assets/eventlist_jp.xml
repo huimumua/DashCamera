@@ -579,7 +579,7 @@
         <dialog_type>3</dialog_type>
         <name>高温閾値Lv1に達した場合</name>
         <description>高温のためモニター画面を消灯します</description>
-        <voice_guidence></voice_guidence>
+        <voice_guidence>010F</voice_guidence>
         <popup>no</popup>
         <icon>no</icon>
         <led>no</led>
@@ -592,11 +592,11 @@
         <dialog_type>5</dialog_type>
         <name>高温閾値Lv2に達した場合</name>
         <description>高温のため録画を中止しました</description>
-        <voice_guidence></voice_guidence>
+        <voice_guidence>010E</voice_guidence>
         <popup>yes</popup>
         <icon>no</icon>
         <led>yes</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>47</id>
