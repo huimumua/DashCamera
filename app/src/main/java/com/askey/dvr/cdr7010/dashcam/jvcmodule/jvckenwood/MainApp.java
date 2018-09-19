@@ -138,17 +138,10 @@ public class MainApp {
         @Override
         public void reportUserSettings(int oos, String response) {
             Logg.d(LOG_TAG, "reportUserSettings: oos=" + oos + ", response=" + response);
-            UserSettingManager.setUserListCallBack(new UserSettingManager.UserInfoCallback() {
-                @Override
-                public void notifyUserInfo(boolean isOk, int num) {
-                    if (isOk) {
                         EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap = new EnumMap<>(JvcStatusParams.JvcStatusParam.class);
                         enumMap.put(JvcStatusParams.JvcStatusParam.OOS, oos);
                         enumMap.put(JvcStatusParams.JvcStatusParam.RESPONSE, response);
-                        UserSettingManager.userSettings(enumMap, countDownLatch, num);
-                    }
-                }
-            });
+                        UserSettingManager.userSettings(enumMap, countDownLatch);
         }
 
         @Override

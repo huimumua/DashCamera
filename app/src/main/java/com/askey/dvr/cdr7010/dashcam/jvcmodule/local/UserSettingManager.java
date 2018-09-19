@@ -78,7 +78,7 @@ public class UserSettingManager {
 
     }
 
-    public static void userSettings(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap, CountDownLatch countDownLatch,int num) {
+    public static void userSettings(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap, CountDownLatch countDownLatch) {
 
         if (enumMap != null) {
             int oos = (int) enumMap.get(JvcStatusParams.JvcStatusParam.OOS);
@@ -89,23 +89,26 @@ public class UserSettingManager {
                 Gson gson = new Gson();
                 JvcUserSettingInfo info = gson.fromJson(response, JvcUserSettingInfo.class);
                 int status = info.status;
+                Context appContext = DashCamApplication.getAppContext();
+                ContentResolver contentResolver = appContext.getContentResolver();
+                int SelctedUserId = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER, 01);
                 if (status == 0) {
                     if (info != null) {
-                        switch (num) {
+                        switch (SelctedUserId) {
                             case 01:
-                                setUserSettings(info.user01, num, countDownLatch);
+                                setUserSettings(info.user01, SelctedUserId, countDownLatch);
                                 break;
                             case 02:
-                                setUserSettings(info.user02, num, countDownLatch);
+                                setUserSettings(info.user02, SelctedUserId, countDownLatch);
                                 break;
                             case 03:
-                                setUserSettings(info.user03, num, countDownLatch);
+                                setUserSettings(info.user03, SelctedUserId, countDownLatch);
                                 break;
                             case 04:
-                                setUserSettings(info.user04, num, countDownLatch);
+                                setUserSettings(info.user04, SelctedUserId, countDownLatch);
                                 break;
                             case 05:
-                                setUserSettings(info.user05, num, countDownLatch);
+                                setUserSettings(info.user05, SelctedUserId, countDownLatch);
                                 break;
                         }
                     }
