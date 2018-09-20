@@ -303,6 +303,7 @@ public class AdasController implements Util.AdasCallback {
         if (mState != State.Started) {
             Log.v(TAG, "process_internal: not Stopped = " + image);
             imageRecord.recycle();
+            mProcessingLock.unlock();
             return;
         }
 
@@ -311,6 +312,7 @@ public class AdasController implements Util.AdasCallback {
                 mTpscFrameDrop.update();
             }
             imageRecord.recycle();
+            mProcessingLock.unlock();
             return;
         }
 
@@ -328,9 +330,13 @@ public class AdasController implements Util.AdasCallback {
                 mTpscFrameDrop.update();
             }
             imageRecord.recycle();
+            mProcessingLock.unlock();
+            return;
         } else if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "process_internal: adasDetect() result = " + result + ", close " + imageRecord);
             imageRecord.recycle();
+            mProcessingLock.unlock();
+            return;
         } else {
             assert result == Constant.ADAS_SUCCESS;
 
