@@ -32,8 +32,9 @@ public class UserSettingManager {
 
     private static final String LOG_TAG = "AskySettingManager";
     private static EnumMap<JvcStatusParams.JvcStatusParam, Object> mReportMap;
-    public static UserInfoCallback userInfoCallback;
+    public static UserInfoSaveCallback userInfoSaveCallback;
     private static int localUserId, seletedUserId;
+    private static boolean isFirstUserChange;
 
     public static void getUserList(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap, CountDownLatch countDownLatch) {
 
@@ -60,14 +61,28 @@ public class UserSettingManager {
                     localUserId = Settings.Global.getInt(contentResolver, AskeySettings.Global.SYSSET_SELECT_USER, 01);
                     seletedUserId = userListInfo.user99.userid;
                     if (localUserId != seletedUserId) {
-                         EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE));
+                        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_PREPARE));
+                        String suffix = "_user"+seletedUserId;
+                        /**
+                         * 几组用户设置信息保存成功再刷新默认用户的设置信息
+                         */
+                        if (isFirstUserChange){
+                            UserSettingManager.setUserInfoSaveCallBack(new UserInfoSaveCallback() {
+                                @Override
+                                public void notifyUserInfo(boolean isOk) {
+                                    if (isOk){
+                                        initAskySetting(appContext, suffix);
+                                    }
+                                }
+                            });
+                        }else {
+                            initAskySetting(appContext, suffix);
+                        }
+                        isFirstUserChange = false;
+                        EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START));
                     }
                     //保存五組用戶數據信息
                     setUserInfoLists(userListInfo);
-                    //回调通知到usersetting设置相应用户信息
-                    if (userInfoCallback!=null){
-                        userInfoCallback.notifyUserInfo(true, seletedUserId);
-                    }
                     if (countDownLatch!=null){
                         countDownLatch.countDown();
                         Log.d(LOG_TAG,"abby countDown~~01~!");
@@ -76,6 +91,14 @@ public class UserSettingManager {
             }
         }
 
+    }
+
+    private static void initAskySetting(Context appContext, String suffix) {
+        try {
+            AskySettingManager.getInstance(appContext).initAskySetting(AskeySettings.Global.SYSSET_USER_ID+suffix);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void userSettings(EnumMap<JvcStatusParams.JvcStatusParam, Object> enumMap, CountDownLatch countDownLatch) {
@@ -121,9 +144,6 @@ public class UserSettingManager {
         if (userListInfo == null) {
             return;
         }
-        if (localUserId != seletedUserId){
-            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_START));
-        }
         Context appContext = DashCamApplication.getAppContext();
         ContentResolver contentResolver = appContext.getContentResolver();
         switch (num){
@@ -162,17 +182,13 @@ public class UserSettingManager {
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_LANGUAGE+suffix, userListInfo.lang);
                 Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS+suffix, userListInfo.set_update_day);
                 Settings.Global.putInt(contentResolver, AskeySettings.Global.COMM_EMERGENCY_AUTO+suffix, userListInfo.outbound_call);
-                try {
-                    AskySettingManager.getInstance(appContext).initAskySetting(AskeySettings.Global.SYSSET_USER_ID+suffix);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
                 if (countDownLatch!=null){
                     countDownLatch.countDown();
                     Log.d(LOG_TAG,"abby countDown~~02~!");
                 }
-                if (localUserId != seletedUserId) {
-                    EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
+                //回调通知到usersetting已保存完成用户设置信息
+                if (userInfoSaveCallback!=null){
+                    userInfoSaveCallback.notifyUserInfo(true);
                 }
                 break;
         }
@@ -231,15 +247,18 @@ public class UserSettingManager {
             Settings.Global.putString(contentResolver, AskeySettings.Global.SYSSET_SET_LASTUPDATE_DAYS_USER5, String.valueOf(infoLists.user05.lastupdate));
         }
         Settings.Global.putInt(contentResolver, AskeySettings.Global.SYSSET_USER_NUM, infoLists.num);
+        if (localUserId != seletedUserId) {
+            EventUtil.sendEvent(new MessageEvent<UIElementStatusEnum.SwitchUserEvent>(Event.EventCode.EVENT_SWITCH_USER, UIElementStatusEnum.SwitchUserEvent.SWITCH_USER_COMPLETE));
+        }
     }
 
 
-    public interface UserInfoCallback {
-        void notifyUserInfo(boolean isOk, int num);
+    public interface UserInfoSaveCallback {
+        void notifyUserInfo(boolean isOk);
 
     }
 
-    public static void setUserListCallBack(UserInfoCallback callBack) {
-        userInfoCallback = callBack;
+    public static void setUserInfoSaveCallBack(UserInfoSaveCallback callBack) {
+        userInfoSaveCallback = callBack;
     }
 }
