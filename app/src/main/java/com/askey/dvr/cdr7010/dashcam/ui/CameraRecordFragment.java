@@ -276,10 +276,7 @@ public class CameraRecordFragment extends Fragment {
                     sendShutDownBroadCast();
                     RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
                     stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
-                    if (isEventRecording) {
-                        //关机,2018.9.5新需求，最多7秒后关机，此处按最长时间处理
-                        handler.sendEmptyMessageDelayed(1, 7000);
-                    } else {
+                    if (!isEventRecording) {
                         //关机
                         handler.sendEmptyMessageDelayed(1, 2000);
                     }
@@ -391,6 +388,7 @@ public class CameraRecordFragment extends Fragment {
             }
             ArrayList<Integer> results = new ArrayList<>(Arrays.asList(data));
             JvcEventSending.recordResponse(eventId, results, files);
+            delay2ShutDown();
         }
 
         @Override
@@ -399,8 +397,17 @@ public class CameraRecordFragment extends Fragment {
             ArrayList<Integer> results = new ArrayList<>(Arrays.asList(reason, 0, reason, reason, reason, 0, 0, 0));
             ArrayList<String> files = new ArrayList<>();
             JvcEventSending.recordResponse(eventId, results, files);
+            delay2ShutDown();
         }
     };
+
+    private void delay2ShutDown() {
+        if (isBatteryDisconnected) {
+            //关机,2018.9.5新需求，最多7秒后关机，此处按最长时间处理
+            handler.sendEmptyMessageDelayed(1, 7000);
+        }
+    }
+
     private ThermalController.ThermalListener thermalListener = new ThermalController.ThermalListener() {
         @Override
         public void startRecording() {
