@@ -45,7 +45,6 @@ import com.askey.dvr.cdr7010.dashcam.service.DialogManager;
 import com.askey.dvr.cdr7010.dashcam.service.EventManager;
 import com.askey.dvr.cdr7010.dashcam.service.FileManager;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
-import com.askey.dvr.cdr7010.dashcam.service.LcdManager;
 import com.askey.dvr.cdr7010.dashcam.service.LedMananger;
 import com.askey.dvr.cdr7010.dashcam.service.SimCardManager;
 import com.askey.dvr.cdr7010.dashcam.service.ThermalController;
@@ -274,6 +273,7 @@ public class CameraRecordFragment extends Fragment {
             if (msg.what == 0) {
                 if (isBatteryDisconnected) {
                     Logg.d(TAG, "battery status....isBatteryDisconnected");
+                    sendShutDownBroadCast();
                     RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
                     stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
                     if (isEventRecording) {
@@ -295,6 +295,14 @@ public class CameraRecordFragment extends Fragment {
             return true;
         }
     });
+
+    /**
+     * PUCDR-2294
+     */
+    private void sendShutDownBroadCast() {
+        Intent intent = new Intent(AskeyIntent.ACTION_ACC_OFF);
+        getActivity().sendBroadcast(intent);
+    }
 
     DashCam.StateCallback mDashCallback = new DashCam.StateCallback() {
         @Override
@@ -492,7 +500,7 @@ public class CameraRecordFragment extends Fragment {
         Logg.d(TAG, "onCreate");
         mTelephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         mHandler = new Handler(Looper.getMainLooper());
-        thermalController = new ThermalController(thermalListener,getActivity());
+        thermalController = new ThermalController(thermalListener, getActivity());
         EventUtil.register(this);
     }
 
@@ -934,14 +942,14 @@ public class CameraRecordFragment extends Fragment {
             case 0://対象の証券無し
                 MainApp.sendStatUpNotify();
                 inContractDay();
-                Log.d(TAG,"対象の証券無し  flag=0 sendStatUpNotify~~~");
+                Log.d(TAG, "対象の証券無し  flag=0 sendStatUpNotify~~~");
                 break;
             case 2://証券期間中 do nothing
                 inContractDay();
                 break;
             case 3://"満期日+14日"以降
                 afterContractDayEnd();
-                Log.d(TAG,"満期日+14日\"以降  flag=3 sendStatUpNotify~~~");
+                Log.d(TAG, "満期日+14日\"以降  flag=3 sendStatUpNotify~~~");
                 break;
         }
     }
