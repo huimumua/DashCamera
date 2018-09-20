@@ -147,8 +147,11 @@ public class NmeaRecorder {
     }
 
     public boolean stop() {
-        if (mState != RecorderState.STARTED)
-            throw new RuntimeException("The NmeaRecorder state is not STARTED.");
+        if (mState != RecorderState.STARTED) {
+            Log.i(LOG_TAG, "stop: state error, state = " + mState + ", StartTime" + mStartTime);
+            //throw new RuntimeException("The NmeaRecorder state is not STARTED.");
+            return false;
+        }
         mState = RecorderState.STOPPED;
 
         try {
@@ -305,6 +308,7 @@ public class NmeaRecorder {
                 case "$GNRMC":
                     // nmea.replaceFirst("GNRMC", "GPRMC"); //Change to GPRMC
                     currentDatas[0] = nmea.replaceFirst("GNRMC", "GPRMC");
+
                     break;
                 case "$GPRMC":
                     currentDatas[0] = nmea;
