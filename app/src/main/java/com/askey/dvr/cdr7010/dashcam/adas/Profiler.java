@@ -2,6 +2,7 @@ package com.askey.dvr.cdr7010.dashcam.adas;
 
 class Profiler {
     private static final String TAG = Profiler.class.getSimpleName();
+    private static final String SHORT_TAG = "Prof";
     private int mIndex;
     private int[] mRecords;
     private final String NAME;
@@ -35,18 +36,22 @@ class Profiler {
 
     public void logFinish() {
         int elapsed = (int) (System.currentTimeMillis() - mLogStartTime);
-        mRecords[mIndex] = elapsed;
+        log(elapsed);
+    }
+
+    public void log(int value) {
+        mRecords[mIndex] = value;
         if (mUsedSize < RECORD_SIZE) {
             mUsedSize++;
         }
         if (++mIndex >= RECORD_SIZE) {
             mIndex = 0;
         }
-        if (elapsed > mMax) {
-            mMax = elapsed;
+        if (value > mMax) {
+            mMax = value;
         }
-        if (elapsed < mMin) {
-            mMin = elapsed;
+        if (value < mMin) {
+            mMin = value;
         }
         mLogTimes++;
     }
@@ -54,19 +59,18 @@ class Profiler {
     @Override
     public String toString() {
         if (mUsedSize == 0) {
-            return "{" + TAG + "[" + NAME + "] " +
-                    "Size=" + mUsedSize + "}";
+            return "{" + SHORT_TAG + "[" + NAME + "]" +
+                    "(" + mUsedSize + ")}";
         }
         updateStatistics();
-        return "{" + TAG + "[" + NAME + "]" +
-                "Size=" + mUsedSize +
-                ", Stat(Avg/Max//Min)=(" + mStatAvg +
+        return "{" + SHORT_TAG + "[" + NAME + "]" +
+                "(" + mUsedSize + ")" +
+                ": " + mStatAvg +
                 "/" + mStatMax +
                 "/" + mStatMin +
-                ")" +
-                ", Max=" + mMax +
-                ", Min=" + mMin +
-                ", LogTimes=" + mLogTimes +
+                "/" + mMax +
+                "/" + mMin +
+                ", N=" + mLogTimes +
                 '}';
     }
 

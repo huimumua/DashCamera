@@ -53,6 +53,8 @@ public class AdasController implements Util.AdasCallback {
     static final int BUFFER_NUM = 6; // A safer number maybe 6
 
     private static final int EXPECTED_LISTENER_NUM = 1;
+    private static final long PROCESS_TIME_WARNING = 175;
+    private static final long PROCESS_TIME_ERROR = 500;
 
     /* Interval of printing statistics data */
     private static long STATISTICS_INTERVAL_MILL_SEC_FIRST = 3 * 1000;
@@ -92,6 +94,7 @@ public class AdasController implements Util.AdasCallback {
     private ContentResolver mContentResolver;
     private boolean mReinitializing;
     private Context mContext;
+    private long mProcessLockTimestampNs;
 
     public enum State {
         Uninitialized, Initializing, Stopped, Started, Stopping, Finishing
@@ -253,6 +256,9 @@ public class AdasController implements Util.AdasCallback {
             Log.v(TAG, "process: image=" + image);
         }
         boolean locked = mProcessingLock.isLocked();
+        if (locked) {
+            checkProcessTimeout();
+        }
         if (ADAS_DISABLED
                 || mState != State.Started
                 || locked) {
@@ -289,6 +295,7 @@ public class AdasController implements Util.AdasCallback {
             image.close();
             return;
         }
+        mProcessLockTimestampNs = System.nanoTime();
 
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "process_internal: image = " + image);
@@ -339,13 +346,22 @@ public class AdasController implements Util.AdasCallback {
             return;
         } else {
             assert result == Constant.ADAS_SUCCESS;
-
+            mStatistics.log(ProfileItem.Speed, mFcInput.VehicleSpeed);
             mProcessingImages.add(imageRecord);
             if (DEBUG_IMAGE_PROCESS) {
                 Log.v(TAG, "process_internal: new image queued: " + mProcessingImages.size()
                         + ", " + imageRecord + ", speed = " + mFcInput.VehicleSpeed);
             }
 
+        }
+    }
+
+    private void checkProcessTimeout() {
+        long elapsedMs = (System.nanoTime() - mProcessLockTimestampNs) / 1000000;
+        if (elapsedMs > PROCESS_TIME_ERROR) {
+            Log.e(TAG, "checkProcessTimeout: elapsed = " + elapsedMs + " ms");
+        } else if (elapsedMs > PROCESS_TIME_WARNING) {
+            Log.w(TAG, "checkProcessTimeout: elapsed = " + elapsedMs + " ms");
         }
     }
 

@@ -12,8 +12,9 @@ class AdasStatistics {
         mLogTimes.put(timesItem, mLogTimes.get(timesItem) + 1);
     }
 
+
     public enum ProfileItem {
-        Init, Process, Stop, Finish, Reinitialize
+        Init, Process, Stop, Finish, Reinitialize, Speed
     }
 
     public enum TimesItem {
@@ -27,6 +28,7 @@ class AdasStatistics {
         addProfiler(ProfileItem.Stop);
         addProfiler(ProfileItem.Finish);
         addProfiler(ProfileItem.Reinitialize);
+        addProfiler(ProfileItem.Speed);
         mLogTimes = new HashMap<>();
         addTimesItem(TimesItem.NewImageReader);
     }
@@ -47,6 +49,11 @@ class AdasStatistics {
         mProfilers.get(profile).logFinish();
     }
 
+    public void log(ProfileItem profile, int value) {
+        mProfilers.get(profile).log(value);
+    }
+
+
     @Override
     public String toString() {
         return "AdasStatistics{" +
@@ -55,6 +62,7 @@ class AdasStatistics {
                 ", " + mProfilers.get(ProfileItem.Finish) +
                 ", " + mProfilers.get(ProfileItem.Stop) +
                 ", " + mProfilers.get(ProfileItem.Reinitialize) +
+                ", " + mProfilers.get(ProfileItem.Speed) +
                 ", " + TimesItem.NewImageReader.name() + "=" + mLogTimes.get(TimesItem.NewImageReader) +
                 '}';
     }
