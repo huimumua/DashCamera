@@ -37,6 +37,7 @@ import static com.jvckenwood.adas.util.Constant.ADAS_SUCCESS;
 
 public class AdasController implements Util.AdasCallback {
     private static final String TAG = AdasController.class.getSimpleName();
+    private final static int NANO_TO_MILLI = 1000000;
 
     static final int ADAS_IMAGE_WIDTH = 1280;
     static final int ADAS_IMAGE_HEIGHT = 720;
@@ -94,7 +95,10 @@ public class AdasController implements Util.AdasCallback {
     private ContentResolver mContentResolver;
     private boolean mReinitializing;
     private Context mContext;
+
+    // Used for check lock timeout
     private long mProcessLockTimestampNs;
+    private long mLastTimeoutPrint;
 
     public enum State {
         Uninitialized, Initializing, Stopped, Started, Stopping, Finishing
@@ -302,7 +306,7 @@ public class AdasController implements Util.AdasCallback {
         }
 
         mFcInput.VehicleSpeed = (int) (getSpeed() * 10);
-        long timestamp = image.getTimestamp() / 1000000; // nano to ms
+        long timestamp = image.getTimestamp() / NANO_TO_MILLI; // nano to ms
         mFcInput.CaptureTime = timestamp / 1000;
         mFcInput.CaptureMilliSec = timestamp % 1000;
         ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureMilliSec, image);
@@ -357,12 +361,20 @@ public class AdasController implements Util.AdasCallback {
     }
 
     private void checkProcessTimeout() {
-        long elapsedMs = (System.nanoTime() - mProcessLockTimestampNs) / 1000000;
-        if (elapsedMs > PROCESS_TIME_ERROR) {
+        long elapsedMs = (System.nanoTime() - mProcessLockTimestampNs) / NANO_TO_MILLI;
+        if (elapsedMs > PROCESS_TIME_ERROR && checkLastPrintTime()) {
             Log.e(TAG, "checkProcessTimeout: elapsed = " + elapsedMs + " ms");
-        } else if (elapsedMs > PROCESS_TIME_WARNING) {
+            mLastTimeoutPrint = System.nanoTime();
+        } else if (elapsedMs > PROCESS_TIME_WARNING && checkLastPrintTime()) {
             Log.w(TAG, "checkProcessTimeout: elapsed = " + elapsedMs + " ms");
+            mLastTimeoutPrint = System.nanoTime();
         }
+    }
+
+    // Limit the frequency of printing timeout
+    private boolean checkLastPrintTime() {
+        long lastPrintElapsedMs = (System.nanoTime() - mLastTimeoutPrint) / NANO_TO_MILLI;
+        return lastPrintElapsedMs > 1000;
     }
 
     @Override
