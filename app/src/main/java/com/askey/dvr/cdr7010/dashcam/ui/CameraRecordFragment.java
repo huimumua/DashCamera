@@ -117,6 +117,7 @@ public class CameraRecordFragment extends Fragment {
 
     private boolean isEventRecording;
     private static boolean isBatteryDisconnected = false;
+    private boolean canShutDown;
     private boolean isKeyNotValid = false;
     public boolean canRecord = false;
 
@@ -272,6 +273,7 @@ public class CameraRecordFragment extends Fragment {
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
                 if (isBatteryDisconnected) {
+                    canShutDown = true;
                     Logg.d(TAG, "battery status....isBatteryDisconnected");
                     sendShutDownBroadCast();
                     RecordHelper.setRecordingPrecondition(BATTERY_STATUS_DISCHARGING);
@@ -402,7 +404,7 @@ public class CameraRecordFragment extends Fragment {
     };
 
     private void delay2ShutDown() {
-        if (isBatteryDisconnected) {
+        if (canShutDown) {
             //关机,2018.9.5新需求，最多7秒后关机，此处按最长时间处理
             handler.sendEmptyMessageDelayed(1, 7000);
         }
