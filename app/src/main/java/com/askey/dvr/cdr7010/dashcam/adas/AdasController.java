@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static com.jvckenwood.adas.util.Constant.ADAS_ERROR_DETECT_ALREADY_RUNNING_DETECTION;
 import static com.jvckenwood.adas.util.Constant.ADAS_SUCCESS;
@@ -91,7 +91,7 @@ public class AdasController implements Util.AdasCallback {
     private float mFakeSpeed;
     private float mLocationSpeed = 0;
     private AdasStatistics mStatistics;
-    private ReentrantLock mProcessingLock;
+    private Semaphore mProcessingLock;
     private ContentResolver mContentResolver;
     private boolean mReinitializing;
     private Context mContext;
@@ -113,7 +113,7 @@ public class AdasController implements Util.AdasCallback {
         mState = State.Uninitialized;
         mReinitializing = false;
         mStatistics = new AdasStatistics();
-        mProcessingLock = new ReentrantLock();
+        mProcessingLock = new Semaphore(1);
         mAdasImpl = Util.getInstance();
         mTpsc = new TimesPerSecondCounter(TAG);
         mTpscDidAdas = new TimesPerSecondCounter(TAG + "_didAdas");
@@ -259,46 +259,37 @@ public class AdasController implements Util.AdasCallback {
         if (DEBUG_IMAGE_PROCESS) {
             Log.v(TAG, "process: image=" + image);
         }
-        boolean locked = mProcessingLock.isLocked();
-        if (locked) {
-            checkProcessTimeout();
-        }
         if (ADAS_DISABLED
-                || mState != State.Started
-                || locked) {
-            // Too much logs
+                || mState != State.Started) {
             if (DEBUG_IMAGE_PROCESS) {
-                Log.w(TAG, "process: ADAS_DISABLED=" + ADAS_DISABLED + ", mState=" + mState +
-                        ", mProcessingLock.isLocked()=" + locked);
+                Log.w(TAG, "process: ADAS_DISABLED=" + ADAS_DISABLED + ", mState=" + mState);
             }
             image.close();
             return;
         }
+        assertState("process", State.Started);
+
+        boolean locked = mProcessingLock.tryAcquire();
+        if (!locked || mState != State.Started) {
+            if (DEBUG_IMAGE_PROCESS) {
+                Log.w(TAG, "process: mProcessingLock.tryAcquire()=" + locked +
+                        "mState=" + mState);
+            }
+            image.close();
+            if (locked) {
+                mProcessingLock.release();
+            }
+            return;
+        }
+        checkProcessTimeout();
+
         if (DEBUG_FPS) {
             mTpsc.update();
         }
-
-        assertState("process", State.Started);
         mHandler.post(()->process_internal(image));
     }
 
     private void process_internal(Image image) {
-        boolean locked = mProcessingLock.isLocked();
-        if (mState != State.Started
-                || locked) {
-            // Too much logs
-            if (DEBUG_IMAGE_PROCESS) {
-                Log.w(TAG, "process_internal: mState=" + mState +
-                        ", mProcessingLock.isLocked()=" + locked);
-            }
-            image.close();
-            return;
-        }
-        if (!mProcessingLock.tryLock()) { // Unlock when process is done (didAdasDetect_internal)
-            Log.w(TAG, "process_internal: \"stop()\" should has acquired the lock first!!!");
-            image.close();
-            return;
-        }
         mProcessLockTimestampNs = System.nanoTime();
 
         if (DEBUG_IMAGE_PROCESS) {
@@ -312,9 +303,9 @@ public class AdasController implements Util.AdasCallback {
         ImageRecord imageRecord = ImageRecord.obtain(mFcInput.CaptureMilliSec, image);
 
         if (mState != State.Started) {
-            Log.v(TAG, "process_internal: not Stopped = " + image);
+            Log.v(TAG, "process_internal: not Started = " + image);
             imageRecord.recycle();
-            mProcessingLock.unlock();
+            mProcessingLock.release();
             return;
         }
 
@@ -323,7 +314,7 @@ public class AdasController implements Util.AdasCallback {
                 mTpscFrameDrop.update();
             }
             imageRecord.recycle();
-            mProcessingLock.unlock();
+            mProcessingLock.release();
             return;
         }
 
@@ -341,12 +332,12 @@ public class AdasController implements Util.AdasCallback {
                 mTpscFrameDrop.update();
             }
             imageRecord.recycle();
-            mProcessingLock.unlock();
+            mProcessingLock.release();
             return;
         } else if (result != Constant.ADAS_SUCCESS) {
             Log.e(TAG, "process_internal: adasDetect() result = " + result + ", close " + imageRecord);
             imageRecord.recycle();
-            mProcessingLock.unlock();
+            mProcessingLock.release();
             return;
         } else {
             assert result == Constant.ADAS_SUCCESS;
@@ -415,7 +406,7 @@ public class AdasController implements Util.AdasCallback {
             mImageReader.close();
             mImageReader = null;
         }
-        mProcessingLock.unlock();
+        mProcessingLock.release();
     }
 
     private float getSpeed() {
@@ -613,11 +604,11 @@ public class AdasController implements Util.AdasCallback {
         mContentResolver.unregisterContentObserver(mSettingObserver);
         boolean locked = false;
         try {
-            locked = mProcessingLock.tryLock();
+            locked = mProcessingLock.tryAcquire();
             if (!locked) { // Unlock in stop_internal
                 Log.w(TAG, "stop: \"process()\" has acquired the lock first!!!");
                 changeState(State.Stopping);
-                locked = mProcessingLock.tryLock(1000, TimeUnit.MILLISECONDS);
+                locked = mProcessingLock.tryAcquire(1000, TimeUnit.MILLISECONDS);
                 if (locked) {
                     Log.w(TAG, "stop: acquire the lock!!!");
                 } else {
@@ -629,7 +620,7 @@ public class AdasController implements Util.AdasCallback {
             handleError("stop", e.getMessage());
         } finally {
             if (locked) {
-                mProcessingLock.unlock();
+                mProcessingLock.release();
             }
             mStatistics.logFinish(ProfileItem.Stop);
             changeState(State.Stopped);
