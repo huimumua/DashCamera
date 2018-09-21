@@ -261,7 +261,7 @@ public class CameraRecordFragment extends Fragment {
                     case BatteryManager.BATTERY_STATUS_DISCHARGING:
                         Logg.d(TAG, "battery status is discharging");
                         isBatteryDisconnected = true;
-                        handler.sendEmptyMessageDelayed(0, 2000);//一秒内(考虑到实际接收广播的时间更长一些，delay2秒)，用户又插上不关机
+                        handler.sendEmptyMessageDelayed(0, 3500);//一秒内(考虑到实际接收广播的时间更长一些，delay2秒)，用户又插上不关机
                         break;
                 }
             }
@@ -280,7 +280,7 @@ public class CameraRecordFragment extends Fragment {
                     stopVideoRecord("Intent.BATTERY_STATUS_DISCHARGING");
                     if (!isEventRecording) {
                         //关机
-                        handler.sendEmptyMessageDelayed(1, 2000);
+                        handler.sendEmptyMessageDelayed(1, 3500);
                     }
                 }
             } else if (msg.what == 1) {
