@@ -447,7 +447,8 @@ public class AdasController implements Util.AdasCallback {
             mReinitializing = false;
             mStatistics.logFinish(ProfileItem.Reinitialize);
             // Don't need prepare image reader again, go to Started
-            changeState(mState.Started);
+            changeState(State.Started);
+            mLastTimeoutPrint = System.nanoTime();
         }
     }
 
@@ -580,6 +581,7 @@ public class AdasController implements Util.AdasCallback {
         mHandler.postDelayed(mPrintStatistics, STATISTICS_INTERVAL_MILL_SEC_FIRST);
 
         changeState(State.Started);
+        mLastTimeoutPrint = System.nanoTime();
     };
 
     private Runnable mPrintStatistics = () -> {
