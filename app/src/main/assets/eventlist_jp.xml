@@ -85,11 +85,11 @@
         <dialog_type></dialog_type>
         <name>音声記録ON</name>
         <description></description>
-        <voice_guidence></voice_guidence>
+        <voice_guidence>0B07</voice_guidence>
         <popup>no</popup>
         <icon>no</icon>
         <led>yes</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>8</id>
@@ -98,11 +98,11 @@
         <dialog_type></dialog_type>
         <name>音声記録OFF</name>
         <description></description>
-        <voice_guidence></voice_guidence>
+        <voice_guidence>0B08</voice_guidence>
         <popup>no</popup>
         <icon>no</icon>
         <led>yes</led>
-        <speech>no</speech>
+        <speech>yes</speech>
     </event>
     <event>
         <id>9</id>
@@ -832,6 +832,84 @@
         <popup>yes</popup>
         <icon>yes</icon>
         <led>yes</led>
+        <speech>yes</speech>
+    </event>
+    <event>
+        <id>65</id>
+        <priority>20</priority>
+        <event_type>130</event_type>
+        <dialog_type></dialog_type>
+        <name>常時録画イベント開始</name>
+        <description></description>
+        <voice_guidence>0B01</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>66</id>
+        <priority>20</priority>
+        <event_type>131</event_type>
+        <dialog_type></dialog_type>
+        <name>常時録画イベント停止</name>
+        <description></description>
+        <voice_guidence>0B02</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>67</id>
+        <priority>20</priority>
+        <event_type>132</event_type>
+        <dialog_type></dialog_type>
+        <name>ファイル削除</name>
+        <description></description>
+        <voice_guidence>0B03</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>68</id>
+        <priority>20</priority>
+        <event_type>133</event_type>
+        <dialog_type></dialog_type>
+        <name>メニューカーソル送り</name>
+        <description></description>
+        <voice_guidence>0B04</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>69</id>
+        <priority>20</priority>
+        <event_type>134</event_type>
+        <dialog_type></dialog_type>
+        <name>メニュー項目決定</name>
+        <description></description>
+        <voice_guidence>0B05</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>70</id>
+        <priority>20</priority>
+        <event_type>135</event_type>
+        <dialog_type></dialog_type>
+        <name>メニュー項目戻り/解除</name>
+        <description></description>
+        <voice_guidence>0B04</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
         <speech>yes</speech>
     </event>
 </eventlist>

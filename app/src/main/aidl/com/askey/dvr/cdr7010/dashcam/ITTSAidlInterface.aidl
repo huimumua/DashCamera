@@ -9,7 +9,7 @@ interface ITTSAidlInterface {
 
     void ttsDeleteFile();
 
-    void ttsMenuCursorFocused();
+    void ttsMenuCursorMove();
 
     void ttsMenuItemClick();
 

@@ -311,6 +311,7 @@ public class CameraRecordFragment extends Fragment {
                     RECORDING_CONTINUOUS));
             isEventRecording = false;
             mHandler.post(() -> EventManager.getInstance().handOutEventInfo(104));
+            mHandler.post(() -> EventManager.getInstance().handOutEventInfo(130));
         }
 
         @Override
@@ -320,6 +321,7 @@ public class CameraRecordFragment extends Fragment {
                     UIElementStatusEnum.RecordingStatusType.RECORDING_STOP));
             if (!isEventRecording) {
                 mHandler.post(() -> EventManager.getInstance().handOutEventInfo(105));
+                mHandler.post(() -> EventManager.getInstance().handOutEventInfo(131));
             } else {
                 mHandler.post(() -> EventManager.getInstance().handOutEventInfo(124));
             }

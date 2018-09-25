@@ -30,8 +30,8 @@ public class TTSSevice extends Service {
             TTSManager.getInstance().ttsDeleteFile();
         }
         @Override
-        public void ttsMenuCursorFocused() throws RemoteException {
-            TTSManager.getInstance().ttsMenuCursorFocused();
+        public void ttsMenuCursorMove() throws RemoteException {
+            TTSManager.getInstance().ttsMenuCursorMove();
         }
         @Override
         public void ttsMenuItemClick() throws RemoteException {

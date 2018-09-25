@@ -62,6 +62,8 @@ public final class Event{
    public static final int USER_SWITCH_BY_SERVER =127;
    public static final int CHANGE_SETTINGS_BY_SERVER =128;
    public static final int RECORDING_PIC_FAILED =129;
+   public static final int CONTINUOUS_RECORDING_EVENT_START = 130;
+   public static final int CONTINUOUS_RECORDING_EVENT_END =131;
    public static final int EVENT_DELETE_FILE = 132;
    public static final int EVENT_MENU_CURSOR_FOCUSED = 133;
    public static final int EVENT_MENU_ITEM_CLICK = 134;

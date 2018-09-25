@@ -834,4 +834,82 @@
         <led>yes</led>
         <speech>yes</speech>
     </event>
+    <event>
+        <id>65</id>
+        <priority>20</priority>
+        <event_type>130</event_type>
+        <dialog_type></dialog_type>
+        <name>Continuous Recording Event start</name>
+        <description></description>
+        <voice_guidence>0B01</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>66</id>
+        <priority>20</priority>
+        <event_type>131</event_type>
+        <dialog_type></dialog_type>
+        <name>Continuous Recording Event end</name>
+        <description></description>
+        <voice_guidence>0B02</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>67</id>
+        <priority>20</priority>
+        <event_type>132</event_type>
+        <dialog_type></dialog_type>
+        <name>Delete file</name>
+        <description></description>
+        <voice_guidence>0B03</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>68</id>
+        <priority>20</priority>
+        <event_type>133</event_type>
+        <dialog_type></dialog_type>
+        <name>Menu Cursor Feed</name>
+        <description></description>
+        <voice_guidence>0B04</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>69</id>
+        <priority>20</priority>
+        <event_type>134</event_type>
+        <dialog_type></dialog_type>
+        <name>Menu item determination</name>
+        <description></description>
+        <voice_guidence>0B05</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
+    <event >
+        <id>70</id>
+        <priority>20</priority>
+        <event_type>135</event_type>
+        <dialog_type></dialog_type>
+        <name>Menu item return / release</name>
+        <description></description>
+        <voice_guidence>0B04</voice_guidence>
+        <popup>no</popup>
+        <icon>no</icon>
+        <led>no</led>
+        <speech>yes</speech>
+    </event>
 </eventlist>
