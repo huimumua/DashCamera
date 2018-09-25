@@ -2,15 +2,19 @@ package com.askey.dvr.cdr7010.dashcam.adas;
 
 import android.content.ContentResolver;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.platform.AskeySettings;
 import com.jvckenwood.adas.util.FC_PARAMETER;
 
+import java.util.Random;
+
 import static com.askey.dvr.cdr7010.dashcam.adas.AdasController.ADAS_IMAGE_HEIGHT;
 import static com.askey.dvr.cdr7010.dashcam.adas.AdasController.ADAS_IMAGE_WIDTH;
 
 class FcGetter {
+    private static final String TAG = FcGetter.class.getSimpleName();
     private static final int CAR_TYPE_NUM = 7;
     private static final int[] INSTALLATION_HEIGHTS = new int[] {120, 135, 120, 135, 120, 135, 200};
     private static final int[] VEHICLE_WIDTHS = new int[] {148, 148, 170, 170, 180, 190, 200};
@@ -88,6 +92,7 @@ class FcGetter {
         boolean bLDS = (1 == globalLogic.getInt(AskeySettings.Global.ADAS_LDS));
         boolean bDelayStart = (1 == globalLogic.getInt(AskeySettings.Global.ADAS_DELAY_START));
         boolean bPedColl = (1 == globalLogic.getInt(AskeySettings.Global.ADAS_PEDESTRIAN_COLLISION));
+        boolean bAutoCalibration = true; // FIXME: (1 == globalLogic.getInt(AskeySettings.Global.ADAS_AUTO_CALIBRATION));
         if (bFCWS) {
             result |= 0x01;
         }
@@ -99,6 +104,9 @@ class FcGetter {
         }
         if (bPedColl) {
             result |= 0x08;
+        }
+        if (bAutoCalibration) {
+            result |= 0x10000;
         }
         return result;
     }
@@ -122,5 +130,12 @@ class FcGetter {
                     Settings.Global.getUriFor(key),
                     false, observer);
         }
+    }
+
+    public static void updateCalibration(int centerX, int skyline) {
+        Log.v(TAG, "updateCalibration: " + centerX + ", " + skyline);
+        GlobalLogic globalLogic = GlobalLogic.getInstance();
+        globalLogic.putInt(AskeySettings.Global.ADAS_SKYLINE_RANGE, skyline);
+        globalLogic.putInt(AskeySettings.Global.ADAS_CENTERX, centerX);
     }
 }

@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.askey.dvr.cdr7010.dashcam.adas.AdasStatistics.ProfileItem;
@@ -17,6 +18,7 @@ import com.askey.dvr.cdr7010.dashcam.adas.AdasStatistics.TimesItem;
 import com.askey.dvr.cdr7010.dashcam.service.GPSStatusManager;
 import com.askey.dvr.cdr7010.dashcam.util.TimesPerSecondCounter;
 import com.jvckenwood.adas.detection.Detection;
+import com.jvckenwood.adas.detection.FC_CALIBRATION;
 import com.jvckenwood.adas.detection.FC_INPUT;
 import com.jvckenwood.adas.util.Constant;
 import com.jvckenwood.adas.util.FC_PARAMETER;
@@ -437,11 +439,14 @@ public class AdasController implements Util.AdasCallback {
     }
 
     @Override
-    public synchronized void didAdasFinish(int i) {
-        Log.v(TAG, "didAdasFinish");
+    public void didAdasFinish(int i, @Nullable FC_CALIBRATION fc_calibration) {
+        Log.v(TAG, "didAdasFinish: i=" + i + ", fc_calibration=" + fc_calibration);
         mStatistics.logFinish(ProfileItem.Finish);
         assertState("didAdasFinish", State.Finishing);
         changeState(State.Uninitialized);
+        if (1 == fc_calibration.calibration) {
+            FcGetter.updateCalibration(fc_calibration.vpx, fc_calibration.vpy);
+        }
         if (mReinitializing) {
             init(mContext);
             mReinitializing = false;
