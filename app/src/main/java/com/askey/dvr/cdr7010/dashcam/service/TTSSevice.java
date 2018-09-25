@@ -25,6 +25,22 @@ public class TTSSevice extends Service {
         public void ttsEventStart(int requestId,int priority,int voiceId) throws RemoteException {
             TTSManager.getInstance().ttsEventStart(requestId,priority,new int[]{voiceId});
         }
+        @Override
+        public void ttsDeleteFile() throws RemoteException {
+            TTSManager.getInstance().ttsDeleteFile();
+        }
+        @Override
+        public void ttsMenuCursorFocused() throws RemoteException {
+            TTSManager.getInstance().ttsMenuCursorFocused();
+        }
+        @Override
+        public void ttsMenuItemClick() throws RemoteException {
+            TTSManager.getInstance().ttsMenuItemClick();
+        }
+        @Override
+        public void ttsMenuItemBack() throws RemoteException {
+            TTSManager.getInstance().ttsMenuItemBack();
+        }
     }
 
     @Override

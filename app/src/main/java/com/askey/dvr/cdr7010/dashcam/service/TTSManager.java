@@ -61,6 +61,51 @@ public class TTSManager{
         }
 
     }
+    public void ttsDeleteFile(){
+        int requestId = Event.EVENT_DELETE_FILE;
+        int priority  =20;
+        int[] voiceId = new int[]{0x0B03};
+        ttsStartSound(requestId,priority,voiceId);
+    }
+    public void ttsMenuCursorFocused(){
+        int requestId = Event.EVENT_MENU_CURSOR_FOCUSED;
+        int priority  = 20;
+        int[] voiceId = new int[]{0x0B04};
+        ttsStartSound(requestId,priority,voiceId);
+    }
+    public void ttsMenuItemClick(){
+        int requestId = Event.EVENT_MENU_ITEM_CLICK;
+        int priority  = 20;
+        int[] voiceId = new int[]{0x0B05};
+        ttsStartSound(requestId,priority,voiceId);
+    }
+    public void ttsMenuItemBack(){
+        int requestId = Event.EVENT_MENU_ITEM_BACK;
+        int priority  = 20;
+        int[] voiceId = new int[]{0x0B04};
+        ttsStartSound(requestId,priority,voiceId);
+    }
+    private void ttsStartSound(int requestId,int priority,int[] voiceId){
+        if(ttsIsSpeaking()){
+            boolean isOtherSoundEvent = (Event.contains(Event.otherSoundEvent,lastRequestId));
+            if(priority <= lastPriority || !isOtherSoundEvent ){
+                if(instance != null && tts != null){
+                    curRequestId = requestId;
+                    tts.speechStop(lastRequestId);
+                    tts.voiceNotification(voiceId,requestId);
+                }
+                lastRequestId = requestId;
+                lastPriority = priority;
+            }
+        }else{
+            if(instance != null && tts != null){
+                curRequestId = requestId;
+                tts.voiceNotification(voiceId,requestId);
+                lastPriority = priority;
+                lastRequestId = requestId;
+            }
+        }
+    }
     public void ttsStop(int requestId){
         if(instance != null && tts != null){
             tts.speechStop(requestId);

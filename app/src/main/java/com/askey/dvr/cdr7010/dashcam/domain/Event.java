@@ -62,6 +62,10 @@ public final class Event{
    public static final int USER_SWITCH_BY_SERVER =127;
    public static final int CHANGE_SETTINGS_BY_SERVER =128;
    public static final int RECORDING_PIC_FAILED =129;
+   public static final int EVENT_DELETE_FILE = 132;
+   public static final int EVENT_MENU_CURSOR_FOCUSED = 133;
+   public static final int EVENT_MENU_ITEM_CLICK = 134;
+   public static final int EVENT_MENU_ITEM_BACK =135;
 
    public static final class EventCode {
        public static final int EVENT_RECORDING = 0x1;
@@ -116,6 +120,8 @@ public final class Event{
    0x030A,0x030B,0x030C,0x030D,0x030F,0x0310,0x0311,0x0312,0x0803};
    public static final int[] typhoonWarning = {0x0801};
    public static final int[] typhoonAlert = {0x0802};
+   public static final int[] otherSoundEvent ={EVENT_DELETE_FILE,EVENT_MENU_CURSOR_FOCUSED,EVENT_MENU_ITEM_CLICK
+   ,EVENT_MENU_ITEM_BACK};
    public static boolean contains(int[] eventArr,int eventType){
       for(int element:eventArr){
          if(eventType == element)
