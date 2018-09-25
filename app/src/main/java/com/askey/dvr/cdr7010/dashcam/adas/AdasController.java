@@ -626,7 +626,7 @@ public class AdasController implements Util.AdasCallback {
             }
             mStatistics.logFinish(ProfileItem.Stop);
             changeState(State.Stopped);
-            Log.v(TAG, "stop: END");
+            Log.v(TAG, "stop: END, elapsed = " + mStatistics.getElapsedMillis(ProfileItem.Stop) + " ms");
         }
     }
 

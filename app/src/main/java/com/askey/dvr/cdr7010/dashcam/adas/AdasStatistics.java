@@ -49,6 +49,10 @@ class AdasStatistics {
         mProfilers.get(profile).logFinish();
     }
 
+    public long getElapsedMillis(ProfileItem profile) {
+        return mProfilers.get(profile).getElapsedMillis();
+    }
+
     public void log(ProfileItem profile, int value) {
         mProfilers.get(profile).log(value);
     }

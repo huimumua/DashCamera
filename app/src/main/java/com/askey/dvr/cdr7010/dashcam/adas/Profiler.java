@@ -14,6 +14,7 @@ class Profiler {
     /* For calculation and toString() */
     private int mStatAvg, mStatMax, mStatMin;
     private int mMax, mMin;
+    private long mLastElapsedMillis;
 
     /**
      * @param name name of what the profiler is for
@@ -30,13 +31,17 @@ class Profiler {
     }
 
     public void logStart() {
-        long timestamp = System.currentTimeMillis();
+        long timestamp = System.nanoTime();
         mLogStartTime = timestamp;
     }
 
     public void logFinish() {
-        int elapsed = (int) (System.currentTimeMillis() - mLogStartTime);
-        log(elapsed);
+        mLastElapsedMillis = nanoToMilli(System.nanoTime() - mLogStartTime);
+        log((int)mLastElapsedMillis);
+    }
+
+    private long nanoToMilli(long l) {
+        return l / 1000000;
     }
 
     public void log(int value) {
@@ -93,4 +98,7 @@ class Profiler {
         mStatAvg = sum / mUsedSize;
     }
 
+    public long getElapsedMillis() {
+        return mLastElapsedMillis;
+    }
 }
