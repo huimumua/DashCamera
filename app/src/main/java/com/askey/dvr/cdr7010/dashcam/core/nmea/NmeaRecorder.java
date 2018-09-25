@@ -72,7 +72,7 @@ public class NmeaRecorder {
         initNmeaSet();
         initLocation(context);
         initSensorManager(context);
-        initNmeaDirToSDcard();
+        //initNmeaDirToSDcard();
         initScheduleRate();
     }
 
@@ -178,7 +178,7 @@ public class NmeaRecorder {
         try {
             NmeaNodeSet nmeaNodeSet = histroyPool.get(recodingTime);
             if (nmeaNodeSet == null) {
-                //Log.i(LOG_TAG, "Don't find nmeaNodeSet = " + recodingTime);
+                Log.i(LOG_TAG, "Don't find nmeaNodeSet = " + recodingTime);
                 return;
             }
             // String tempString = "number" + nmeaNodeSet.keyNumber;
@@ -412,6 +412,20 @@ public class NmeaRecorder {
                 }
 
                 sensorNodePool.put(keyNumber, sensorData);
+                if (keyNumber == 4) {
+                    //Log.i(LOG_TAG, "Call  nnmeaNode node update");
+                    try {
+                        NmeaNode nmeaNode = nmeaNodePool.remove(nmeaNodePool.entrySet().iterator().next().getKey());
+                        currentDatasUpdate();
+                        if (nmeaNode != null) {
+                            nmeaNodeUpdate(nmeaNode);
+                        } else {
+                            Log.i(LOG_TAG, "nnmeaNode not get node");
+                        }
+                    } catch (Exception e) {
+                        // Log.i(LOG_TAG, "error = " + e);
+                    }
+                }
             }
         }
     };
@@ -501,7 +515,7 @@ public class NmeaRecorder {
     private static void initScheduleRate() {
         if (sensorThreadPool.getPoolSize() == 0 && gpsThreadPool.getPoolSize() == 0) {
             sensorThreadPool.scheduleAtFixedRate(sensorRunnable, 0, 100, TimeUnit.MILLISECONDS);
-            gpsThreadPool.scheduleAtFixedRate(gpsRunnable, 0, 500, TimeUnit.MILLISECONDS);
+            //gpsThreadPool.scheduleAtFixedRate(gpsRunnable, 0, 500, TimeUnit.MILLISECONDS);
         }
     }
 
