@@ -1065,7 +1065,11 @@ public class CameraRecordFragment extends Fragment {
         refreshUserInfo();
         int userId = GlobalLogic.getInstance().getInt(AskeySettings.Global.SYSSET_USER_ID);
         Communication.getInstance().changeUserID(userId);
-        EventManager.getInstance().handOutEventInfo(127);
+        if(GlobalLogic.getInstance().isFirstUserChange()) {
+            EventManager.getInstance().handOutEventInfo(136);
+        }else{
+            EventManager.getInstance().handOutEventInfo(127);
+        }
     }
 
     private void checkSdcardAndSimcardStatus() {

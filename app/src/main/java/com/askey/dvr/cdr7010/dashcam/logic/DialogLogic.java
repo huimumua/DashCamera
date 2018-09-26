@@ -209,7 +209,7 @@ public class DialogLogic{
             protected void doRun() {
                 showTime = 0;
                 onDismiss(dialogType,eventType);
-                if(eventType == Event.USER_SWITCH_BY_SERVER){
+                if(eventType == Event.USER_SWITCH_BY_SERVER || eventType == Event.USER_SWITCH_FIRST_BY_SERVER ){
                     EventUtil.sendEvent((new MessageEvent<UIElementStatusEnum.SdCardAndSimCardCheckStatus>(Event.EventCode.EVENT_CHECK_SDCARD_AND_SIMCARD,CHECK_START)));
                 }
             }

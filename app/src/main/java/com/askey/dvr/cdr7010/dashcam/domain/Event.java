@@ -68,6 +68,7 @@ public final class Event{
    public static final int EVENT_MENU_CURSOR_FOCUSED = 133;
    public static final int EVENT_MENU_ITEM_CLICK = 134;
    public static final int EVENT_MENU_ITEM_BACK =135;
+   public static final int USER_SWITCH_FIRST_BY_SERVER =136;
 
    public static final class EventCode {
        public static final int EVENT_RECORDING = 0x1;
@@ -102,7 +103,7 @@ public final class Event{
            BEWARE_OF_ANIMALS_YAMANEKO,BEWARE_OF_ANIMALS, BEWARE_OF_ANIMALS_RARE,TYPHOON_WARNING,
            TYPHOON_ALERT,WEATHER_ALERT_SPECIAL,WEATHER_ALERT,PEDESTRIAN_COLLISION_WARNING,ABRUPT_HANDLE_LEFT,
            ABRUPT_HANDLE_RIGHT, GPS_LOCATION_INFORMATION,GPS_LOCATION_INFORMATION_ERROR,EMERGENCY_CALL_BUTTON,
-           EMERGENCY_CALL_USER, USER_SWITCH_BY_SERVER};
+           EMERGENCY_CALL_USER, USER_SWITCH_BY_SERVER,USER_SWITCH_FIRST_BY_SERVER};
    public static final int[] sdCardUnMountedEvent ={SDCARD_UNMOUNTED};
    public static final int[] sdCardAbnormalEvent ={SDCARD_UNFORMATTED,SDCARD_UNSUPPORTED,SDCARD_ERROR,
            SDCARD_SPACE_INSUFFICIENT};

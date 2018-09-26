@@ -10,6 +10,7 @@ import android.util.Log;
 import com.askey.dvr.cdr7010.dashcam.application.DashCamApplication;
 import com.askey.dvr.cdr7010.dashcam.domain.Event;
 import com.askey.dvr.cdr7010.dashcam.domain.MessageEvent;
+import com.askey.dvr.cdr7010.dashcam.logic.GlobalLogic;
 import com.askey.dvr.cdr7010.dashcam.service.AskySettingManager;
 import com.askey.dvr.cdr7010.dashcam.ui.utils.UIElementStatusEnum;
 import com.askey.dvr.cdr7010.dashcam.util.EventUtil;
@@ -66,6 +67,7 @@ public class UserSettingManager {
                         /**
                          * 几组用户设置信息保存成功再刷新默认用户的设置信息
                          */
+                        GlobalLogic.getInstance().setFirstUserChange(isFirstUserChange);
                         if (isFirstUserChange){
                             UserSettingManager.setUserInfoSaveCallBack(new UserInfoSaveCallback() {
                                 @Override

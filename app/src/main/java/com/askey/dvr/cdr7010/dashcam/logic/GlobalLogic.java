@@ -23,6 +23,7 @@ public class GlobalLogic {
     private String userInfo;
     private volatile boolean isStartSwitchUser = false;
     private boolean isECallAllow = true;
+    private volatile boolean isFirstUserChange = true;
     private UIElementStatusEnum.RecordingStatusType recordingStatus = RECORDING_UNKNOWN;
     private UIElementStatusEnum.MICStatusType micStatusType = MIC_ON;
     private UIElementStatusEnum.LTEStatusType lteStatus = LTE_NONE;
@@ -204,5 +205,11 @@ public class GlobalLogic {
 
     public void setECallAllow(boolean ECallAllow) {
         isECallAllow = ECallAllow;
+    }
+    public void setFirstUserChange(boolean isFirstUserChange){
+        this.isFirstUserChange = isFirstUserChange;
+    }
+    public boolean isFirstUserChange(){
+        return isFirstUserChange;
     }
 }
