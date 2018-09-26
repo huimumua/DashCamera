@@ -222,7 +222,7 @@ public class Recorder implements IFrameListener {
         public void segmentTerminated() {
             Logg.d(TAG, "segmentTerminated");
 
-            if (mConfig.nmeaRecordEnable()) {
+            if (mConfig.nmeaRecordEnable() && mNmeaMap != null) {
                 for (NmeaRecorder nmea : mNmeaMap.values()) {
                     Logg.d(TAG, "nmea loop");
 
