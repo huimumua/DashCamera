@@ -67,7 +67,8 @@ public class EGLRenderer implements OnFrameAvailableListener {
 
     @Override
     public void finalize() {
-        mRenderThread.quit();
+        if (mRenderThread != null)
+            mRenderThread.quit();
     }
 
     public void setDisplaySurface(Surface surface, int width, int height) {
